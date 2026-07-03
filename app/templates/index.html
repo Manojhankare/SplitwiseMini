@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Splitwise Mini</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #171a21;
+    --border: #2a2e38;
+    --text: #e8e8ec;
+    --muted: #9aa0ab;
+    --accent: #5b8cff;
+    --green: #3ecf8e;
+    --red: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px 16px 80px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  p.sub { color: var(--muted); margin-top: 0; font-size: 0.9rem; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; margin-top: 10px; }
+  label:first-child { margin-top: 0; }
+
+  input[type="text"], input[type="number"], input[type="date"], select, textarea {
+    width: 100%;
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  textarea { min-height: 64px; resize: vertical; }
+
+  button {
+    margin-top: 10px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  button.secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 4px 10px;
+    font-weight: 400;
+    font-size: 0.8rem;
+    margin-top: 0;
+  }
+  button.tab {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    margin-top: 0;
+    margin-right: 6px;
+  }
+  button.tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .status { font-size: 0.85rem; margin-top: 8px; color: var(--muted); }
+  .status.error { color: var(--red); }
+  .status.ok { color: var(--green); }
+
+  h2 { font-size: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; margin-top: 0; }
+
+  .row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .row input[type="text"] { flex: 1; min-width: 140px; }
+  .row button { margin-top: 0; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    text-transform: capitalize;
+  }
+
+  .checkboxes { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+  .checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text);
+    text-transform: capitalize;
+    cursor: pointer;
+  }
+  .checkboxes input { width: auto; }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 0.9rem;
+  }
+  .toggle-row input { width: auto; }
+
+  .hidden { display: none !important; }
+
+  .balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+  }
+  .balance-row:last-child { border-bottom: none; }
+  .balance-row .amt.pos { color: var(--green); }
+  .balance-row .amt.neg { color: var(--red); }
+
+  .expense-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+  }
+  .expense-row:last-child { border-bottom: none; }
+  .expense-row .meta { color: var(--muted); font-size: 0.8rem; }
+  .expense-row .left { display: flex; flex-direction: column; gap: 2px; }
+  .expense-row .right { display: flex; align-items: center; gap: 10px; }
+
+  .empty { color: var(--muted); font-size: 0.9rem; padding: 8px 0; }
+
+  .table-wrap { overflow-x: auto; margin-top: 10px; }
+  table.report {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  table.report th, table.report td {
+    border: 1px solid var(--border);
+    padding: 6px 8px;
+    text-align: right;
+  }
+  table.report th:first-child, table.report td:first-child,
+  table.report th:nth-child(2), table.report td:nth-child(2) {
+    text-align: left;
+  }
+  table.report th { background: #0d0f14; color: var(--muted); font-weight: 600; }
+  table.report tr.totals td { font-weight: 700; background: #12151c; }
+  table.report .desc { max-width: 180px; white-space: normal; }
+
+  details summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+  details[open] summary { margin-bottom: 12px; }
+
+  .filter-tabs { margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Splitwise Mini</h1>
+  <p class="sub">Track shared bills and personal spending.</p>
+
+  <div class="card">
+    <h2>People</h2>
+    <div class="row">
+      <input type="text" id="personName" placeholder="Add a name" />
+      <button type="button" onclick="addPerson()">Add</button>
+    </div>
+    <div id="peopleChips" class="chips"><div class="empty">No people yet.</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Add expense</h2>
+    <label for="desc">Description</label>
+    <input type="text" id="desc" placeholder="e.g. food jay malhar or bus fare" />
+
+    <label for="amount">Amount (₹)</label>
+    <input type="number" id="amount" min="0" step="0.01" placeholder="240" />
+
+    <label for="expDate">Date</label>
+    <input type="date" id="expDate" />
+
+    <label for="payer">Paid by</label>
+    <select id="payer"><option value="">— select —</option></select>
+
+    <div class="toggle-row">
+      <input type="checkbox" id="isPersonal" onchange="togglePersonal()" />
+      <label for="isPersonal" style="margin:0">Personal expense (no split)</label>
+    </div>
+
+    <div id="participantsBlock">
+      <label>Split between</label>
+      <div id="participantChecks" class="checkboxes"><span class="empty">Add people first.</span></div>
+    </div>
+
+    <button type="button" id="addStructuredBtn" onclick="addStructuredExpense()">Add expense</button>
+    <div id="formStatus" class="status"></div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>Add via AI text (optional)</summary>
+      <textarea id="aiInput" placeholder="e.g. 230 rs food split between me and akshay"></textarea>
+      <button type="button" id="addAiBtn" onclick="addAiExpense()">Parse &amp; add</button>
+      <div id="aiStatus" class="status"></div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>Itemized report</h2>
+    <div class="filter-tabs">
+      <button type="button" class="tab active" data-filter="all" onclick="setReportFilter('all', this)">All</button>
+      <button type="button" class="tab" data-filter="shared" onclick="setReportFilter('shared', this)">Shared</button>
+      <button type="button" class="tab" data-filter="personal" onclick="setReportFilter('personal', this)">Personal</button>
+    </div>
+    <div id="reportTable"><div class="empty">No expenses yet.</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Balances (shared only)</h2>
+    <div id="balances"><div class="empty">No shared expenses yet.</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Recent expenses</h2>
+    <div id="expenses"><div class="empty">No expenses yet.</div></div>
+  </div>
+</div>
+
+<script>
+let people = [];
+let reportFilter = 'all';
+
+const expDateEl = document.getElementById('expDate');
+expDateEl.value = new Date().toISOString().slice(0, 10);
+
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+function fmt(n) { return '₹' + Number(n).toFixed(2); }
+
+function setFormStatus(msg, type) {
+  const el = document.getElementById('formStatus');
+  el.textContent = msg || '';
+  el.className = 'status' + (type ? ' ' + type : '');
+}
+function setAiStatus(msg, type) {
+  const el = document.getElementById('aiStatus');
+  el.textContent = msg || '';
+  el.className = 'status' + (type ? ' ' + type : '');
+}
+
+function togglePersonal() {
+  const personal = document.getElementById('isPersonal').checked;
+  document.getElementById('participantsBlock').classList.toggle('hidden', personal);
+}
+
+function renderPeople() {
+  const chips = document.getElementById('peopleChips');
+  const payerSel = document.getElementById('payer');
+  const checks = document.getElementById('participantChecks');
+
+  if (people.length === 0) {
+    chips.innerHTML = '<div class="empty">No people yet.</div>';
+    payerSel.innerHTML = '<option value="">— select —</option>';
+    checks.innerHTML = '<span class="empty">Add people first.</span>';
+    return;
+  }
+
+  chips.innerHTML = people.map(p => `
+    <span class="chip">${cap(p.name)}
+      <button type="button" class="secondary" onclick="removePerson(${p.id})">×</button>
+    </span>
+  `).join('');
+
+  const prevPayer = payerSel.value;
+  payerSel.innerHTML = '<option value="">— select —</option>' +
+    people.map(p => `<option value="${p.name}">${cap(p.name)}</option>`).join('');
+  if (prevPayer && people.some(p => p.name === prevPayer)) payerSel.value = prevPayer;
+
+  const checked = new Set(
+    [...checks.querySelectorAll('input:checked')].map(cb => cb.value)
+  );
+  checks.innerHTML = people.map(p => `
+    <label><input type="checkbox" value="${p.name}" ${checked.has(p.name) ? 'checked' : ''} /> ${cap(p.name)}</label>
+  `).join('');
+}
+
+async function addPerson() {
+  const name = document.getElementById('personName').value.trim();
+  if (!name) return;
+  const res = await fetch('/api/people', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error || 'Failed'); return; }
+  document.getElementById('personName').value = '';
+  await refresh();
+}
+
+async function removePerson(id) {
+  if (!confirm('Remove this person?')) return;
+  await fetch(`/api/people/${id}`, { method: 'DELETE' });
+  await refresh();
+}
+
+function getSelectedParticipants() {
+  return [...document.querySelectorAll('#participantChecks input:checked')].map(cb => cb.value);
+}
+
+async function addStructuredExpense() {
+  const description = document.getElementById('desc').value.trim();
+  const amount = parseFloat(document.getElementById('amount').value);
+  const payer = document.getElementById('payer').value;
+  const isPersonal = document.getElementById('isPersonal').checked;
+  const date = document.getElementById('expDate').value;
+  const participants = getSelectedParticipants();
+  const btn = document.getElementById('addStructuredBtn');
+
+  if (!description) { setFormStatus('Description is required', 'error'); return; }
+  if (!amount || amount <= 0) { setFormStatus('Enter a valid amount', 'error'); return; }
+  if (!payer) { setFormStatus('Select who paid', 'error'); return; }
+  if (!isPersonal && participants.length === 0) { setFormStatus('Select at least one participant', 'error'); return; }
+
+  btn.disabled = true;
+  setFormStatus('Saving...', '');
+  try {
+    const res = await fetch('/api/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description, amount, payer, participants, is_personal: isPersonal, date })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    setFormStatus(`Added: ${data.description} — ${fmt(data.amount)}`, 'ok');
+    document.getElementById('desc').value = '';
+    document.getElementById('amount').value = '';
+    await refresh();
+  } catch (err) {
+    setFormStatus(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function addAiExpense() {
+  const text = document.getElementById('aiInput').value.trim();
+  if (!text) return;
+  const btn = document.getElementById('addAiBtn');
+  btn.disabled = true;
+  setAiStatus('Parsing with AI...', '');
+  try {
+    const res = await fetch('/api/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, date: document.getElementById('expDate').value })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    setAiStatus(`Added: ${data.description} — ${fmt(data.amount)}`, 'ok');
+    document.getElementById('aiInput').value = '';
+    await refresh();
+  } catch (err) {
+    setAiStatus(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function deleteExpense(id) {
+  if (!confirm('Delete this expense?')) return;
+  await fetch(`/api/delete/${id}`, { method: 'DELETE' });
+  await refresh();
+}
+
+function setReportFilter(filter, btn) {
+  reportFilter = filter;
+  document.querySelectorAll('.filter-tabs .tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  refreshReport();
+}
+
+async function refreshReport() {
+  const res = await fetch(`/api/report?filter=${reportFilter}`);
+  const data = await res.json();
+  const el = document.getElementById('reportTable');
+
+  if (!data.rows || data.rows.length === 0) {
+    el.innerHTML = '<div class="empty">No expenses yet.</div>';
+    return;
+  }
+
+  const people = data.people || [];
+  const head = `
+    <tr>
+      <th>Date</th>
+      <th>Description</th>
+      <th>Total</th>
+      ${people.map(p => `<th>${cap(p)}</th>`).join('')}
+      <th>Split</th>
+    </tr>`;
+
+  const body = data.rows.map(r => `
+    <tr>
+      <td>${r.date}</td>
+      <td class="desc">${r.description}</td>
+      <td>${fmt(r.amount)}</td>
+      ${people.map(p => `<td>${r.shares[p] ? fmt(r.shares[p]) : '—'}</td>`).join('')}
+      <td>${r.split_type}</td>
+    </tr>
+  `).join('');
+
+  const totals = `
+    <tr class="totals">
+      <td colspan="2">Final Standings</td>
+      <td>${fmt(data.grand_total)}</td>
+      ${people.map(p => `<td>${fmt(data.totals[p] || 0)}</td>`).join('')}
+      <td></td>
+    </tr>`;
+
+  el.innerHTML = `<div class="table-wrap"><table class="report"><thead>${head}</thead><tbody>${body}${totals}</tbody></table></div>`;
+}
+
+async function refresh() {
+  const [peopleRes, balRes, expRes] = await Promise.all([
+    fetch('/api/people'),
+    fetch('/api/balances'),
+    fetch('/api/expenses')
+  ]);
+  people = await peopleRes.json();
+  const balances = await balRes.json();
+  const expenses = await expRes.json();
+
+  renderPeople();
+  await refreshReport();
+
+  const balancesEl = document.getElementById('balances');
+  const names = Object.keys(balances);
+  if (names.length === 0) {
+    balancesEl.innerHTML = '<div class="empty">No shared expenses yet.</div>';
+  } else {
+    balancesEl.innerHTML = names
+      .sort((a, b) => balances[b] - balances[a])
+      .map(name => {
+        const v = balances[name];
+        const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : '';
+        const label = v > 0.001 ? 'is owed' : v < -0.001 ? 'owes' : 'settled';
+        return `<div class="balance-row">
+          <span>${cap(name)}</span>
+          <span class="amt ${cls}">${label} ${fmt(Math.abs(v))}</span>
+        </div>`;
+      }).join('');
+  }
+
+  const expensesEl = document.getElementById('expenses');
+  if (expenses.length === 0) {
+    expensesEl.innerHTML = '<div class="empty">No expenses yet.</div>';
+  } else {
+    expensesEl.innerHTML = expenses.map(e => {
+      const tag = e.is_personal ? 'personal' : e.participants.join(', ');
+      return `<div class="expense-row">
+        <div class="left">
+          <span>${e.date} · ${e.description} — ${fmt(e.amount)}</span>
+          <span class="meta">paid by ${cap(e.payer)} · ${e.is_personal ? 'personal' : 'split: ' + tag}</span>
+        </div>
+        <div class="right">
+          <button type="button" class="secondary" onclick="deleteExpense(${e.id})">delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+refresh();
+</script>
+</body>
+</html>

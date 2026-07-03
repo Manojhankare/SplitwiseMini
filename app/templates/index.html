@@ -4,268 +4,270 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Splitwise Mini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1115;
-    --card: #171a21;
-    --border: #2a2e38;
-    --text: #e8e8ec;
-    --muted: #9aa0ab;
-    --accent: #5b8cff;
-    --green: #3ecf8e;
-    --red: #ff6b6b;
+    --bg:#F4F5F1; --surface:#FFFFFF; --surface-2:#ECEEE7;
+    --ink:#14171A; --muted:#6B7280; --border:#E1E4DD;
+    --accent:#12664F; --accent-dark:#0D4C3B; --accent-soft:#E3F0EB;
+    --positive:#1F8A5C; --positive-soft:#E7F5EE;
+    --negative:#C7442E; --negative-soft:#FBEAE6;
+    --radius:16px; --radius-sm:10px;
+    --shadow:0 1px 2px rgba(20,23,26,0.04), 0 10px 28px -12px rgba(20,23,26,0.10);
+    --font-display:'Fraunces', Georgia, serif;
+    --font-body:'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing:border-box; }
   body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 24px 16px 80px;
+    margin:0; font-family:var(--font-body); background:var(--bg); color:var(--ink);
+    padding:20px 16px 90px;
   }
-  .wrap { max-width: 960px; margin: 0 auto; }
-  h1 { font-size: 1.4rem; margin-bottom: 4px; }
-  p.sub { color: var(--muted); margin-top: 0; font-size: 0.9rem; }
+  .wrap { max-width:960px; margin:0 auto; }
 
+  /* header */
+  .header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:6px; }
+  .header-left { display:flex; align-items:center; gap:12px; }
+  .brand-mark {
+    width:36px; height:36px; border-radius:10px; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-display);
+    font-weight:600; font-size:1rem; flex-shrink:0;
+  }
+  .header h1 { font-family:var(--font-display); font-weight:600; font-size:1.3rem; margin:0; letter-spacing:-0.01em; }
+  .header-actions { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .header-actions span { color:var(--muted); font-size:0.85rem; text-transform:capitalize; font-weight:500; }
+  .header-actions a { color:var(--accent); text-decoration:none; font-size:0.85rem; font-weight:600; }
+  .header-actions a:hover { text-decoration:underline; }
+  .header-actions form { margin:0; }
+  .header-actions button.link-btn {
+    background:none; border:none; color:var(--muted); cursor:pointer;
+    font-size:0.85rem; padding:0; min-height:44px; font-family:inherit; font-weight:500;
+  }
+  .header-actions button.link-btn:hover { color:var(--ink); }
+  p.sub { color:var(--muted); margin:0 0 20px; font-size:0.92rem; }
+
+  /* cards */
   .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 16px;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:18px; margin-bottom:16px; box-shadow:var(--shadow);
   }
+  h2 {
+    font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em;
+    margin:0 0 14px; font-weight:700; display:flex; align-items:center; gap:8px;
+  }
+  h2 .dot { width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0; }
 
-  label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; margin-top: 10px; }
-  label:first-child { margin-top: 0; }
-
+  label { display:block; font-size:0.8rem; font-weight:600; color:var(--ink); margin-bottom:5px; margin-top:12px; }
+  label:first-child { margin-top:0; }
   input[type="text"], input[type="number"], input[type="date"], select, textarea {
-    width: 100%;
-    background: #0d0f14;
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 0.95rem;
-    font-family: inherit;
+    width:100%; background:var(--bg); border:1.5px solid var(--border);
+    color:var(--ink); border-radius:var(--radius-sm); padding:11px 13px; font-size:0.96rem;
+    font-family:inherit; min-height:44px; transition:border-color .15s ease, background .15s ease;
   }
-  textarea { min-height: 64px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); background:var(--surface); }
+  textarea { min-height:64px; resize:vertical; }
 
   button {
-    margin-top: 10px;
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    cursor: pointer;
-    font-weight: 600;
+    margin-top:10px; background:var(--accent); color:#fff; border:none;
+    padding:12px 18px; border-radius:var(--radius-sm); font-size:0.95rem;
+    cursor:pointer; font-weight:600; min-height:44px; font-family:inherit;
+    transition:background .15s ease, transform .05s ease;
   }
-  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  button:hover { background:var(--accent-dark); }
+  button:active { transform:translateY(1px); }
+  button:disabled { opacity:0.55; cursor:not-allowed; }
   button.secondary {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 4px 10px;
-    font-weight: 400;
-    font-size: 0.8rem;
-    margin-top: 0;
+    background:transparent; border:1.5px solid var(--border); color:var(--muted);
+    padding:6px 12px; font-weight:500; font-size:0.8rem; margin-top:0; min-height:36px;
   }
+  button.secondary:hover { border-color:var(--negative); color:var(--negative); background:var(--negative-soft); }
   button.tab {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 6px 14px;
-    font-weight: 500;
-    font-size: 0.85rem;
-    margin-top: 0;
-    margin-right: 6px;
+    background:transparent; border:1.5px solid var(--border); color:var(--muted);
+    padding:8px 14px; font-weight:600; font-size:0.85rem; margin-top:0; margin-right:6px; min-height:40px;
   }
-  button.tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+  button.tab:hover { border-color:var(--accent); color:var(--accent); }
+  button.tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
 
-  .status { font-size: 0.85rem; margin-top: 8px; color: var(--muted); }
-  .status.error { color: var(--red); }
-  .status.ok { color: var(--green); }
+  .status { font-size:0.85rem; margin-top:10px; color:var(--muted); font-weight:500; }
+  .status.error { color:var(--negative); }
+  .status.ok { color:var(--positive); }
 
-  h2 { font-size: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; margin-top: 0; }
+  .row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+  .row input[type="text"] { flex:1; min-width:120px; }
+  .row button { margin-top:0; flex-shrink:0; }
 
-  .row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
-  .row input[type="text"] { flex: 1; min-width: 140px; }
-  .row button { margin-top: 0; }
-
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
   .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #0d0f14;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 4px 10px;
-    font-size: 0.85rem;
-    text-transform: capitalize;
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--accent-soft); border:1px solid #cfe6dc; color:var(--accent-dark); border-radius:20px;
+    padding:6px 8px 6px 14px; font-size:0.85rem; font-weight:600; text-transform:capitalize;
   }
+  .chip button.secondary {
+    border:none; color:var(--accent-dark); background:transparent; min-height:auto; padding:2px 6px;
+    font-size:1rem; line-height:1;
+  }
+  .chip button.secondary:hover { background:rgba(199,68,46,0.12); color:var(--negative); border-radius:50%; }
 
-  .checkboxes { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+  .checkboxes { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:8px; margin-top:6px; }
   .checkboxes label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--text);
-    text-transform: capitalize;
-    cursor: pointer;
+    display:flex; align-items:center; gap:8px; margin:0;
+    font-size:0.92rem; font-weight:500; color:var(--ink); text-transform:capitalize;
+    cursor:pointer; min-height:44px; padding:4px 10px; border-radius:var(--radius-sm);
+    background:var(--bg); border:1px solid var(--border);
   }
-  .checkboxes input { width: auto; }
+  .checkboxes input { width:18px; height:18px; accent-color:var(--accent); flex-shrink:0; }
+  .group-member-picks { margin-top:8px; }
 
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-    font-size: 0.9rem;
+  .toggle-row { display:flex; align-items:center; gap:10px; margin-top:14px; font-size:0.95rem; min-height:44px; }
+  .toggle-row input { width:18px; height:18px; accent-color:var(--accent); }
+  .hidden { display:none !important; }
+
+  .balance-row, .expense-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 0; border-bottom:1px dashed var(--border); font-size:0.95rem; gap:10px;
   }
-  .toggle-row input { width: auto; }
+  .balance-row:last-child, .expense-row:last-child { border-bottom:none; }
+  .balance-row .amt { font-family:var(--font-mono); font-weight:600; font-variant-numeric:tabular-nums; }
+  .balance-row .amt.pos { color:var(--positive); }
+  .balance-row .amt.neg { color:var(--negative); }
+  .expense-row .meta { color:var(--muted); font-size:0.8rem; margin-top:2px; }
+  .expense-row .left { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+  .expense-row .right { flex-shrink:0; }
+  .empty { color:var(--muted); font-size:0.9rem; padding:10px 0; }
 
-  .hidden { display: none !important; }
-
-  .balance-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.95rem;
-  }
-  .balance-row:last-child { border-bottom: none; }
-  .balance-row .amt.pos { color: var(--green); }
-  .balance-row .amt.neg { color: var(--red); }
-
-  .expense-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.95rem;
-  }
-  .expense-row:last-child { border-bottom: none; }
-  .expense-row .meta { color: var(--muted); font-size: 0.8rem; }
-  .expense-row .left { display: flex; flex-direction: column; gap: 2px; }
-  .expense-row .right { display: flex; align-items: center; gap: 10px; }
-
-  .empty { color: var(--muted); font-size: 0.9rem; padding: 8px 0; }
-
-  .table-wrap { overflow-x: auto; margin-top: 10px; }
-  table.report {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.82rem;
-    white-space: nowrap;
-  }
-  table.report th, table.report td {
-    border: 1px solid var(--border);
-    padding: 6px 8px;
-    text-align: right;
-  }
+  .table-wrap { overflow-x:auto; margin-top:10px; -webkit-overflow-scrolling:touch; border-radius:var(--radius-sm); border:1px solid var(--border); }
+  table.report { width:100%; border-collapse:collapse; font-size:0.82rem; white-space:nowrap; font-family:var(--font-mono); }
+  table.report th, table.report td { border-bottom:1px solid var(--border); padding:10px; text-align:right; font-variant-numeric:tabular-nums; }
   table.report th:first-child, table.report td:first-child,
-  table.report th:nth-child(2), table.report td:nth-child(2) {
-    text-align: left;
-  }
-  table.report th { background: #0d0f14; color: var(--muted); font-weight: 600; }
-  table.report tr.totals td { font-weight: 700; background: #12151c; }
-  table.report .desc { max-width: 180px; white-space: normal; }
+  table.report th:nth-child(2), table.report td:nth-child(2) { text-align:left; font-family:var(--font-body); }
+  table.report th { background:var(--surface-2); color:var(--muted); font-weight:700; position:sticky; top:0; text-transform:uppercase; font-size:0.7rem; letter-spacing:0.04em; }
+  table.report th:first-child, table.report td:first-child { position:sticky; left:0; background:var(--surface); z-index:1; }
+  table.report th:nth-child(2), table.report td:nth-child(2) { position:sticky; left:90px; background:var(--surface); z-index:1; }
+  table.report tr.totals td { font-weight:700; background:var(--accent-soft); color:var(--accent-dark); }
+  table.report .desc { max-width:160px; white-space:normal; font-family:var(--font-body); }
 
-  details summary {
-    cursor: pointer;
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-bottom: 8px;
-  }
-  details[open] summary { margin-bottom: 12px; }
+  details summary { cursor:pointer; color:var(--muted); font-size:0.9rem; margin-bottom:8px; min-height:44px; display:flex; align-items:center; font-weight:600; }
+  details[open] summary { margin-bottom:12px; }
+  .filter-tabs { margin-bottom:10px; display:flex; flex-wrap:wrap; gap:6px; }
 
-  .filter-tabs { margin-bottom: 10px; }
+  .bottom-nav {
+    display:none; position:fixed; bottom:0; left:0; right:0;
+    background:var(--surface); border-top:1px solid var(--border);
+    padding:8px 16px; justify-content:space-around; z-index:100;
+    box-shadow:0 -4px 16px rgba(20,23,26,0.06);
+  }
+  .bottom-nav a {
+    color:var(--muted); text-decoration:none; font-size:0.78rem; font-weight:600;
+    text-align:center; padding:8px 12px; min-height:44px; display:flex; align-items:center;
+  }
+  .bottom-nav a:active { color:var(--accent); }
+
+  @media (max-width:600px) {
+    body { padding-bottom:74px; }
+    .bottom-nav { display:flex; }
+    .card { padding:15px; }
+    .checkboxes { grid-template-columns:1fr 1fr; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Splitwise Mini</h1>
+  <div class="header">
+    <div class="header-left">
+      <div class="brand-mark">S</div>
+      <h1>Splitwise Mini</h1>
+    </div>
+    <div class="header-actions">
+      <span>{{ current_username }}</span>
+      {% if is_admin %}<a href="{{ url_for('admin.dashboard') }}">Admin</a>{% endif %}
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <button type="submit" class="link-btn">Log out</button>
+      </form>
+    </div>
+  </div>
   <p class="sub">Track shared bills and personal spending.</p>
 
-  <div class="card">
-    <h2>People</h2>
+  <div class="card" id="section-people">
+    <h2><span class="dot"></span>People</h2>
     <div class="row">
       <input type="text" id="personName" placeholder="Add a name" />
       <button type="button" onclick="addPerson()">Add</button>
     </div>
-    <div id="peopleChips" class="chips"><div class="empty">No people yet.</div></div>
+    <div id="peopleChips" class="chips"><div class="empty">No people yet. Add someone to get started.</div></div>
   </div>
 
-  <div class="card">
-    <h2>Add expense</h2>
+  <div class="card" id="section-groups">
+    <h2><span class="dot"></span>Groups</h2>
+    <label for="groupName">Group name</label>
+    <input type="text" id="groupName" placeholder="e.g. Roommates" />
+    <label>Members</label>
+    <div id="groupMemberPicks" class="checkboxes group-member-picks"><span class="empty">Add people first.</span></div>
+    <button type="button" onclick="createGroup()">Create group</button>
+    <div id="groupsList" class="chips" style="margin-top:14px"><div class="empty">No groups yet.</div></div>
+  </div>
+
+  <div class="card" id="section-add">
+    <h2><span class="dot"></span>Add expense</h2>
     <label for="desc">Description</label>
     <input type="text" id="desc" placeholder="e.g. food jay malhar or bus fare" />
-
     <label for="amount">Amount (₹)</label>
     <input type="number" id="amount" min="0" step="0.01" placeholder="240" />
-
     <label for="expDate">Date</label>
     <input type="date" id="expDate" />
-
     <label for="payer">Paid by</label>
-    <select id="payer"><option value="">— select —</option></select>
-
+    <select id="payer"><option value="self" selected>Self</option></select>
     <div class="toggle-row">
       <input type="checkbox" id="isPersonal" onchange="togglePersonal()" />
       <label for="isPersonal" style="margin:0">Personal expense (no split)</label>
     </div>
-
     <div id="participantsBlock">
+      <label for="groupSelect">Quick select group</label>
+      <select id="groupSelect" onchange="applyGroup()">
+        <option value="">— none —</option>
+      </select>
       <label>Split between</label>
       <div id="participantChecks" class="checkboxes"><span class="empty">Add people first.</span></div>
     </div>
-
     <button type="button" id="addStructuredBtn" onclick="addStructuredExpense()">Add expense</button>
     <div id="formStatus" class="status"></div>
   </div>
 
-  <div class="card">
-    <details>
-      <summary>Add via AI text (optional)</summary>
-      <textarea id="aiInput" placeholder="e.g. 230 rs food split between me and akshay"></textarea>
-      <button type="button" id="addAiBtn" onclick="addAiExpense()">Parse &amp; add</button>
-      <div id="aiStatus" class="status"></div>
-    </details>
-  </div>
-
-  <div class="card">
-    <h2>Itemized report</h2>
+  <div class="card" id="section-report">
+    <h2><span class="dot"></span>Itemized report</h2>
     <div class="filter-tabs">
-      <button type="button" class="tab active" data-filter="all" onclick="setReportFilter('all', this)">All</button>
-      <button type="button" class="tab" data-filter="shared" onclick="setReportFilter('shared', this)">Shared</button>
-      <button type="button" class="tab" data-filter="personal" onclick="setReportFilter('personal', this)">Personal</button>
+      <button type="button" class="tab active" onclick="setReportFilter('all', this)">All</button>
+      <button type="button" class="tab" onclick="setReportFilter('shared', this)">Shared</button>
+      <button type="button" class="tab" onclick="setReportFilter('personal', this)">Personal</button>
     </div>
     <div id="reportTable"><div class="empty">No expenses yet.</div></div>
   </div>
 
-  <div class="card">
-    <h2>Balances (shared only)</h2>
+  <div class="card" id="section-balances">
+    <h2><span class="dot"></span>Balances (shared only)</h2>
     <div id="balances"><div class="empty">No shared expenses yet.</div></div>
   </div>
 
   <div class="card">
-    <h2>Recent expenses</h2>
+    <h2><span class="dot"></span>Recent expenses</h2>
     <div id="expenses"><div class="empty">No expenses yet.</div></div>
   </div>
 </div>
 
+<nav class="bottom-nav">
+  <a href="#section-add">Add</a>
+  <a href="#section-report">Report</a>
+  <a href="#section-balances">Balances</a>
+  <a href="#section-people">People</a>
+</nav>
+
 <script>
 let people = [];
+let groups = [];
 let reportFilter = 'all';
 
-const expDateEl = document.getElementById('expDate');
-expDateEl.value = new Date().toISOString().slice(0, 10);
+document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
 
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 function fmt(n) { return '₹' + Number(n).toFixed(2); }
@@ -275,26 +277,33 @@ function setFormStatus(msg, type) {
   el.textContent = msg || '';
   el.className = 'status' + (type ? ' ' + type : '');
 }
-function setAiStatus(msg, type) {
-  const el = document.getElementById('aiStatus');
-  el.textContent = msg || '';
-  el.className = 'status' + (type ? ' ' + type : '');
-}
 
 function togglePersonal() {
   const personal = document.getElementById('isPersonal').checked;
   document.getElementById('participantsBlock').classList.toggle('hidden', personal);
 }
 
+function getCheckedValues(containerId) {
+  return [...document.querySelectorAll(`#${containerId} input:checked`)].map(cb => cb.value);
+}
+
+function getCheckedIds(containerId) {
+  return [...document.querySelectorAll(`#${containerId} input:checked`)].map(cb => parseInt(cb.value, 10));
+}
+
 function renderPeople() {
   const chips = document.getElementById('peopleChips');
   const payerSel = document.getElementById('payer');
   const checks = document.getElementById('participantChecks');
+  const groupPicks = document.getElementById('groupMemberPicks');
+  const groupSel = document.getElementById('groupSelect');
 
   if (people.length === 0) {
-    chips.innerHTML = '<div class="empty">No people yet.</div>';
-    payerSel.innerHTML = '<option value="">— select —</option>';
-    checks.innerHTML = '<span class="empty">Add people first.</span>';
+    chips.innerHTML = '<div class="empty">No people yet. Add someone to get started.</div>';
+    payerSel.innerHTML = '<option value="self" selected>Self</option>';
+    checks.innerHTML = '<label><input type="checkbox" value="self" checked /> Self</label>';
+    groupPicks.innerHTML = '<span class="empty">Add people first.</span>';
+    groupSel.innerHTML = '<option value="">— none —</option>';
     return;
   }
 
@@ -305,16 +314,56 @@ function renderPeople() {
   `).join('');
 
   const prevPayer = payerSel.value;
-  payerSel.innerHTML = '<option value="">— select —</option>' +
+  payerSel.innerHTML = '<option value="self">Self</option>' +
     people.map(p => `<option value="${p.name}">${cap(p.name)}</option>`).join('');
-  if (prevPayer && people.some(p => p.name === prevPayer)) payerSel.value = prevPayer;
+  if (prevPayer && (prevPayer === 'self' || people.some(p => p.name === prevPayer))) {
+    payerSel.value = prevPayer;
+  } else {
+    payerSel.value = 'self';
+  }
 
-  const checked = new Set(
-    [...checks.querySelectorAll('input:checked')].map(cb => cb.value)
-  );
-  checks.innerHTML = people.map(p => `
-    <label><input type="checkbox" value="${p.name}" ${checked.has(p.name) ? 'checked' : ''} /> ${cap(p.name)}</label>
+  const checkedNames = new Set(getCheckedValues('participantChecks'));
+  if (checkedNames.size === 0) checkedNames.add('self');
+  checks.innerHTML = '<label><input type="checkbox" value="self" ' +
+    (checkedNames.has('self') ? 'checked' : '') + ' /> Self</label>' +
+    people.map(p => `
+    <label><input type="checkbox" value="${p.name}" ${checkedNames.has(p.name) ? 'checked' : ''} /> ${cap(p.name)}</label>
   `).join('');
+
+  const checkedIds = new Set(getCheckedIds('groupMemberPicks'));
+  groupPicks.innerHTML = people.map(p => `
+    <label><input type="checkbox" value="${p.id}" ${checkedIds.has(p.id) ? 'checked' : ''} /> ${cap(p.name)}</label>
+  `).join('');
+
+  const prevGroup = groupSel.value;
+  groupSel.innerHTML = '<option value="">— none —</option>' +
+    groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+  if (prevGroup) groupSel.value = prevGroup;
+}
+
+function renderGroups() {
+  const el = document.getElementById('groupsList');
+  if (groups.length === 0) {
+    el.innerHTML = '<div class="empty">No groups yet.</div>';
+    return;
+  }
+  el.innerHTML = groups.map(g => `
+    <span class="chip">${g.name} (${g.members.map(m => cap(m.name)).join(', ')})
+      <button type="button" class="secondary" onclick="removeGroup(${g.id})">×</button>
+    </span>
+  `).join('');
+  renderPeople();
+}
+
+function applyGroup() {
+  const gid = document.getElementById('groupSelect').value;
+  if (!gid) return;
+  const group = groups.find(g => String(g.id) === gid);
+  if (!group) return;
+  const memberNames = new Set(group.members.map(m => m.name));
+  document.querySelectorAll('#participantChecks input').forEach(cb => {
+    cb.checked = memberNames.has(cb.value);
+  });
 }
 
 async function addPerson() {
@@ -337,8 +386,30 @@ async function removePerson(id) {
   await refresh();
 }
 
+async function createGroup() {
+  const name = document.getElementById('groupName').value.trim();
+  const member_ids = getCheckedIds('groupMemberPicks');
+  if (!name) { alert('Enter a group name'); return; }
+  if (member_ids.length === 0) { alert('Select at least one member'); return; }
+  const res = await fetch('/api/groups', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, member_ids })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error || 'Failed'); return; }
+  document.getElementById('groupName').value = '';
+  await refresh();
+}
+
+async function removeGroup(id) {
+  if (!confirm('Delete this group?')) return;
+  await fetch(`/api/groups/${id}`, { method: 'DELETE' });
+  await refresh();
+}
+
 function getSelectedParticipants() {
-  return [...document.querySelectorAll('#participantChecks input:checked')].map(cb => cb.value);
+  return getCheckedValues('participantChecks');
 }
 
 async function addStructuredExpense() {
@@ -352,8 +423,6 @@ async function addStructuredExpense() {
 
   if (!description) { setFormStatus('Description is required', 'error'); return; }
   if (!amount || amount <= 0) { setFormStatus('Enter a valid amount', 'error'); return; }
-  if (!payer) { setFormStatus('Select who paid', 'error'); return; }
-  if (!isPersonal && participants.length === 0) { setFormStatus('Select at least one participant', 'error'); return; }
 
   btn.disabled = true;
   setFormStatus('Saving...', '');
@@ -368,33 +437,10 @@ async function addStructuredExpense() {
     setFormStatus(`Added: ${data.description} — ${fmt(data.amount)}`, 'ok');
     document.getElementById('desc').value = '';
     document.getElementById('amount').value = '';
+    document.getElementById('groupSelect').value = '';
     await refresh();
   } catch (err) {
     setFormStatus(err.message, 'error');
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-async function addAiExpense() {
-  const text = document.getElementById('aiInput').value.trim();
-  if (!text) return;
-  const btn = document.getElementById('addAiBtn');
-  btn.disabled = true;
-  setAiStatus('Parsing with AI...', '');
-  try {
-    const res = await fetch('/api/add', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, date: document.getElementById('expDate').value })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed');
-    setAiStatus(`Added: ${data.description} — ${fmt(data.amount)}`, 'ok');
-    document.getElementById('aiInput').value = '';
-    await refresh();
-  } catch (err) {
-    setAiStatus(err.message, 'error');
   } finally {
     btn.disabled = false;
   }
@@ -423,48 +469,39 @@ async function refreshReport() {
     return;
   }
 
-  const people = data.people || [];
-  const head = `
-    <tr>
-      <th>Date</th>
-      <th>Description</th>
-      <th>Total</th>
-      ${people.map(p => `<th>${cap(p)}</th>`).join('')}
-      <th>Split</th>
-    </tr>`;
+  const ppl = data.people || [];
+  const head = `<tr>
+    <th>Date</th><th>Description</th><th>Total</th>
+    ${ppl.map(p => `<th>${cap(p)}</th>`).join('')}
+    <th>Split</th></tr>`;
 
-  const body = data.rows.map(r => `
-    <tr>
-      <td>${r.date}</td>
-      <td class="desc">${r.description}</td>
-      <td>${fmt(r.amount)}</td>
-      ${people.map(p => `<td>${r.shares[p] ? fmt(r.shares[p]) : '—'}</td>`).join('')}
-      <td>${r.split_type}</td>
-    </tr>
-  `).join('');
+  const body = data.rows.map(r => `<tr>
+    <td>${r.date}</td><td class="desc">${r.description}</td><td>${fmt(r.amount)}</td>
+    ${ppl.map(p => `<td>${r.shares[p] ? fmt(r.shares[p]) : '—'}</td>`).join('')}
+    <td>${r.split_type}</td></tr>`).join('');
 
-  const totals = `
-    <tr class="totals">
-      <td colspan="2">Final Standings</td>
-      <td>${fmt(data.grand_total)}</td>
-      ${people.map(p => `<td>${fmt(data.totals[p] || 0)}</td>`).join('')}
-      <td></td>
-    </tr>`;
+  const totals = `<tr class="totals">
+    <td colspan="2">Final Standings</td><td>${fmt(data.grand_total)}</td>
+    ${ppl.map(p => `<td>${fmt(data.totals[p] || 0)}</td>`).join('')}
+    <td></td></tr>`;
 
   el.innerHTML = `<div class="table-wrap"><table class="report"><thead>${head}</thead><tbody>${body}${totals}</tbody></table></div>`;
 }
 
 async function refresh() {
-  const [peopleRes, balRes, expRes] = await Promise.all([
+  const [peopleRes, groupsRes, balRes, expRes] = await Promise.all([
     fetch('/api/people'),
+    fetch('/api/groups'),
     fetch('/api/balances'),
     fetch('/api/expenses')
   ]);
   people = await peopleRes.json();
+  groups = await groupsRes.json();
   const balances = await balRes.json();
   const expenses = await expRes.json();
 
   renderPeople();
+  renderGroups();
   await refreshReport();
 
   const balancesEl = document.getElementById('balances');
@@ -472,17 +509,12 @@ async function refresh() {
   if (names.length === 0) {
     balancesEl.innerHTML = '<div class="empty">No shared expenses yet.</div>';
   } else {
-    balancesEl.innerHTML = names
-      .sort((a, b) => balances[b] - balances[a])
-      .map(name => {
-        const v = balances[name];
-        const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : '';
-        const label = v > 0.001 ? 'is owed' : v < -0.001 ? 'owes' : 'settled';
-        return `<div class="balance-row">
-          <span>${cap(name)}</span>
-          <span class="amt ${cls}">${label} ${fmt(Math.abs(v))}</span>
-        </div>`;
-      }).join('');
+    balancesEl.innerHTML = names.sort((a, b) => balances[b] - balances[a]).map(name => {
+      const v = balances[name];
+      const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : '';
+      const label = v > 0.001 ? 'is owed' : v < -0.001 ? 'owes' : 'settled';
+      return `<div class="balance-row"><span>${cap(name)}</span><span class="amt ${cls}">${label} ${fmt(Math.abs(v))}</span></div>`;
+    }).join('');
   }
 
   const expensesEl = document.getElementById('expenses');
@@ -491,15 +523,12 @@ async function refresh() {
   } else {
     expensesEl.innerHTML = expenses.map(e => {
       const tag = e.is_personal ? 'personal' : e.participants.join(', ');
-      return `<div class="expense-row">
-        <div class="left">
-          <span>${e.date} · ${e.description} — ${fmt(e.amount)}</span>
-          <span class="meta">paid by ${cap(e.payer)} · ${e.is_personal ? 'personal' : 'split: ' + tag}</span>
-        </div>
-        <div class="right">
-          <button type="button" class="secondary" onclick="deleteExpense(${e.id})">delete</button>
-        </div>
-      </div>`;
+      return `<div class="expense-row"><div class="left">
+        <span>${e.date} · ${e.description} — ${fmt(e.amount)}</span>
+        <span class="meta">paid by ${cap(e.payer)} · ${e.is_personal ? 'personal' : 'split: ' + tag}</span>
+      </div><div class="right">
+        <button type="button" class="secondary" onclick="deleteExpense(${e.id})">delete</button>
+      </div></div>`;
     }).join('');
   }
 }

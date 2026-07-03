@@ -1,11 +1,10 @@
 from flask import Blueprint, render_template
-
-from app.utils.auth import requires_basic_auth
+from flask_login import login_required
 
 page_bp = Blueprint("page", __name__)
 
 
 @page_bp.route("/")
-@requires_basic_auth
+@login_required
 def index():
     return render_template("index.html")

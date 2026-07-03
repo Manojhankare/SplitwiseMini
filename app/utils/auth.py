@@ -1,22 +1,14 @@
 from functools import wraps
 
-from flask import Response, current_app, request
+from flask import abort, redirect, url_for
+from flask_login import current_user
 
 
-def requires_basic_auth(view):
+def admin_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
-        auth = request.authorization
-        expected_user = current_app.config["BASIC_AUTH_USERNAME"]
-        expected_pass = current_app.config["BASIC_AUTH_PASSWORD"]
-        if not expected_user or not expected_pass:
-            return Response("Basic auth is not configured", 500)
-        if not auth or auth.username != expected_user or auth.password != expected_pass:
-            return Response(
-                "Login required",
-                401,
-                {"WWW-Authenticate": 'Basic realm="Splitwise Mini"'},
-            )
+        if not current_user.is_authenticated or current_user.role != "admin":
+            abort(403)
         return view(*args, **kwargs)
 
     return wrapped

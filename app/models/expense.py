@@ -27,6 +27,7 @@ class Expense(db.Model):
     __tablename__ = "expenses"
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     description = db.Column(db.Text, nullable=False)
     amount = db.Column(db.Numeric, nullable=False)
     payer = db.Column(db.Text, nullable=False)
@@ -55,10 +56,11 @@ class Expense(db.Model):
         }
 
     @classmethod
-    def create(cls, description, amount, payer, participants, expense_date=None, is_personal=False):
+    def create(cls, user_id, description, amount, payer, participants, expense_date=None, is_personal=False):
         if is_personal:
             participants = [payer]
         exp = cls(
+            user_id=user_id,
             description=description,
             amount=amount,
             payer=payer,
@@ -71,21 +73,33 @@ class Expense(db.Model):
         return exp
 
     @classmethod
-    def list_all(cls):
-        rows = cls.query.order_by(cls.expense_date.desc(), cls.created_at.desc()).all()
+    def _query_for_user(cls, user_id):
+        return cls.query.filter_by(user_id=user_id)
+
+    @classmethod
+    def list_all(cls, user_id):
+        rows = (
+            cls._query_for_user(user_id)
+            .order_by(cls.expense_date.desc(), cls.created_at.desc())
+            .all()
+        )
         return [r.to_dict() for r in rows]
 
     @classmethod
-    def delete(cls, expense_id):
-        exp = db.session.get(cls, expense_id)
+    def get_for_user(cls, expense_id, user_id):
+        return cls._query_for_user(user_id).filter_by(id=expense_id).first()
+
+    @classmethod
+    def delete(cls, expense_id, user_id):
+        exp = cls.get_for_user(expense_id, user_id)
         if exp:
             db.session.delete(exp)
             db.session.commit()
 
     @classmethod
-    def compute_balances(cls):
+    def compute_balances(cls, user_id):
         net = {}
-        for row in cls.query.all():
+        for row in cls._query_for_user(user_id).all():
             if row.is_personal:
                 continue
             amount = float(row.amount)
@@ -96,8 +110,12 @@ class Expense(db.Model):
         return {k: round(v, 2) for k, v in net.items()}
 
     @classmethod
-    def compute_report(cls, filter_type="all"):
-        rows = cls.query.order_by(cls.expense_date.desc(), cls.created_at.desc()).all()
+    def compute_report(cls, user_id, filter_type="all"):
+        rows = (
+            cls._query_for_user(user_id)
+            .order_by(cls.expense_date.desc(), cls.created_at.desc())
+            .all()
+        )
         people_set = set()
         for row in rows:
             people_set.add(row.payer)

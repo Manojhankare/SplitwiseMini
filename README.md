@@ -1,66 +1,40 @@
 # Splitwise Mini
 
-Track shared bills and personal spending. Add expenses via a structured form (description, amount, date, payer, participants) or optional AI text parsing (Groq). View itemized per-person breakdowns and shared balances.
-
-Example shared: food at jay malhar, ₹240, paid by manoj, split manoj + baba + akshay.
-Example personal: bus fare ₹45, paid by manoj (no split).
+Multi-user expense tracker: shared bills with groups, personal spending, itemized reports, and per-user isolated data.
 
 ## Stack
-- Frontend: Jinja template at `app/templates/index.html` (no framework)
-- Backend: Flask MVC app (`app/` package), entry via `run.py`
-- DB: Postgres via Supabase with SQLAlchemy ORM
-- AI parsing (optional): [Groq](https://groq.com/) OpenAI-compatible chat completions API
+- Flask MVC + SQLAlchemy + Flask-Login
+- Postgres (Supabase)
 
-## Project structure (MVC)
-```
-SplitwiseMini/
-├── run.py
-├── app/
-│   ├── __init__.py                 # create_app() + db.create_all()
-│   ├── config.py
-│   ├── extensions.py
-│   ├── models/
-│   │   ├── expense.py              # expenses + report logic
-│   │   └── person.py               # managed people list
-│   ├── services/ai_service.py
-│   ├── controllers/
-│   ├── utils/auth.py
-│   └── templates/index.html
-```
+## Setup
+1. Drop all existing tables in Supabase (fresh schema).
+2. Copy `.env.example` to `.env` and fill in values.
+3. `pip install -r requirements.txt`
+4. `python run.py` — creates tables and seeds admin user from `ADMIN_USERNAME` / `ADMIN_PASSWORD`.
 
-## 1. Set up Supabase
-1. Create a free project at supabase.com.
-2. Copy the Postgres connection string (Session pooler or direct).
-3. **Delete any old tables** if upgrading schema — the app recreates `expenses` and `people` on startup via `db.create_all()`.
-
-## 2. Get a Groq API key (optional, for AI text input)
-Get a free API key from [Groq Console](https://console.groq.com/).
-
-## 3. Run locally
-```bash
-pip install -r requirements.txt
-cp .env.example .env   # fill in DATABASE_URL, GROQ_API_KEY, BASIC_AUTH_*
-python run.py
-```
-Open http://localhost:5000 — browser prompts for basic auth.
+## First use
+1. Login as admin at http://localhost:5000/login (or register a new account).
+2. Add **People** (manoj, akshay, baba, etc.).
+3. Create **Groups** (e.g. "Roommates") by selecting members.
+4. Add expenses — use **Quick select group** to auto-check participants.
+5. View **Itemized report** and **Balances**.
 
 ## Environment variables
 | Variable | Description |
 |----------|-------------|
-| `DATABASE_URL` | Supabase Postgres connection string |
-| `GROQ_API_KEY` | Groq API key (optional; only needed for AI text box) |
-| `GROQ_MODEL` | Groq model id (default: `llama-3.3-70b-versatile`) |
-| `BASIC_AUTH_USERNAME` | Homepage basic auth username |
-| `BASIC_AUTH_PASSWORD` | Homepage basic auth password |
+| `DATABASE_URL` | Postgres connection string |
+| `SECRET_KEY` | Flask session secret (required) |
+| `ADMIN_USERNAME` | Initial admin username (seeded once) |
+| `ADMIN_PASSWORD` | Initial admin password |
 
-## API
+## Auth
+- `/register` — open sign-up; each user gets isolated people, groups, expenses
+- `/login` — session login
+- `/admin` — admin dashboard (user list, enable/disable, delete)
 
-### People
-- `GET /api/people` — list `{id, name}`
-- `POST /api/people` — body `{ "name": "manoj" }`
-- `DELETE /api/people/<id>`
-
-### Expenses
+## API (all require login)
+- `GET/POST /api/people`, `DELETE /api/people/<id>`
+- `GET/POST /api/groups`, `PUT/DELETE /api/groups/<id>`
 - `POST /api/add` — structured body:
   ```json
   {
@@ -72,13 +46,13 @@ Open http://localhost:5000 — browser prompts for basic auth.
     "date": "2026-07-03"
   }
   ```
-  Or AI body: `{ "text": "230 rs food split between me and akshay" }`
-- `GET /api/expenses` — all expenses (newest first)
-- `GET /api/balances` — shared balances only (personal excluded)
-- `GET /api/report?filter=all|shared|personal` — itemized breakdown with per-person shares, Final Standings, Grand Total
+- `GET /api/expenses`, `/api/balances`, `/api/report?filter=all|shared|personal`
 - `DELETE /api/delete/<id>`
 
-## Notes
-- **Personal expenses**: set `is_personal: true` or use the UI toggle — full amount counts in report totals, no effect on shared balances.
-- **Shared expenses**: equal split among selected participants.
-- Report table matches the style of `bill_split_summary.md` (per-person columns + totals row).
+## Admin API
+- `GET /admin/users`
+- `POST /admin/users/<id>/toggle`
+- `DELETE /admin/users/<id>`
+
+## SaaS notes
+User model includes `role`, `is_active`, `created_at` for future billing integration. No payment features yet.

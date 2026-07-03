@@ -19,39 +19,41 @@
     --font-display:'Fraunces', Georgia, serif;
     --font-body:'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    --topbar-h:56px; --bottombar-h:64px;
   }
-  * { box-sizing:border-box; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; }
   body {
     margin:0; font-family:var(--font-body); background:var(--bg); color:var(--ink);
-    padding:20px 16px 90px;
   }
-  .wrap { max-width:960px; margin:0 auto; }
+  .app { max-width:520px; margin:0 auto; min-height:100%; position:relative; padding-bottom:calc(var(--bottombar-h) + 14px); }
 
-  /* header */
-  .header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:6px; }
-  .header-left { display:flex; align-items:center; gap:12px; }
+  .topbar {
+    position:sticky; top:0; z-index:50; background:var(--bg);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px 10px; gap:10px;
+  }
+  .topbar-left { display:flex; align-items:center; gap:10px; min-width:0; }
   .brand-mark {
-    width:36px; height:36px; border-radius:10px; background:var(--accent); color:#fff;
+    width:34px; height:34px; border-radius:10px; background:var(--accent); color:#fff;
     display:flex; align-items:center; justify-content:center; font-family:var(--font-display);
-    font-weight:600; font-size:1rem; flex-shrink:0;
+    font-weight:600; font-size:0.95rem; flex-shrink:0;
   }
-  .header h1 { font-family:var(--font-display); font-weight:600; font-size:1.3rem; margin:0; letter-spacing:-0.01em; }
-  .header-actions { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-  .header-actions span { color:var(--muted); font-size:0.85rem; text-transform:capitalize; font-weight:500; }
-  .header-actions a { color:var(--accent); text-decoration:none; font-size:0.85rem; font-weight:600; }
-  .header-actions a:hover { text-decoration:underline; }
-  .header-actions form { margin:0; }
-  .header-actions button.link-btn {
-    background:none; border:none; color:var(--muted); cursor:pointer;
-    font-size:0.85rem; padding:0; min-height:44px; font-family:inherit; font-weight:500;
+  .topbar h1 {
+    font-family:var(--font-display); font-weight:600; font-size:1.15rem; margin:0;
+    letter-spacing:-0.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
-  .header-actions button.link-btn:hover { color:var(--ink); }
-  p.sub { color:var(--muted); margin:0 0 20px; font-size:0.92rem; }
+  .topbar-sub { font-size:0.72rem; color:var(--muted); margin:0; }
 
-  /* cards */
+  main { padding:2px 16px 8px; }
+
+  .tab-panel { display:none; animation:fadein .15s ease; }
+  .tab-panel.active { display:block; }
+  @keyframes fadein { from { opacity:0; transform:translateY(4px);} to { opacity:1; transform:translateY(0);} }
+
   .card {
     background:var(--surface); border:1px solid var(--border);
-    border-radius:var(--radius); padding:18px; margin-bottom:16px; box-shadow:var(--shadow);
+    border-radius:var(--radius); padding:18px; margin-bottom:14px; box-shadow:var(--shadow);
   }
   h2 {
     font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em;
@@ -78,17 +80,18 @@
   button:hover { background:var(--accent-dark); }
   button:active { transform:translateY(1px); }
   button:disabled { opacity:0.55; cursor:not-allowed; }
+  button.block { width:100%; }
   button.secondary {
     background:transparent; border:1.5px solid var(--border); color:var(--muted);
     padding:6px 12px; font-weight:500; font-size:0.8rem; margin-top:0; min-height:36px;
   }
   button.secondary:hover { border-color:var(--negative); color:var(--negative); background:var(--negative-soft); }
-  button.tab {
+  button.tab-filter {
     background:transparent; border:1.5px solid var(--border); color:var(--muted);
     padding:8px 14px; font-weight:600; font-size:0.85rem; margin-top:0; margin-right:6px; min-height:40px;
   }
-  button.tab:hover { border-color:var(--accent); color:var(--accent); }
-  button.tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button.tab-filter:hover { border-color:var(--accent); color:var(--accent); }
+  button.tab-filter.active { background:var(--accent); color:#fff; border-color:var(--accent); }
 
   .status { font-size:0.85rem; margin-top:10px; color:var(--muted); font-weight:500; }
   .status.error { color:var(--negative); }
@@ -120,6 +123,57 @@
   .checkboxes input { width:18px; height:18px; accent-color:var(--accent); flex-shrink:0; }
   .group-member-picks { margin-top:8px; }
 
+  /* picker: scrollable, searchable list — used for "split between" and "group members" */
+  .picker { margin-top:6px; }
+  .picker-toolbar { display:flex; gap:8px; align-items:center; }
+  .picker-search { flex:1; min-height:40px; padding:9px 12px; }
+  .picker-actions { display:flex; gap:6px; flex-shrink:0; }
+  button.link-action {
+    background:transparent; border:1.5px solid var(--border); color:var(--muted);
+    min-height:40px; padding:0 12px; font-size:0.78rem; font-weight:700; margin:0;
+    text-transform:uppercase; letter-spacing:0.03em;
+  }
+  button.link-action:hover { border-color:var(--accent); color:var(--accent); }
+  .picker-list {
+    margin-top:8px;
+    border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface);
+  }
+  .picker-list label {
+    display:flex; align-items:center; gap:10px; margin:0; width:100%;
+    font-size:0.94rem; font-weight:500; color:var(--ink); text-transform:capitalize;
+    cursor:pointer; min-height:46px; padding:9px 12px; border-bottom:1px solid var(--border);
+    background:var(--surface); transition:background .1s ease;
+  }
+  .picker-list label:last-child { border-bottom:none; }
+  .picker-list label:active, .picker-list label:has(input:checked) { background:var(--accent-soft); }
+  .picker-list label.picker-row-hidden { display:none; }
+  .picker-list input { width:18px; height:18px; accent-color:var(--accent); flex-shrink:0; }
+  .picker-row-avatar {
+    width:26px; height:26px; border-radius:50%; background:var(--surface-2); color:var(--muted);
+    display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:700;
+    text-transform:uppercase; flex-shrink:0;
+  }
+  .picker-summary { font-size:0.8rem; color:var(--muted); margin-top:8px; font-weight:500; }
+  .picker-summary b { color:var(--accent-dark); font-weight:700; }
+  .picker-empty { padding:14px 12px; }
+
+  /* combo: search-as-you-type dropdown for adding participants one by one */
+  .combo { position:relative; }
+  .combo-options {
+    position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:20;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
+    box-shadow:var(--shadow); max-height:230px; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  .combo-option {
+    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+    background:var(--surface); border:none; border-bottom:1px solid var(--border);
+    padding:10px 12px; min-height:46px; font-size:0.94rem; font-weight:500; color:var(--ink);
+    text-transform:capitalize; cursor:pointer; margin:0; border-radius:0;
+  }
+  .combo-option:last-child { border-bottom:none; }
+  .combo-option:hover, .combo-option:active { background:var(--accent-soft); }
+  .combo-option .combo-empty-text { color:var(--muted); font-weight:500; text-transform:none; }
+
   .toggle-row { display:flex; align-items:center; gap:10px; margin-top:14px; font-size:0.95rem; min-height:44px; }
   .toggle-row input { width:18px; height:18px; accent-color:var(--accent); }
   .hidden { display:none !important; }
@@ -148,118 +202,192 @@
   table.report tr.totals td { font-weight:700; background:var(--accent-soft); color:var(--accent-dark); }
   table.report .desc { max-width:160px; white-space:normal; font-family:var(--font-body); }
 
-  details summary { cursor:pointer; color:var(--muted); font-size:0.9rem; margin-bottom:8px; min-height:44px; display:flex; align-items:center; font-weight:600; }
-  details[open] summary { margin-bottom:12px; }
   .filter-tabs { margin-bottom:10px; display:flex; flex-wrap:wrap; gap:6px; }
 
+  .account-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .account-who { display:flex; align-items:center; gap:10px; min-width:0; }
+  .avatar {
+    width:38px; height:38px; border-radius:50%; background:var(--surface-2); color:var(--ink);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.95rem;
+    text-transform:uppercase; flex-shrink:0;
+  }
+  .account-name { font-weight:600; font-size:0.95rem; text-transform:capitalize; }
+  .account-role { font-size:0.78rem; color:var(--muted); }
+  .account-actions { display:flex; gap:8px; align-items:center; flex-shrink:0; }
+  .account-actions form { margin:0; }
+  a.admin-link {
+    color:var(--accent); text-decoration:none; font-size:0.85rem; font-weight:600;
+    border:1.5px solid var(--accent-soft); background:var(--accent-soft); padding:8px 12px; border-radius:var(--radius-sm);
+  }
+
   .bottom-nav {
-    display:none; position:fixed; bottom:0; left:0; right:0;
+    position:fixed; bottom:0; left:0; right:0; z-index:60;
     background:var(--surface); border-top:1px solid var(--border);
-    padding:8px 16px; justify-content:space-around; z-index:100;
     box-shadow:0 -4px 16px rgba(20,23,26,0.06);
   }
-  .bottom-nav a {
-    color:var(--muted); text-decoration:none; font-size:0.78rem; font-weight:600;
-    text-align:center; padding:8px 12px; min-height:44px; display:flex; align-items:center;
+  .bottom-nav-inner {
+    max-width:520px; margin:0 auto; display:flex; justify-content:space-around;
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom));
   }
-  .bottom-nav a:active { color:var(--accent); }
-
-  @media (max-width:600px) {
-    body { padding-bottom:74px; }
-    .bottom-nav { display:flex; }
-    .card { padding:15px; }
-    .checkboxes { grid-template-columns:1fr 1fr; }
+  .nav-btn {
+    background:none; border:none; color:var(--muted); cursor:pointer; font-family:inherit;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    font-size:0.68rem; font-weight:600; padding:6px 10px; min-height:52px; flex:1;
+    border-radius:var(--radius-sm); margin:0; transition:color .15s ease;
   }
+  .nav-btn svg { width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.8; }
+  .nav-btn.active { color:var(--accent); }
+  .nav-btn:active { background:var(--accent-soft); }
+  .nav-btn .fab-add {
+    width:34px; height:34px; border-radius:50%; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; margin-bottom:1px;
+  }
+  .nav-btn .fab-add svg { width:18px; height:18px; stroke:#fff; }
+  .nav-btn.active .fab-add { background:var(--accent-dark); }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="header">
-    <div class="header-left">
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-left">
       <div class="brand-mark">S</div>
-      <h1>Splitwise Mini</h1>
-    </div>
-    <div class="header-actions">
-      <span>{{ current_username }}</span>
-      {% if is_admin %}<a href="{{ url_for('admin.dashboard') }}">Admin</a>{% endif %}
-      <form method="post" action="{{ url_for('auth.logout') }}">
-        <button type="submit" class="link-btn">Log out</button>
-      </form>
+      <div>
+        <h1 id="pageTitle">Add expense</h1>
+        <p class="topbar-sub" id="pageSub">Log a new bill or purchase</p>
+      </div>
     </div>
   </div>
-  <p class="sub">Track shared bills and personal spending.</p>
 
-  <div class="card" id="section-people">
-    <h2><span class="dot"></span>People</h2>
-    <div class="row">
-      <input type="text" id="personName" placeholder="Add a name" />
-      <button type="button" onclick="addPerson()">Add</button>
-    </div>
-    <div id="peopleChips" class="chips"><div class="empty">No people yet. Add someone to get started.</div></div>
-  </div>
+  <main>
 
-  <div class="card" id="section-groups">
-    <h2><span class="dot"></span>Groups</h2>
-    <label for="groupName">Group name</label>
-    <input type="text" id="groupName" placeholder="e.g. Roommates" />
-    <label>Members</label>
-    <div id="groupMemberPicks" class="checkboxes group-member-picks"><span class="empty">Add people first.</span></div>
-    <button type="button" onclick="createGroup()">Create group</button>
-    <div id="groupsList" class="chips" style="margin-top:14px"><div class="empty">No groups yet.</div></div>
-  </div>
+    <!-- TAB: ADD (default / home) -->
+    <section class="tab-panel active" data-panel="add">
+      <div class="card" id="section-add">
+        <label for="desc">Description</label>
+        <input type="text" id="desc" placeholder="e.g. food jay malhar or bus fare" />
+        <label for="amount">Amount (₹)</label>
+        <input type="number" id="amount" min="0" step="0.01" placeholder="240" />
+        <label for="expDate">Date</label>
+        <input type="date" id="expDate" />
+        <label for="payer">Paid by</label>
+        <select id="payer"><option value="self" selected>Self</option></select>
+        <div class="toggle-row">
+          <input type="checkbox" id="isPersonal" onchange="togglePersonal()" />
+          <label for="isPersonal" style="margin:0">Personal expense (no split)</label>
+        </div>
+        <div id="participantsBlock">
+          <label for="participantSearch">Split between</label>
+          <div class="combo">
+            <input type="text" id="participantSearch" class="picker-search" autocomplete="off" placeholder="Search &amp; add people"
+                   oninput="showParticipantOptions(this.value)" onfocus="showParticipantOptions(this.value)" />
+            <div id="participantOptions" class="combo-options hidden"></div>
+          </div>
+          <div id="participantChips" class="chips" style="margin-top:10px"></div>
+        </div>
+        <button type="button" id="addStructuredBtn" class="block" onclick="addStructuredExpense()">Add expense</button>
+        <div id="formStatus" class="status"></div>
+      </div>
+    </section>
 
-  <div class="card" id="section-add">
-    <h2><span class="dot"></span>Add expense</h2>
-    <label for="desc">Description</label>
-    <input type="text" id="desc" placeholder="e.g. food jay malhar or bus fare" />
-    <label for="amount">Amount (₹)</label>
-    <input type="number" id="amount" min="0" step="0.01" placeholder="240" />
-    <label for="expDate">Date</label>
-    <input type="date" id="expDate" />
-    <label for="payer">Paid by</label>
-    <select id="payer"><option value="self" selected>Self</option></select>
-    <div class="toggle-row">
-      <input type="checkbox" id="isPersonal" onchange="togglePersonal()" />
-      <label for="isPersonal" style="margin:0">Personal expense (no split)</label>
-    </div>
-    <div id="participantsBlock">
-      <label for="groupSelect">Quick select group</label>
-      <select id="groupSelect" onchange="applyGroup()">
-        <option value="">— none —</option>
-      </select>
-      <label>Split between</label>
-      <div id="participantChecks" class="checkboxes"><span class="empty">Add people first.</span></div>
-    </div>
-    <button type="button" id="addStructuredBtn" onclick="addStructuredExpense()">Add expense</button>
-    <div id="formStatus" class="status"></div>
-  </div>
+    <!-- TAB: REPORT -->
+    <section class="tab-panel" data-panel="report">
+      <div class="card" id="section-report">
+        <h2><span class="dot"></span>Itemized report</h2>
+        <div class="filter-tabs">
+          <button type="button" class="tab-filter active" onclick="setReportFilter('all', this)">All</button>
+          <button type="button" class="tab-filter" onclick="setReportFilter('shared', this)">Shared</button>
+          <button type="button" class="tab-filter" onclick="setReportFilter('personal', this)">Personal</button>
+        </div>
+        <div id="reportTable"><div class="empty">No expenses yet.</div></div>
+      </div>
 
-  <div class="card" id="section-report">
-    <h2><span class="dot"></span>Itemized report</h2>
-    <div class="filter-tabs">
-      <button type="button" class="tab active" onclick="setReportFilter('all', this)">All</button>
-      <button type="button" class="tab" onclick="setReportFilter('shared', this)">Shared</button>
-      <button type="button" class="tab" onclick="setReportFilter('personal', this)">Personal</button>
-    </div>
-    <div id="reportTable"><div class="empty">No expenses yet.</div></div>
-  </div>
+      <div class="card">
+        <h2><span class="dot"></span>Recent expenses</h2>
+        <div id="expenses"><div class="empty">No expenses yet.</div></div>
+      </div>
+    </section>
 
-  <div class="card" id="section-balances">
-    <h2><span class="dot"></span>Balances (shared only)</h2>
-    <div id="balances"><div class="empty">No shared expenses yet.</div></div>
-  </div>
+    <!-- TAB: BALANCES -->
+    <section class="tab-panel" data-panel="balances">
+      <div class="card" id="section-balances">
+        <h2><span class="dot"></span>Who owes what</h2>
+        <div id="balances"><div class="empty">No shared expenses yet.</div></div>
+      </div>
+    </section>
 
-  <div class="card">
-    <h2><span class="dot"></span>Recent expenses</h2>
-    <div id="expenses"><div class="empty">No expenses yet.</div></div>
-  </div>
+    <!-- TAB: SETTINGS -->
+    <section class="tab-panel" data-panel="settings">
+      <div class="card">
+        <h2><span class="dot"></span>Account</h2>
+        <div class="account-row">
+          <div class="account-who">
+            <div class="avatar">{{ current_username[0] if current_username else '?' }}</div>
+            <div>
+              <div class="account-name">{{ current_username }}</div>
+              <div class="account-role">{{ 'Admin' if is_admin else 'Member' }}</div>
+            </div>
+          </div>
+          <div class="account-actions">
+            {% if is_admin %}<a class="admin-link" href="{{ url_for('admin.dashboard') }}">Admin</a>{% endif %}
+            <form method="post" action="{{ url_for('auth.logout') }}">
+              <button type="submit" class="secondary">Log out</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="section-people">
+        <h2><span class="dot"></span>People</h2>
+        <div class="row">
+          <input type="text" id="personName" placeholder="Add a name" />
+          <button type="button" onclick="addPerson()">Add</button>
+        </div>
+        <div id="peopleChips" class="chips"><div class="empty">No people yet. Add someone to get started.</div></div>
+      </div>
+
+      <div class="card" id="section-groups">
+        <h2><span class="dot"></span>Groups</h2>
+        <label for="groupName">Group name</label>
+        <input type="text" id="groupName" placeholder="e.g. Roommates" />
+        <label>Members</label>
+        <div class="picker">
+          <div class="picker-toolbar">
+            <input type="text" class="picker-search" id="groupMemberSearch" placeholder="Search people" oninput="filterPicker('groupMemberPicks', this.value)" />
+            <div class="picker-actions">
+              <button type="button" class="link-action" onclick="selectAllPicker('groupMemberPicks','groupMemberSummary')">All</button>
+              <button type="button" class="link-action" onclick="clearPicker('groupMemberPicks','groupMemberSummary')">None</button>
+            </div>
+          </div>
+          <div id="groupMemberPicks" class="picker-list"><span class="empty picker-empty">Add people first.</span></div>
+          <div class="picker-summary" id="groupMemberSummary"></div>
+        </div>
+        <button type="button" onclick="createGroup()">Create group</button>
+        <div id="groupsList" class="chips" style="margin-top:14px"><div class="empty">No groups yet.</div></div>
+      </div>
+    </section>
+
+  </main>
 </div>
 
 <nav class="bottom-nav">
-  <a href="#section-add">Add</a>
-  <a href="#section-report">Report</a>
-  <a href="#section-balances">Balances</a>
-  <a href="#section-people">People</a>
+  <div class="bottom-nav-inner">
+    <button type="button" class="nav-btn active" data-tab="add" onclick="showTab('add')">
+      <span class="fab-add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></span>
+      Add
+    </button>
+    <button type="button" class="nav-btn" data-tab="report" onclick="showTab('report')">
+      <svg viewBox="0 0 24 24"><path d="M4 19h16M7 15v-4M12 15V7M17 15v-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Report
+    </button>
+    <button type="button" class="nav-btn" data-tab="balances" onclick="showTab('balances')">
+      <svg viewBox="0 0 24 24"><path d="M12 3v18M5 7h4l-4 7a3 3 0 0 0 6 0L7 7M15 7h4l-4 7a3 3 0 0 0 6 0l-4-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Balances
+    </button>
+    <button type="button" class="nav-btn" data-tab="settings" onclick="showTab('settings')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Settings
+    </button>
+  </div>
 </nav>
 
 <script>
@@ -268,6 +396,21 @@ let groups = [];
 let reportFilter = 'all';
 
 document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
+
+const TAB_META = {
+  add:      { title: 'Add expense', sub: 'Log a new bill or purchase' },
+  report:   { title: 'Report',      sub: 'Itemized breakdown & activity' },
+  balances: { title: 'Balances',    sub: 'Who owes what, at a glance' },
+  settings: { title: 'Settings',    sub: 'People, groups & account' }
+};
+
+function showTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.getElementById('pageTitle').textContent = TAB_META[tab].title;
+  document.getElementById('pageSub').textContent = TAB_META[tab].sub;
+  window.scrollTo(0, 0);
+}
 
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 function fmt(n) { return '₹' + Number(n).toFixed(2); }
@@ -278,32 +421,81 @@ function setFormStatus(msg, type) {
   el.className = 'status' + (type ? ' ' + type : '');
 }
 
+function getCheckedIds(containerId) {
+  return [...document.querySelectorAll(`#${containerId} input:checked`)].map(cb => parseInt(cb.value, 10));
+}
+
+// --- participant combobox (search & add one by one) ---
+let selectedParticipants = [];
+
 function togglePersonal() {
   const personal = document.getElementById('isPersonal').checked;
   document.getElementById('participantsBlock').classList.toggle('hidden', personal);
 }
 
-function getCheckedValues(containerId) {
-  return [...document.querySelectorAll(`#${containerId} input:checked`)].map(cb => cb.value);
+function participantPool() {
+  return ['self', ...people.map(p => p.name)];
 }
 
-function getCheckedIds(containerId) {
-  return [...document.querySelectorAll(`#${containerId} input:checked`)].map(cb => parseInt(cb.value, 10));
+function showParticipantOptions(query) {
+  const box = document.getElementById('participantOptions');
+  const q = (query || '').trim().toLowerCase();
+  const matches = participantPool().filter(name =>
+    !selectedParticipants.includes(name) && (!q || name.includes(q))
+  );
+  if (matches.length === 0) {
+    box.innerHTML = '<div class="combo-option"><span class="combo-empty-text">No matches</span></div>';
+  } else {
+    box.innerHTML = matches.map(name =>
+      `<button type="button" class="combo-option" onclick="addParticipant('${name}')">
+        <span class="picker-row-avatar">${name.charAt(0).toUpperCase()}</span>${cap(name)}
+      </button>`
+    ).join('');
+  }
+  box.classList.remove('hidden');
 }
+
+function hideParticipantOptions() {
+  document.getElementById('participantOptions').classList.add('hidden');
+}
+
+function addParticipant(name) {
+  if (!selectedParticipants.includes(name)) selectedParticipants.push(name);
+  const search = document.getElementById('participantSearch');
+  search.value = '';
+  renderParticipantChips();
+  hideParticipantOptions();
+  search.focus();
+}
+
+function removeParticipant(name) {
+  selectedParticipants = selectedParticipants.filter(n => n !== name);
+  renderParticipantChips();
+}
+
+function renderParticipantChips() {
+  const el = document.getElementById('participantChips');
+  el.innerHTML = selectedParticipants.map(name => `
+    <span class="chip">${cap(name)}
+      <button type="button" class="secondary" onclick="removeParticipant('${name}')">×</button>
+    </span>
+  `).join('');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.combo')) hideParticipantOptions();
+});
 
 function renderPeople() {
   const chips = document.getElementById('peopleChips');
   const payerSel = document.getElementById('payer');
-  const checks = document.getElementById('participantChecks');
   const groupPicks = document.getElementById('groupMemberPicks');
-  const groupSel = document.getElementById('groupSelect');
 
   if (people.length === 0) {
     chips.innerHTML = '<div class="empty">No people yet. Add someone to get started.</div>';
     payerSel.innerHTML = '<option value="self" selected>Self</option>';
-    checks.innerHTML = '<label><input type="checkbox" value="self" checked /> Self</label>';
-    groupPicks.innerHTML = '<span class="empty">Add people first.</span>';
-    groupSel.innerHTML = '<option value="">— none —</option>';
+    groupPicks.innerHTML = '<span class="empty picker-empty">Add people first.</span>';
+    updatePickerSummary('groupMemberPicks', 'groupMemberSummary');
     return;
   }
 
@@ -322,23 +514,46 @@ function renderPeople() {
     payerSel.value = 'self';
   }
 
-  const checkedNames = new Set(getCheckedValues('participantChecks'));
-  if (checkedNames.size === 0) checkedNames.add('self');
-  checks.innerHTML = '<label><input type="checkbox" value="self" ' +
-    (checkedNames.has('self') ? 'checked' : '') + ' /> Self</label>' +
-    people.map(p => `
-    <label><input type="checkbox" value="${p.name}" ${checkedNames.has(p.name) ? 'checked' : ''} /> ${cap(p.name)}</label>
-  `).join('');
+  const initial = n => n ? n.charAt(0).toUpperCase() : '?';
 
   const checkedIds = new Set(getCheckedIds('groupMemberPicks'));
   groupPicks.innerHTML = people.map(p => `
-    <label><input type="checkbox" value="${p.id}" ${checkedIds.has(p.id) ? 'checked' : ''} /> ${cap(p.name)}</label>
+    <label data-name="${cap(p.name).toLowerCase()}">
+      <span class="picker-row-avatar">${initial(p.name)}</span>
+      <input type="checkbox" value="${p.id}" ${checkedIds.has(p.id) ? 'checked' : ''} onchange="updatePickerSummary('groupMemberPicks','groupMemberSummary')" />
+      ${cap(p.name)}
+    </label>
   `).join('');
 
-  const prevGroup = groupSel.value;
-  groupSel.innerHTML = '<option value="">— none —</option>' +
-    groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
-  if (prevGroup) groupSel.value = prevGroup;
+  updatePickerSummary('groupMemberPicks', 'groupMemberSummary');
+}
+
+// --- picker helpers (search / select all / clear / summary) for the people lists ---
+function filterPicker(containerId, query) {
+  const q = query.trim().toLowerCase();
+  document.querySelectorAll(`#${containerId} label`).forEach(label => {
+    const match = !q || (label.dataset.name || '').includes(q);
+    label.classList.toggle('picker-row-hidden', !match);
+  });
+}
+
+function selectAllPicker(containerId, summaryId) {
+  document.querySelectorAll(`#${containerId} label:not(.picker-row-hidden) input`).forEach(cb => { cb.checked = true; });
+  updatePickerSummary(containerId, summaryId);
+}
+
+function clearPicker(containerId, summaryId) {
+  document.querySelectorAll(`#${containerId} label:not(.picker-row-hidden) input`).forEach(cb => { cb.checked = false; });
+  updatePickerSummary(containerId, summaryId);
+}
+
+function updatePickerSummary(containerId, summaryId) {
+  const summaryEl = document.getElementById(summaryId);
+  if (!summaryEl) return;
+  const total = document.querySelectorAll(`#${containerId} input`).length;
+  if (total === 0) { summaryEl.textContent = ''; return; }
+  const checked = document.querySelectorAll(`#${containerId} input:checked`).length;
+  summaryEl.innerHTML = `<b>${checked}</b> of ${total} selected`;
 }
 
 function renderGroups() {
@@ -353,17 +568,6 @@ function renderGroups() {
     </span>
   `).join('');
   renderPeople();
-}
-
-function applyGroup() {
-  const gid = document.getElementById('groupSelect').value;
-  if (!gid) return;
-  const group = groups.find(g => String(g.id) === gid);
-  if (!group) return;
-  const memberNames = new Set(group.members.map(m => m.name));
-  document.querySelectorAll('#participantChecks input').forEach(cb => {
-    cb.checked = memberNames.has(cb.value);
-  });
 }
 
 async function addPerson() {
@@ -408,17 +612,12 @@ async function removeGroup(id) {
   await refresh();
 }
 
-function getSelectedParticipants() {
-  return getCheckedValues('participantChecks');
-}
-
 async function addStructuredExpense() {
   const description = document.getElementById('desc').value.trim();
   const amount = parseFloat(document.getElementById('amount').value);
   const payer = document.getElementById('payer').value;
   const isPersonal = document.getElementById('isPersonal').checked;
   const date = document.getElementById('expDate').value;
-  const participants = getSelectedParticipants();
   const btn = document.getElementById('addStructuredBtn');
 
   if (!description) { setFormStatus('Description is required', 'error'); return; }
@@ -430,14 +629,15 @@ async function addStructuredExpense() {
     const res = await fetch('/api/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ description, amount, payer, participants, is_personal: isPersonal, date })
+      body: JSON.stringify({ description, amount, payer, participants: selectedParticipants, is_personal: isPersonal, date })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed');
     setFormStatus(`Added: ${data.description} — ${fmt(data.amount)}`, 'ok');
     document.getElementById('desc').value = '';
     document.getElementById('amount').value = '';
-    document.getElementById('groupSelect').value = '';
+    selectedParticipants = [];
+    renderParticipantChips();
     await refresh();
   } catch (err) {
     setFormStatus(err.message, 'error');
@@ -454,7 +654,7 @@ async function deleteExpense(id) {
 
 function setReportFilter(filter, btn) {
   reportFilter = filter;
-  document.querySelectorAll('.filter-tabs .tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.filter-tabs .tab-filter').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   refreshReport();
 }

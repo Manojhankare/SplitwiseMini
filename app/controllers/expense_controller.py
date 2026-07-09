@@ -40,10 +40,7 @@ def add_expense():
     else:
         participants = [p.strip().lower() for p in data.get("participants", []) if p.strip()]
         if not participants:
-            is_personal = True
-            participants = [payer]
-        elif payer not in participants:
-            participants.append(payer)
+            return jsonify({"error": "select at least one person to split with"}), 400
 
     expense_date = _parse_expense_date(data.get("date"))
 

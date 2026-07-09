@@ -426,7 +426,7 @@ function getCheckedIds(containerId) {
 }
 
 // --- participant combobox (search & add one by one) ---
-let selectedParticipants = [];
+let selectedParticipants = ['self'];
 
 function togglePersonal() {
   const personal = document.getElementById('isPersonal').checked;
@@ -622,6 +622,10 @@ async function addStructuredExpense() {
 
   if (!description) { setFormStatus('Description is required', 'error'); return; }
   if (!amount || amount <= 0) { setFormStatus('Enter a valid amount', 'error'); return; }
+  if (!isPersonal && selectedParticipants.length === 0) {
+    setFormStatus('Select at least one person to split with', 'error');
+    return;
+  }
 
   btn.disabled = true;
   setFormStatus('Saving...', '');
@@ -636,7 +640,7 @@ async function addStructuredExpense() {
     setFormStatus(`Added: ${data.description} — ${fmt(data.amount)}`, 'ok');
     document.getElementById('desc').value = '';
     document.getElementById('amount').value = '';
-    selectedParticipants = [];
+    selectedParticipants = ['self'];
     renderParticipantChips();
     await refresh();
   } catch (err) {
@@ -734,6 +738,7 @@ async function refresh() {
 }
 
 refresh();
+renderParticipantChips();
 </script>
 </body>
 </html>

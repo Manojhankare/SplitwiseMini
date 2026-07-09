@@ -6,6 +6,7 @@ from flask_login import current_user, login_required
 from app.models.expense import Expense
 from app.models.group import Group
 from app.models.person import Person
+from app.models.settlement import Settlement
 
 expense_bp = Blueprint("expense", __name__, url_prefix="/api")
 
@@ -183,5 +184,92 @@ def delete_expense(expense_id):
     try:
         Expense.delete(expense_id, current_user.id)
         return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@expense_bp.route("/settlements", methods=["GET"])
+@login_required
+def list_settlements():
+    try:
+        return jsonify(Settlement.list_all(current_user.id))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@expense_bp.route("/settlements", methods=["POST"])
+@login_required
+def create_settlement():
+    data = request.get_json(force=True, silent=True) or {}
+    from_person = (data.get("from_person") or "").strip().lower()
+    to_person = (data.get("to_person") or "").strip().lower()
+    if not from_person or not to_person:
+        return jsonify({"error": "from_person and to_person are required"}), 400
+    if from_person == to_person:
+        return jsonify({"error": "from_person and to_person must differ"}), 400
+    try:
+        amount = float(data.get("amount"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "amount must be a number"}), 400
+    if amount <= 0:
+        return jsonify({"error": "amount must be positive"}), 400
+
+    expense_id = data.get("expense_id")
+    if expense_id is not None:
+        try:
+            expense_id = int(expense_id)
+        except (TypeError, ValueError):
+            return jsonify({"error": "invalid expense_id"}), 400
+        expense = Expense.get_for_user(expense_id, current_user.id)
+        if not expense:
+            return jsonify({"error": "expense not found"}), 404
+        if expense.is_personal:
+            return jsonify({"error": "cannot settle a personal expense"}), 400
+        outstanding = Expense.outstanding_for_expense(expense)["outstanding"]
+        max_owed = outstanding.get(from_person, 0.0)
+        if amount > max_owed + 0.001:
+            return jsonify({"error": f"amount exceeds outstanding share ({max_owed:.2f})"}), 400
+        if to_person != expense.payer:
+            return jsonify({"error": f"to_person must be the expense payer ({expense.payer})"}), 400
+    else:
+        expense_id = None
+
+    settlement_date = _parse_expense_date(data.get("date"))
+    note = (data.get("note") or "").strip() or None
+
+    try:
+        settlement = Settlement.create(
+            current_user.id,
+            from_person,
+            to_person,
+            amount,
+            expense_id=expense_id,
+            settlement_date=settlement_date,
+            note=note,
+        )
+        Person.register_names(current_user.id, from_person, to_person)
+        return jsonify(settlement.to_dict())
+    except Exception as e:
+        return jsonify({"error": f"Database error: {e}"}), 500
+
+
+@expense_bp.route("/settlements/<int:settlement_id>", methods=["DELETE"])
+@login_required
+def delete_settlement(settlement_id):
+    try:
+        Settlement.delete(settlement_id, current_user.id)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@expense_bp.route("/expenses/<int:expense_id>/outstanding", methods=["GET"])
+@login_required
+def expense_outstanding(expense_id):
+    try:
+        expense = Expense.get_for_user(expense_id, current_user.id)
+        if not expense:
+            return jsonify({"error": "expense not found"}), 404
+        return jsonify(Expense.outstanding_for_expense(expense))
     except Exception as e:
         return jsonify({"error": str(e)}), 500

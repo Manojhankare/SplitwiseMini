@@ -98,6 +98,8 @@ class Expense(db.Model):
 
     @classmethod
     def compute_balances(cls, user_id):
+        from app.models.settlement import Settlement
+
         net = {}
         for row in cls._query_for_user(user_id).all():
             if row.is_personal:
@@ -107,7 +109,71 @@ class Expense(db.Model):
             net[row.payer] = net.get(row.payer, 0.0) + amount
             for p in row.participants:
                 net[p] = net.get(p, 0.0) - share
+        net = Settlement.apply_to_balances(user_id, net)
         return {k: round(v, 2) for k, v in net.items()}
+
+    @classmethod
+    def outstanding_for_expense(cls, expense):
+        from app.models.settlement import Settlement
+
+        if expense.is_personal:
+            return {"payer": expense.payer, "outstanding": {}}
+
+        amount = float(expense.amount)
+        participants = expense.participants
+        shares = _equal_shares(amount, participants, participants)
+        settled = Settlement.settled_by_person_for_expense(expense.user_id, expense.id)
+
+        outstanding = {}
+        for p in participants:
+            if p == expense.payer:
+                continue
+            owed = round(shares.get(p, 0.0) - settled.get(p, 0.0), 2)
+            if owed > 0.001:
+                outstanding[p] = owed
+
+        return {
+            "expense_id": expense.id,
+            "payer": expense.payer,
+            "description": expense.description,
+            "outstanding": outstanding,
+        }
+
+    @classmethod
+    def compute_pairwise_with_self(cls, user_id, me="self"):
+        from app.models.settlement import Settlement
+
+        pairwise = {}
+        for row in cls._query_for_user(user_id).all():
+            if row.is_personal:
+                continue
+            amount = float(row.amount)
+            share = amount / len(row.participants)
+            payer = row.payer
+            if payer == me:
+                for p in row.participants:
+                    if p != me:
+                        pairwise[p] = pairwise.get(p, 0.0) + share
+            elif me in row.participants:
+                pairwise[payer] = pairwise.get(payer, 0.0) - share
+
+        for row in Settlement._query_for_user(user_id).all():
+            amount = float(row.amount)
+            if row.to_person == me:
+                pairwise[row.from_person] = pairwise.get(row.from_person, 0.0) - amount
+            elif row.from_person == me:
+                pairwise[row.to_person] = pairwise.get(row.to_person, 0.0) + amount
+
+        owe_you = []
+        you_owe = []
+        for person in sorted(pairwise):
+            amt = round(pairwise[person], 2)
+            if amt > 0.001:
+                owe_you.append({"person": person, "amount": amt})
+            elif amt < -0.001:
+                you_owe.append({"person": person, "amount": round(-amt, 2)})
+
+        return {"owe_you": owe_you, "you_owe": you_owe}
 
     @classmethod
     def compute_report(cls, user_id, filter_type="all"):
@@ -159,4 +225,5 @@ class Expense(db.Model):
             "rows": report_rows,
             "totals": {p: round(totals[p], 2) for p in people},
             "grand_total": round(grand_total, 2),
+            "self_summary": cls.compute_pairwise_with_self(user_id),
         }

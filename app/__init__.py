@@ -7,6 +7,7 @@ from app.extensions import db, login_manager
 from app.models.expense import Expense  # noqa: F401
 from app.models.group import Group  # noqa: F401
 from app.models.person import Person  # noqa: F401
+from app.models.settlement import Settlement  # noqa: F401
 from app.models.user import User
 
 

@@ -9,30 +9,34 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:#F4F5F1; --surface:#FFFFFF; --surface-2:#ECEEE7;
-    --ink:#14171A; --muted:#6B7280; --border:#E1E4DD;
-    --accent:#12664F; --accent-dark:#0D4C3B; --accent-soft:#E3F0EB;
-    --negative:#C7442E; --negative-soft:#FBEAE6;
+    --bg:#F1F5F9; --surface:#FFFFFF; --surface-2:#E2E8F0;
+    --ink:#0F172A; --muted:#64748B; --border:#CBD5E1;
+    --accent:#2563EB; --accent-dark:#1D4ED8; --accent-soft:#DBEAFE;
+    --negative:#DC2626; --negative-soft:#FEE2E2;
+    --grad-bg:linear-gradient(160deg, #F8FAFC 0%, #EFF6FF 38%, #DBEAFE 72%, #E0E7FF 100%);
+    --grad-accent:linear-gradient(135deg, #3B82F6 0%, #2563EB 45%, #4F46E5 100%);
+    --grad-accent-hover:linear-gradient(135deg, #2563EB 0%, #1D4ED8 50%, #4338CA 100%);
     --radius:18px; --radius-sm:10px;
-    --shadow:0 1px 2px rgba(20,23,26,0.04), 0 16px 32px -12px rgba(20,23,26,0.12);
+    --shadow:0 1px 2px rgba(15,23,42,0.05), 0 16px 32px -12px rgba(37,99,235,0.18);
     --font-display:'Fraunces', Georgia, serif;
     --font-body:'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
   * { box-sizing:border-box; }
   body {
     margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
-    font-family:var(--font-body); background:var(--bg); color:var(--ink); padding:24px;
-    background-image: radial-gradient(circle at 80% 15%, rgba(18,102,79,0.06), transparent 45%);
+    font-family:var(--font-body); color:var(--ink); padding:24px;
+    background:var(--grad-bg);
   }
   .card {
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    background:linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%); border:1px solid var(--border); border-radius:var(--radius);
     box-shadow:var(--shadow); padding:36px 32px; width:100%; max-width:400px;
   }
   .brand { display:flex; align-items:center; gap:12px; margin-bottom:22px; }
   .brand-mark {
-    width:40px; height:40px; border-radius:11px; background:var(--accent); color:#fff;
+    width:40px; height:40px; border-radius:11px; background:var(--grad-accent); color:#fff;
     display:flex; align-items:center; justify-content:center; font-family:var(--font-display);
     font-weight:600; font-size:1.15rem; flex-shrink:0;
+    box-shadow:0 4px 12px -4px rgba(37,99,235,0.55);
   }
   .brand-name { font-family:var(--font-display); font-weight:600; font-size:1.05rem; }
   h1 { font-family:var(--font-display); font-weight:600; font-size:1.5rem; margin:0 0 6px; letter-spacing:-0.01em; }
@@ -48,16 +52,16 @@
   input:focus { outline:none; border-color:var(--accent); background:var(--surface); }
   .hint { font-size:0.78rem; color:var(--muted); margin-top:5px; }
   button {
-    width:100%; margin-top:26px; background:var(--accent); color:#fff; border:none;
+    width:100%; margin-top:26px; background:var(--grad-accent); color:#fff; border:none;
     padding:13px; border-radius:var(--radius-sm); font-size:0.98rem; font-weight:600;
-    cursor:pointer; min-height:46px; transition:background .15s ease, transform .05s ease;
-    font-family:inherit;
+    cursor:pointer; min-height:46px; transition:filter .15s ease, transform .05s ease;
+    font-family:inherit; box-shadow:0 4px 14px -6px rgba(37,99,235,0.55);
   }
-  button:hover { background:var(--accent-dark); }
+  button:hover { background:var(--grad-accent-hover); filter:brightness(1.03); }
   button:active { transform:translateY(1px); }
   .flash {
-    display:flex; align-items:flex-start; gap:8px; color:#8a2f1f; background:var(--negative-soft);
-    border:1px solid #f0c9bd; font-size:0.85rem; margin-top:16px; padding:10px 12px; border-radius:var(--radius-sm);
+    display:flex; align-items:flex-start; gap:8px; color:#991B1B; background:var(--negative-soft);
+    border:1px solid #FECACA; font-size:0.85rem; margin-top:16px; padding:10px 12px; border-radius:var(--radius-sm);
   }
   .link { display:block; text-align:center; margin-top:22px; color:var(--muted); font-size:0.88rem; text-decoration:none; }
   .link b { color:var(--accent); font-weight:600; }

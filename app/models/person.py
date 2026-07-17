@@ -36,8 +36,32 @@ class Person(db.Model):
 
     @classmethod
     def register_names(cls, user_id, *names):
-        for name in names:
-            cls.add(user_id, name)
+        wanted = []
+        seen = set()
+        for raw in names:
+            name = normalize_name(raw)
+            if not name or name == "self" or name in seen:
+                continue
+            seen.add(name)
+            wanted.append(name)
+        if not wanted:
+            return
+
+        existing = {
+            p.name
+            for p in cls.query.filter(
+                cls.user_id == user_id,
+                cls.name.in_(wanted),
+            ).all()
+        }
+        added = False
+        for name in wanted:
+            if name in existing:
+                continue
+            db.session.add(cls(user_id=user_id, name=name))
+            added = True
+        if added:
+            db.session.commit()
 
     @classmethod
     def get_for_user(cls, person_id, user_id):

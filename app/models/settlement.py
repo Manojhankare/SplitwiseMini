@@ -1,12 +1,17 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import func
+from sqlalchemy import Index, func
+from sqlalchemy.orm import joinedload
 
 from app.extensions import db
 
 
 class Settlement(db.Model):
     __tablename__ = "settlements"
+    __table_args__ = (
+        Index("ix_settlements_user_id_settlement_date", "user_id", "settlement_date"),
+        Index("ix_settlements_expense_id", "expense_id"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
@@ -45,13 +50,17 @@ class Settlement(db.Model):
         return cls.query.filter_by(user_id=user_id)
 
     @classmethod
-    def list_all(cls, user_id):
-        rows = (
+    def fetch_for_user(cls, user_id):
+        return (
             cls._query_for_user(user_id)
+            .options(joinedload(cls.expense))
             .order_by(cls.settlement_date.desc(), cls.created_at.desc())
             .all()
         )
-        return [r.to_dict() for r in rows]
+
+    @classmethod
+    def list_all(cls, user_id):
+        return [r.to_dict() for r in cls.fetch_for_user(user_id)]
 
     @classmethod
     def get_for_user(cls, settlement_id, user_id):
@@ -91,8 +100,10 @@ class Settlement(db.Model):
         return {person: float(total) for person, total in rows}
 
     @classmethod
-    def apply_to_balances(cls, user_id, net):
-        for row in cls._query_for_user(user_id).all():
+    def apply_to_balances(cls, user_id, net, settlements=None):
+        if settlements is None:
+            settlements = cls.fetch_for_user(user_id)
+        for row in settlements:
             amount = float(row.amount)
             net[row.from_person] = net.get(row.from_person, 0.0) + amount
             net[row.to_person] = net.get(row.to_person, 0.0) - amount

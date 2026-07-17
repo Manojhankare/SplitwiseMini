@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_login import current_user
 
-from app.config import Config
+from app.config import Config, should_create_db_on_startup
 from app.controllers import admin_bp, auth_bp, expense_bp, page_bp
 from app.extensions import db, login_manager
 from app.models.expense import Expense  # noqa: F401
@@ -33,9 +33,10 @@ def create_app(config_class=Config):
     db.init_app(app)
     login_manager.init_app(app)
 
-    with app.app_context():
-        db.create_all()
-        seed_admin(app)
+    if should_create_db_on_startup():
+        with app.app_context():
+            db.create_all()
+            seed_admin(app)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)

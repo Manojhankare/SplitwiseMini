@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from sqlalchemy import Index
+
 from app.extensions import db
 
 
@@ -25,6 +27,9 @@ def _split_type(row):
 
 class Expense(db.Model):
     __tablename__ = "expenses"
+    __table_args__ = (
+        Index("ix_expenses_user_id_expense_date", "user_id", "expense_date"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
@@ -77,13 +82,16 @@ class Expense(db.Model):
         return cls.query.filter_by(user_id=user_id)
 
     @classmethod
-    def list_all(cls, user_id):
-        rows = (
+    def fetch_for_user(cls, user_id):
+        return (
             cls._query_for_user(user_id)
             .order_by(cls.expense_date.desc(), cls.created_at.desc())
             .all()
         )
-        return [r.to_dict() for r in rows]
+
+    @classmethod
+    def list_all(cls, user_id):
+        return [r.to_dict() for r in cls.fetch_for_user(user_id)]
 
     @classmethod
     def get_for_user(cls, expense_id, user_id):
@@ -97,11 +105,16 @@ class Expense(db.Model):
             db.session.commit()
 
     @classmethod
-    def compute_balances(cls, user_id):
+    def compute_balances(cls, user_id, expenses=None, settlements=None):
         from app.models.settlement import Settlement
 
+        if expenses is None:
+            expenses = cls.fetch_for_user(user_id)
+        if settlements is None:
+            settlements = Settlement.fetch_for_user(user_id)
+
         net = {}
-        for row in cls._query_for_user(user_id).all():
+        for row in expenses:
             if row.is_personal:
                 continue
             amount = float(row.amount)
@@ -109,7 +122,7 @@ class Expense(db.Model):
             net[row.payer] = net.get(row.payer, 0.0) + amount
             for p in row.participants:
                 net[p] = net.get(p, 0.0) - share
-        net = Settlement.apply_to_balances(user_id, net)
+        net = Settlement.apply_to_balances(user_id, net, settlements=settlements)
         return {k: round(v, 2) for k, v in net.items()}
 
     @classmethod
@@ -140,11 +153,16 @@ class Expense(db.Model):
         }
 
     @classmethod
-    def compute_pairwise_with_self(cls, user_id, me="self"):
+    def compute_pairwise_with_self(cls, user_id, me="self", expenses=None, settlements=None):
         from app.models.settlement import Settlement
 
+        if expenses is None:
+            expenses = cls.fetch_for_user(user_id)
+        if settlements is None:
+            settlements = Settlement.fetch_for_user(user_id)
+
         pairwise = {}
-        for row in cls._query_for_user(user_id).all():
+        for row in expenses:
             if row.is_personal:
                 continue
             amount = float(row.amount)
@@ -157,7 +175,7 @@ class Expense(db.Model):
             elif me in row.participants:
                 pairwise[payer] = pairwise.get(payer, 0.0) - share
 
-        for row in Settlement._query_for_user(user_id).all():
+        for row in settlements:
             amount = float(row.amount)
             if row.to_person == me:
                 pairwise[row.from_person] = pairwise.get(row.from_person, 0.0) - amount
@@ -176,14 +194,12 @@ class Expense(db.Model):
         return {"owe_you": owe_you, "you_owe": you_owe}
 
     @classmethod
-    def compute_report(cls, user_id, filter_type="all"):
-        rows = (
-            cls._query_for_user(user_id)
-            .order_by(cls.expense_date.desc(), cls.created_at.desc())
-            .all()
-        )
+    def compute_report(cls, user_id, filter_type="all", expenses=None, settlements=None):
+        if expenses is None:
+            expenses = cls.fetch_for_user(user_id)
+
         people_set = set()
-        for row in rows:
+        for row in expenses:
             people_set.add(row.payer)
             people_set.update(row.participants)
         people = sorted(people_set)
@@ -192,7 +208,7 @@ class Expense(db.Model):
         totals = {p: 0.0 for p in people}
         grand_total = 0.0
 
-        for row in rows:
+        for row in expenses:
             if filter_type == "shared" and row.is_personal:
                 continue
             if filter_type == "personal" and not row.is_personal:
@@ -225,5 +241,31 @@ class Expense(db.Model):
             "rows": report_rows,
             "totals": {p: round(totals[p], 2) for p in people},
             "grand_total": round(grand_total, 2),
-            "self_summary": cls.compute_pairwise_with_self(user_id),
+            "self_summary": cls.compute_pairwise_with_self(
+                user_id, expenses=expenses, settlements=settlements
+            ),
+        }
+
+    @classmethod
+    def bootstrap_payload(cls, user_id, filter_type="all"):
+        from app.models.group import Group
+        from app.models.person import Person
+        from app.models.settlement import Settlement
+
+        expenses = cls.fetch_for_user(user_id)
+        settlements = Settlement.fetch_for_user(user_id)
+        return {
+            "people": Person.list_all(user_id),
+            "groups": Group.list_all(user_id),
+            "expenses": [r.to_dict() for r in expenses],
+            "settlements": [r.to_dict() for r in settlements],
+            "balances": cls.compute_balances(
+                user_id, expenses=expenses, settlements=settlements
+            ),
+            "report": cls.compute_report(
+                user_id,
+                filter_type=filter_type,
+                expenses=expenses,
+                settlements=settlements,
+            ),
         }

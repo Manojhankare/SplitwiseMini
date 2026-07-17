@@ -655,7 +655,6 @@ function renderGroups() {
       <button type="button" class="secondary" onclick="removeGroup(${g.id})">×</button>
     </span>
   `).join('');
-  renderPeople();
 }
 
 async function addPerson() {
@@ -965,12 +964,10 @@ function setReportFilter(filter, btn) {
   refreshReport();
 }
 
-async function refreshReport() {
-  const res = await fetch(`/api/report?filter=${reportFilter}`);
-  const data = await res.json();
+function renderReport(data) {
   const el = document.getElementById('reportTable');
 
-  if (!data.rows || data.rows.length === 0) {
+  if (!data || !data.rows || data.rows.length === 0) {
     el.innerHTML = '<div class="empty">No expenses yet.</div>';
     return;
   }
@@ -1010,77 +1007,92 @@ async function refreshReport() {
   el.innerHTML = `<div class="table-wrap"><table class="report"><thead>${head}</thead><tbody>${body}${totals}${selfRow}</tbody></table></div>`;
 }
 
-async function refresh() {
-  const [peopleRes, groupsRes, balRes, expRes, setRes] = await Promise.all([
-    fetch('/api/people'),
-    fetch('/api/groups'),
-    fetch('/api/balances'),
-    fetch('/api/expenses'),
-    fetch('/api/settlements')
-  ]);
-  people = await peopleRes.json();
-  groups = await groupsRes.json();
-  const balances = await balRes.json();
-  const expenses = await expRes.json();
-  settlements = await setRes.json();
+async function refreshReport() {
+  const res = await fetch(`/api/report?filter=${reportFilter}`);
+  const data = await res.json();
+  renderReport(data);
+}
 
-  renderPeople();
-  renderGroups();
-  await refreshReport();
-
+function renderBalances(balances) {
   const balancesEl = document.getElementById('balances');
-  const names = Object.keys(balances);
+  const names = Object.keys(balances || {});
   if (names.length === 0) {
     balancesEl.innerHTML = '<div class="empty">No shared expenses yet.</div>';
-  } else {
-    balancesEl.innerHTML = names.sort((a, b) => balances[b] - balances[a]).map(name => {
-      const v = balances[name];
-      const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : '';
-      const label = v > 0.001 ? 'is owed' : v < -0.001 ? 'owes' : 'settled';
-      const settleBtn = Math.abs(v) > 0.001
-        ? `<button type="button" class="secondary" onclick="openSettlePerson('${name}', ${v})">Settle</button>`
-        : '';
-      return `<div class="balance-row">
-        <span>${cap(name)}</span>
-        <div class="row-actions">
-          <span class="amt ${cls}">${label} ${fmt(Math.abs(v))}</span>
-          ${settleBtn}
-        </div>
-      </div>`;
-    }).join('');
+    return;
   }
+  balancesEl.innerHTML = names.sort((a, b) => balances[b] - balances[a]).map(name => {
+    const v = balances[name];
+    const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : '';
+    const label = v > 0.001 ? 'is owed' : v < -0.001 ? 'owes' : 'settled';
+    const settleBtn = Math.abs(v) > 0.001
+      ? `<button type="button" class="secondary" onclick="openSettlePerson('${name}', ${v})">Settle</button>`
+      : '';
+    return `<div class="balance-row">
+      <span>${cap(name)}</span>
+      <div class="row-actions">
+        <span class="amt ${cls}">${label} ${fmt(Math.abs(v))}</span>
+        ${settleBtn}
+      </div>
+    </div>`;
+  }).join('');
+}
 
+function renderSettlementsList() {
   const settlementsEl = document.getElementById('settlements');
   if (!settlements.length) {
     settlementsEl.innerHTML = '<div class="empty">No settlements yet.</div>';
-  } else {
-    settlementsEl.innerHTML = settlements.map(s => {
-      const expenseNote = s.expense_description ? ` · ${s.expense_description}` : '';
-      return `<div class="settlement-row"><div>
-        <span>${s.date} · ${cap(s.from_person)} → ${cap(s.to_person)} ${fmt(s.amount)}</span>
-        <div class="settlement-meta">${expenseNote || 'General settle-up'}</div>
-      </div><button type="button" class="secondary" onclick="deleteSettlement(${s.id})">undo</button></div>`;
-    }).join('');
+    return;
+  }
+  settlementsEl.innerHTML = settlements.map(s => {
+    const expenseNote = s.expense_description ? ` · ${s.expense_description}` : '';
+    return `<div class="settlement-row"><div>
+      <span>${s.date} · ${cap(s.from_person)} → ${cap(s.to_person)} ${fmt(s.amount)}</span>
+      <div class="settlement-meta">${expenseNote || 'General settle-up'}</div>
+    </div><button type="button" class="secondary" onclick="deleteSettlement(${s.id})">undo</button></div>`;
+  }).join('');
+}
+
+function renderExpensesList(expenses) {
+  const expensesEl = document.getElementById('expenses');
+  if (!expenses || expenses.length === 0) {
+    expensesEl.innerHTML = '<div class="empty">No expenses yet.</div>';
+    return;
+  }
+  expensesEl.innerHTML = expenses.map(e => {
+    const tag = e.is_personal ? 'personal' : e.participants.join(', ');
+    const settleBtn = e.is_personal
+      ? ''
+      : `<button type="button" class="secondary" onclick="openSettleExpense(${e.id})">Settle</button>`;
+    return `<div class="expense-row"><div class="left">
+      <span>${e.date} · ${e.description} — ${fmt(e.amount)}</span>
+      <span class="meta">paid by ${cap(e.payer)} · ${e.is_personal ? 'personal' : 'split: ' + tag}</span>
+    </div><div class="right row-actions">
+      ${settleBtn}
+      <button type="button" class="secondary" onclick="deleteExpense(${e.id})">delete</button>
+    </div></div>`;
+  }).join('');
+}
+
+async function refresh() {
+  const res = await fetch(`/api/bootstrap?filter=${reportFilter}`);
+  const data = await res.json();
+  if (!res.ok) {
+    console.error(data.error || 'bootstrap failed');
+    return;
   }
 
-  const expensesEl = document.getElementById('expenses');
-  if (expenses.length === 0) {
-    expensesEl.innerHTML = '<div class="empty">No expenses yet.</div>';
-  } else {
-    expensesEl.innerHTML = expenses.map(e => {
-      const tag = e.is_personal ? 'personal' : e.participants.join(', ');
-      const settleBtn = e.is_personal
-        ? ''
-        : `<button type="button" class="secondary" onclick="openSettleExpense(${e.id})">Settle</button>`;
-      return `<div class="expense-row"><div class="left">
-        <span>${e.date} · ${e.description} — ${fmt(e.amount)}</span>
-        <span class="meta">paid by ${cap(e.payer)} · ${e.is_personal ? 'personal' : 'split: ' + tag}</span>
-      </div><div class="right row-actions">
-        ${settleBtn}
-        <button type="button" class="secondary" onclick="deleteExpense(${e.id})">delete</button>
-      </div></div>`;
-    }).join('');
-  }
+  people = data.people || [];
+  groups = data.groups || [];
+  settlements = data.settlements || [];
+  const expenses = data.expenses || [];
+  const balances = data.balances || {};
+
+  renderPeople();
+  renderGroups();
+  renderReport(data.report);
+  renderBalances(balances);
+  renderSettlementsList();
+  renderExpensesList(expenses);
 }
 
 refresh();

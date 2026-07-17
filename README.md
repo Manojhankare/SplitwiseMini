@@ -7,10 +7,11 @@ Multi-user expense tracker: shared bills with groups, personal spending, itemize
 - Postgres (Supabase)
 
 ## Setup
-1. Drop all existing tables in Supabase (fresh schema).
-2. Copy `.env.example` to `.env` and fill in values.
+1. Drop all existing tables in Supabase (fresh schema), or run `scripts/add_indexes.sql` on an existing DB.
+2. Copy `.env.example` to `.env` and fill in values (prefer Supabase **pooler** URL on port `6543`).
 3. `pip install -r requirements.txt`
-4. `python run.py` — creates tables and seeds admin user from `ADMIN_USERNAME` / `ADMIN_PASSWORD`.
+4. Set `FLASK_ENV=development` locally, then `python run.py` — creates tables and seeds admin from `ADMIN_USERNAME` / `ADMIN_PASSWORD`.
+5. On Vercel: omit `FLASK_ENV` (or set production) so cold starts skip `create_all` / seed.
 
 ## First use
 1. Login as admin at http://localhost:5000/login (or register a new account).
@@ -22,10 +23,12 @@ Multi-user expense tracker: shared bills with groups, personal spending, itemize
 ## Environment variables
 | Variable | Description |
 |----------|-------------|
-| `DATABASE_URL` | Postgres connection string |
+| `DATABASE_URL` | Postgres connection string (pooler `:6543` recommended on Vercel) |
 | `SECRET_KEY` | Flask session secret (required) |
-| `ADMIN_USERNAME` | Initial admin username (seeded once) |
+| `ADMIN_USERNAME` | Initial admin username (seeded once in development) |
 | `ADMIN_PASSWORD` | Initial admin password |
+| `FLASK_ENV` | Set to `development` locally to create tables + seed on startup |
+| `ENABLE_DB_CREATE` | Set to `1` to force schema create without `FLASK_ENV=development` |
 
 ## Auth
 - `/register` — open sign-up; each user gets isolated people, groups, expenses
@@ -33,6 +36,7 @@ Multi-user expense tracker: shared bills with groups, personal spending, itemize
 - `/admin` — admin dashboard (user list, enable/disable, delete)
 
 ## API (all require login)
+- `GET /api/bootstrap?filter=all|shared|personal` — people, groups, expenses, settlements, balances, report in one response
 - `GET/POST /api/people`, `DELETE /api/people/<id>`
 - `GET/POST /api/groups`, `PUT/DELETE /api/groups/<id>`
 - `POST /api/add` — structured body:

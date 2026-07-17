@@ -71,11 +71,29 @@ def list_expenses():
         return jsonify({"error": str(e)}), 500
 
 
+@expense_bp.route("/bootstrap", methods=["GET"])
+@login_required
+def bootstrap():
+    filter_type = request.args.get("filter", "all")
+    if filter_type not in ("all", "shared", "personal"):
+        filter_type = "all"
+    try:
+        return jsonify(Expense.bootstrap_payload(current_user.id, filter_type=filter_type))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @expense_bp.route("/balances", methods=["GET"])
 @login_required
 def balances():
     try:
-        return jsonify(Expense.compute_balances(current_user.id))
+        expenses = Expense.fetch_for_user(current_user.id)
+        settlements = Settlement.fetch_for_user(current_user.id)
+        return jsonify(
+            Expense.compute_balances(
+                current_user.id, expenses=expenses, settlements=settlements
+            )
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -87,7 +105,16 @@ def report():
     if filter_type not in ("all", "shared", "personal"):
         filter_type = "all"
     try:
-        return jsonify(Expense.compute_report(current_user.id, filter_type=filter_type))
+        expenses = Expense.fetch_for_user(current_user.id)
+        settlements = Settlement.fetch_for_user(current_user.id)
+        return jsonify(
+            Expense.compute_report(
+                current_user.id,
+                filter_type=filter_type,
+                expenses=expenses,
+                settlements=settlements,
+            )
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

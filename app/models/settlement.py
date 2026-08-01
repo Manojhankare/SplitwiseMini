@@ -63,6 +63,40 @@ class Settlement(db.Model):
         )
 
     @classmethod
+    def fetch_for_balance_period(cls, user_id, period_expense_ids, start_date=None, end_date=None):
+        """Settlements for balance/pairwise math in a period.
+
+        - Linked settlements: included when their expense_id is in the period's
+          expense set (any settlement_date).
+        - Unlinked settlements: included when settlement_date is in the period.
+        - All-time (start/end both None): same as fetch_for_user.
+        """
+        from sqlalchemy import or_, and_
+
+        if start_date is None and end_date is None:
+            return cls.fetch_for_user(user_id)
+
+        q = cls._query_for_user(user_id)
+        clauses = []
+        ids = list(period_expense_ids or [])
+        if ids:
+            clauses.append(cls.expense_id.in_(ids))
+
+        date_parts = [cls.expense_id.is_(None)]
+        if start_date is not None:
+            date_parts.append(cls.settlement_date >= start_date)
+        if end_date is not None:
+            date_parts.append(cls.settlement_date <= end_date)
+        clauses.append(and_(*date_parts))
+
+        return (
+            q.filter(or_(*clauses))
+            .options(joinedload(cls.expense))
+            .order_by(cls.settlement_date.desc(), cls.created_at.desc())
+            .all()
+        )
+
+    @classmethod
     def list_all(cls, user_id, start_date=None, end_date=None):
         return [r.to_dict() for r in cls.fetch_for_user(user_id, start_date=start_date, end_date=end_date)]
 

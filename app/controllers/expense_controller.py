@@ -198,7 +198,10 @@ def balances():
     start_date, end_date = bounds
     try:
         expenses = Expense.fetch_for_user(current_user.id, start_date=start_date, end_date=end_date)
-        settlements = Settlement.fetch_for_user(current_user.id, start_date=start_date, end_date=end_date)
+        period_ids = [e.id for e in expenses]
+        settlements = Settlement.fetch_for_balance_period(
+            current_user.id, period_ids, start_date=start_date, end_date=end_date
+        )
         return jsonify(
             Expense.compute_balances(
                 current_user.id, expenses=expenses, settlements=settlements
@@ -220,7 +223,10 @@ def report():
     start_date, end_date = bounds
     try:
         expenses = Expense.fetch_for_user(current_user.id, start_date=start_date, end_date=end_date)
-        settlements = Settlement.fetch_for_user(current_user.id, start_date=start_date, end_date=end_date)
+        period_ids = [e.id for e in expenses]
+        settlements = Settlement.fetch_for_balance_period(
+            current_user.id, period_ids, start_date=start_date, end_date=end_date
+        )
         return jsonify(
             Expense.compute_report(
                 current_user.id,
@@ -372,12 +378,48 @@ def create_settlement():
             return jsonify({"error": "cannot settle a personal expense"}), 400
         outstanding = Expense.outstanding_for_expense(expense)["outstanding"]
         max_owed = outstanding.get(from_person, 0.0)
+        # outstanding_for_expense already mins with pairwise; keep explicit check for clarity
+        if max_owed <= 0.001:
+            return jsonify({"error": f"{from_person} has no outstanding share to settle"}), 400
         if amount > max_owed + 0.001:
             return jsonify({"error": f"amount exceeds outstanding share ({max_owed:.2f})"}), 400
         if to_person != expense.payer:
             return jsonify({"error": f"to_person must be the expense payer ({expense.payer})"}), 400
     else:
         expense_id = None
+        # Cap unlinked settlements at what from_person currently owes to_person, scoped to
+        # whichever period the client is viewing (from/to or year/month query args), so the
+        # cap matches the amount shown on the Balances page for that period. No period args
+        # (All time) falls back to the full all-time pairwise debt.
+        bounds, err = _period_bounds()
+        if err:
+            return err
+        start_date, end_date = bounds
+        if start_date is None and end_date is None:
+            owed = Expense.pairwise_amount_owed(current_user.id, from_person, to_person)
+        else:
+            period_expenses = Expense.fetch_for_user(
+                current_user.id, start_date=start_date, end_date=end_date
+            )
+            period_ids = [e.id for e in period_expenses]
+            period_settlements = Settlement.fetch_for_balance_period(
+                current_user.id, period_ids, start_date=start_date, end_date=end_date
+            )
+            owed = Expense.pairwise_amount_owed(
+                current_user.id,
+                from_person,
+                to_person,
+                expenses=period_expenses,
+                settlements=period_settlements,
+            )
+        if owed <= 0.001:
+            return jsonify({
+                "error": f"{from_person} does not owe {to_person} anything to settle"
+            }), 400
+        if amount > owed + 0.001:
+            return jsonify({
+                "error": f"amount exceeds what {from_person} owes {to_person} ({owed:.2f})"
+            }), 400
 
     settlement_date = _parse_expense_date(data.get("date"))
     note = (data.get("note") or "").strip() or None

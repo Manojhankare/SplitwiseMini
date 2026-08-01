@@ -515,6 +515,8 @@
     position: relative;
   }
   .expense-row:last-child { margin-bottom: 0; }
+  .expense-row--tappable { cursor: pointer; }
+  .expense-row--tappable:hover { background: var(--border); }
   .expense-icon {
     width: 44px; height: 44px; border-radius: 14px;
     background: var(--primary-soft); color: var(--primary);
@@ -1002,10 +1004,11 @@
 <div id="settleModal" class="modal hidden" onclick="if(event.target===this)closeSettleModal()">
   <div class="modal-card">
     <h3 id="settleModalTitle">Record payment</h3>
+    <div id="settlePeriodLabel" class="status hidden"></div>
     <div id="settleExpenseContext" class="status hidden"></div>
     <div id="settleOutstandingList"></div>
     <label for="settleFrom">From (who paid)</label>
-    <select id="settleFrom"></select>
+    <select id="settleFrom" onchange="onSettleFromChange()"></select>
     <label for="settleTo">To (who received)</label>
     <select id="settleTo"></select>
     <label for="settleAmount">Amount (₹)</label>
@@ -1036,6 +1039,7 @@ let lastBudgetSummary = {
   budget_spent: 0,
   budget_shared_total: 0,
 };
+let lastSelfSummary = { owe_you: [], you_owe: [] };
 let reportFilter = 'all';
 let settleExpenseId = null;
 let settleOutstandingData = null;
@@ -1070,41 +1074,12 @@ function setGreeting() {
 }
 
 function updateHeroSummary() {
-  // Self-centric pairwise (same idea as compute_pairwise_with_self).
-  // Do NOT sum all lastBalances — that ledger is zero-sum and always nets ~0.
-  const me = 'self';
-  const pairwise = {};
-  (lastExpenses || []).forEach(row => {
-    if (row.is_personal) return;
-    const amount = Number(row.amount) || 0;
-    const parts = row.participants || [];
-    if (!parts.length) return;
-    const share = amount / parts.length;
-    if (row.payer === me) {
-      parts.forEach(p => {
-        if (p !== me) pairwise[p] = (pairwise[p] || 0) + share;
-      });
-    } else if (parts.includes(me)) {
-      pairwise[row.payer] = (pairwise[row.payer] || 0) - share;
-    }
-  });
-  (settlements || []).forEach(row => {
-    const amount = Number(row.amount) || 0;
-    if (row.to_person === me) {
-      pairwise[row.from_person] = (pairwise[row.from_person] || 0) - amount;
-    } else if (row.from_person === me) {
-      pairwise[row.to_person] = (pairwise[row.to_person] || 0) + amount;
-    }
-  });
-
+  // You owe / You're owed come from server self_summary (period-correct + _equal_shares).
+  const summary = lastSelfSummary || { owe_you: [], you_owe: [] };
   let youOwe = 0;
   let youreOwed = 0;
-  Object.values(pairwise).forEach(v => {
-    if (v > 0.001) youreOwed += v;
-    else if (v < -0.001) youOwe += Math.abs(v);
-  });
-  // Prefer pairwise for owe tiles (period-aware from loaded data).
-  // Settlement net is no longer the hero headline.
+  (summary.you_owe || []).forEach(o => { youOwe += Number(o.amount) || 0; });
+  (summary.owe_you || []).forEach(o => { youreOwed += Number(o.amount) || 0; });
 
   const spent = Number(lastBudgetSummary.budget_spent) || 0;
   const personal = Number(lastBudgetSummary.budget_personal) || 0;
@@ -1213,6 +1188,27 @@ function periodQuery() {
     return `from=${encodeURIComponent(periodFrom)}&to=${encodeURIComponent(periodTo)}`;
   }
   return `year=${periodYear}&month=${periodMonth}`;
+}
+
+function activePeriodBounds() {
+  // Returns {start, end} as 'YYYY-MM-DD' strings for the active period, or null for all-time.
+  if (periodMode === 'all') return null;
+  if (periodMode === 'range' && periodFrom && periodTo) {
+    return { start: periodFrom, end: periodTo };
+  }
+  const last = new Date(periodYear, periodMonth, 0).getDate();
+  return {
+    start: `${periodYear}-${pad2(periodMonth)}-01`,
+    end: `${periodYear}-${pad2(periodMonth)}-${pad2(last)}`,
+  };
+}
+
+function defaultSettleDate() {
+  const today = new Date().toISOString().slice(0, 10);
+  const bounds = activePeriodBounds();
+  if (!bounds) return today;
+  if (today >= bounds.start && today <= bounds.end) return today;
+  return bounds.end;
 }
 
 function periodLabel() {
@@ -1395,8 +1391,21 @@ function renderParticipantChips() {
   `).join('');
 }
 
+function closeAllMenus(except) {
+  document.querySelectorAll('details.menu[open]').forEach(m => {
+    if (m !== except) m.removeAttribute('open');
+  });
+}
+
+document.addEventListener('toggle', e => {
+  const menu = e.target;
+  if (!(menu instanceof HTMLDetailsElement) || !menu.classList.contains('menu')) return;
+  if (menu.open) closeAllMenus(menu);
+}, true);
+
 document.addEventListener('click', e => {
   if (!e.target.closest('.combo')) hideParticipantOptions();
+  if (!e.target.closest('details.menu')) closeAllMenus();
 });
 
 function renderPeople() {
@@ -1636,6 +1645,34 @@ function populateSettleSelects(fromVal, toVal) {
   if (toVal && settlePersonOptions().includes(toVal)) toSel.value = toVal;
 }
 
+function onSettleFromChange() {
+  const amountEl = document.getElementById('settleAmount');
+  if (!settleOutstandingData || !settleOutstandingData.outstanding) {
+    return;
+  }
+  const from = document.getElementById('settleFrom').value;
+  const amt = settleOutstandingData.outstanding[from];
+  if (amt != null && amt > 0) {
+    amountEl.value = Number(amt).toFixed(2);
+  } else {
+    amountEl.value = '';
+  }
+}
+
+function pairwiseSettleHint(name) {
+  // Prefer server pairwise (what you and this person owe each other), not group net.
+  const summary = lastSelfSummary || { owe_you: [], you_owe: [] };
+  const oweYou = (summary.owe_you || []).find(o => o.person === name);
+  if (oweYou && Number(oweYou.amount) > 0.001) {
+    return { from: name, to: 'self', amount: Number(oweYou.amount) };
+  }
+  const youOwe = (summary.you_owe || []).find(o => o.person === name);
+  if (youOwe && Number(youOwe.amount) > 0.001) {
+    return { from: 'self', to: name, amount: Number(youOwe.amount) };
+  }
+  return null;
+}
+
 function setSettleStatus(msg, type) {
   const el = document.getElementById('settleStatus');
   el.textContent = msg || '';
@@ -1644,6 +1681,7 @@ function setSettleStatus(msg, type) {
 
 function closeSettleModal() {
   document.getElementById('settleModal').classList.add('hidden');
+  document.getElementById('settlePeriodLabel').classList.add('hidden');
   settleExpenseId = null;
   settleOutstandingData = null;
   setSettleStatus('');
@@ -1673,7 +1711,7 @@ function renderSettleOutstanding() {
     ? entries.map(([person, amt]) => `
       <div class="outstanding-row">
         <span>${displayName(person)} owes ${fmt(amt)}</span>
-        <button type="button" class="secondary" onclick="quickSettle(${JSON.stringify(person)}, ${JSON.stringify(settleOutstandingData.payer)}, ${amt})">Settle</button>
+        <button type="button" class="secondary" onclick='quickSettle(${JSON.stringify(person)}, ${JSON.stringify(settleOutstandingData.payer)}, ${amt})'>Settle</button>
       </div>
     `).join('')
     : '';
@@ -1706,19 +1744,23 @@ function openSettlePerson(name, balance) {
   settleExpenseId = null;
   settleOutstandingData = null;
   document.getElementById('settleModalTitle').textContent = 'Record payment';
-  document.getElementById('settleDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('settleDate').value = defaultSettleDate();
   document.getElementById('settleOutstandingList').innerHTML = '';
   document.getElementById('settleExpenseContext').classList.add('hidden');
   document.getElementById('settleAllBtn').classList.add('hidden');
 
-  const absBal = Math.abs(balance);
-  if (balance < -0.001) {
-    populateSettleSelects(name, 'self');
-    document.getElementById('settleAmount').value = absBal.toFixed(2);
-  } else {
-    populateSettleSelects('', name);
-    document.getElementById('settleAmount').value = absBal.toFixed(2);
+  const periodEl = document.getElementById('settlePeriodLabel');
+  periodEl.textContent = `Settling for: ${periodLabel()}`;
+  periodEl.classList.remove('hidden');
+
+  const hint = pairwiseSettleHint(name);
+  if (!hint) {
+    alert('No pairwise balance with ' + displayName(name) + ' for ' + periodLabel() + ' to settle.');
+    periodEl.classList.add('hidden');
+    return;
   }
+  populateSettleSelects(hint.from, hint.to);
+  document.getElementById('settleAmount').value = hint.amount.toFixed(2);
   setSettleStatus('');
   document.getElementById('settleModal').classList.remove('hidden');
 }
@@ -1727,6 +1769,7 @@ async function openSettleExpense(expenseId) {
   settleExpenseId = expenseId;
   document.getElementById('settleModalTitle').textContent = 'Settle expense';
   document.getElementById('settleDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('settlePeriodLabel').classList.add('hidden');
   setSettleStatus('');
 
   const res = await fetch(`/api/expenses/${expenseId}/outstanding`);
@@ -1737,15 +1780,20 @@ async function openSettleExpense(expenseId) {
   }
 
   settleOutstandingData = data;
-  populateSettleSelects('', data.payer);
-  document.getElementById('settleAmount').value = '';
+  const outstanding = data.outstanding || {};
+  const firstDebtor = Object.keys(outstanding)[0];
+  populateSettleSelects(firstDebtor || '', data.payer);
+  document.getElementById('settleAmount').value =
+    firstDebtor != null ? Number(outstanding[firstDebtor]).toFixed(2) : '';
   renderSettleOutstanding();
   document.getElementById('settleModal').classList.remove('hidden');
 }
 
 async function quickSettle(fromPerson, toPerson, amount) {
   const date = document.getElementById('settleDate').value;
-  const res = await fetch('/api/settlements', {
+  const qs = !settleExpenseId ? periodQuery() : '';
+  const url = qs ? `/api/settlements?${qs}` : '/api/settlements';
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -1796,7 +1844,9 @@ async function submitSettlement() {
   try {
     const body = { from_person, to_person, amount, date };
     if (settleExpenseId) body.expense_id = settleExpenseId;
-    const res = await fetch('/api/settlements', {
+    const qs = !settleExpenseId ? periodQuery() : '';
+    const url = qs ? `/api/settlements?${qs}` : '/api/settlements';
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -1805,12 +1855,15 @@ async function submitSettlement() {
     if (!res.ok) throw new Error(data.error || 'Failed');
     setSettleStatus(`Recorded: ${cap(from_person)} → ${cap(to_person)} ${fmt(amount)}`, 'ok');
     ensurePeriodIncludesDate(data.date || date);
+    const wasPersonMode = !settleExpenseId;
     if (settleExpenseId) {
       const outRes = await fetch(`/api/expenses/${settleExpenseId}/outstanding`);
       settleOutstandingData = await outRes.json();
       renderSettleOutstanding();
     }
     await refresh();
+    // Person-mode (Balances tab) closes after success; expense-mode stays open.
+    if (wasPersonMode) closeSettleModal();
   } catch (err) {
     setSettleStatus(err.message, 'error');
   } finally {
@@ -1936,7 +1989,8 @@ function renderBalances(balances) {
     const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : '';
     const label = v > 0.001 ? 'is owed' : v < -0.001 ? 'owes' : 'settled';
     const initial = (name && name !== 'self' ? name : (CURRENT_USERNAME || 'S')).charAt(0).toUpperCase();
-    const settleBtn = Math.abs(v) > 0.001
+    const pairwise = pairwiseSettleHint(name);
+    const settleBtn = (name !== 'self' && pairwise)
       ? `<button type="button" class="secondary" onclick='openSettlePerson(${JSON.stringify(name)}, ${v})'>Settle</button>`
       : '';
     const printBtn = `<button type="button" class="secondary" onclick='printPersonStatement(${JSON.stringify(name)})'>Print</button>`;
@@ -2076,28 +2130,34 @@ function renderExpensesList(expenses) {
   }
   expensesEl.innerHTML = expenses.map(e => {
     const tag = e.is_personal ? 'personal' : (e.participants || []).join(', ');
+    const isSettled = !e.is_personal && !e.has_outstanding;
     const settleBtn = (!e.is_personal && e.has_outstanding)
-      ? `<button type="button" onclick="openSettleExpense(${e.id})">Settle</button>`
+      ? `<button type="button" onclick="this.closest('details.menu').removeAttribute('open'); openSettleExpense(${e.id})">Settle</button>`
       : '';
-    return `<div class="expense-row">
+    const settledBadge = isSettled
+      ? `<span class="badge-settled" style="color:var(--success);font-size:11px;font-weight:600;">Settled</span>`
+      : '';
+    const rowClass = e.is_personal ? 'expense-row' : 'expense-row expense-row--tappable';
+    const rowClick = e.is_personal ? '' : ` onclick="openSettleExpense(${e.id})"`;
+    return `<div class="${rowClass}"${rowClick}>
       <div class="expense-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <div class="left">
         <span class="expense-title">${e.description}</span>
         <span class="meta">${e.date}</span>
-        <span class="meta">paid by ${cap(e.payer)} · ${e.is_personal ? 'personal' : 'split: ' + tag}</span>
+        <span class="meta">paid by ${cap(e.payer)} · ${e.is_personal ? 'personal' : 'split: ' + tag}${settledBadge ? ' · ' + settledBadge : ''}</span>
       </div>
       <div class="right">
         <span class="expense-amount">${fmt(e.amount)}</span>
-        <details class="menu">
+        <details class="menu" onclick="event.stopPropagation()">
           <summary aria-label="Actions">
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="5" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="12" cy="19" r="1.75"/></svg>
           </summary>
           <div class="menu-panel">
-            <button type="button" onclick="editExpense(${e.id})">Edit</button>
+            <button type="button" onclick="this.closest('details.menu').removeAttribute('open'); editExpense(${e.id})">Edit</button>
             ${settleBtn}
-            <button type="button" class="danger-action" onclick="deleteExpense(${e.id})">Delete</button>
+            <button type="button" class="danger-action" onclick="this.closest('details.menu').removeAttribute('open'); deleteExpense(${e.id})">Delete</button>
           </div>
         </details>
       </div>
@@ -2128,6 +2188,7 @@ async function refresh() {
     const balances = data.balances || {};
     lastExpenses = expenses;
     lastBalances = balances;
+    lastSelfSummary = (data.report && data.report.self_summary) || { owe_you: [], you_owe: [] };
     lastBudgetSummary = {
       monthly_budget: data.monthly_budget != null ? Number(data.monthly_budget) : null,
       budget_personal: Number(data.budget_personal) || 0,

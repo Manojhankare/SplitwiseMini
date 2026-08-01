@@ -43,7 +43,11 @@ docs/                  # this file + AGENTS.md
 
 - Per person in `balances`: **positive = is owed**, **negative = owes**.
 - The map is **zero-sum**. Do not sum all positives and negatives for “your” net — use `balances.self` or pairwise `self_summary`.
-- Pairwise with self (`owe_you` / `you_owe`) is computed in `Expense.compute_pairwise_with_self`.
+- Pairwise with self (`owe_you` / `you_owe`) is computed in `Expense.compute_pairwise_with_self` using `_equal_shares`.
+- **Period settlements for balances/report:** linked settlements are included when their expense falls in the period (regardless of settlement date); unlinked settlements use `settlement_date` in the period (`Settlement.fetch_for_balance_period`). Settlement history list still filters by settlement date only.
+- Unlinked settlements are capped at what the payer currently owes the receiver **for the period the request specifies** (same `year`/`month`/`from`/`to` args as balances/report); no period args caps at all-time. This matches the amount shown on the Balances page for whatever period is selected.
+- **Per-bill outstanding uses a FIFO settlement ledger**, not a single all-time pairwise number: for each payer, that payer's bills are ordered chronologically per debtor, and the debtor's all-time unlinked settlements to that payer are allocated against those bills **oldest-first**. A general settle-up therefore permanently clears whichever bills it actually covered — reopening an old, already-covered bill later (e.g. after new unrelated debt accrues) can never make it look outstanding again, and it can never be paid a second time. This replaced an earlier "single aggregate pool" design where a Balances-page settle-up could look consumed by *later* debt and let an old bill be double-charged. Known limitation: a payer→debtor ledger doesn't net against the reverse debtor→payer direction — two people who alternate paying for each other are tracked as two independent ledgers.
+- Settling from Balances defaults the settlement date to fall inside the currently selected period (today if it's in range, else the period's last day), so it is correctly picked up when that period is viewed again. Shared expenses with no outstanding left show an explicit "Settled" badge in the list.
 
 ## Budget semantics
 

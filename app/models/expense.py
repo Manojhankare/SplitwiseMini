@@ -129,34 +129,100 @@ class Expense(db.Model):
             db.session.commit()
 
     @classmethod
-    def _has_outstanding(cls, expense, settled=None):
+    def _has_outstanding(cls, expense, ledger=None):
         if expense.is_personal:
             return False
-        if settled is None:
-            from app.models.settlement import Settlement
-            settled = Settlement.settled_by_person_for_expense(expense.user_id, expense.id)
-        amount = float(expense.amount)
-        participants = expense.participants
-        shares = _equal_shares(amount, participants, participants)
-        for p in participants:
+        if ledger is None:
+            ledger = cls._build_settlement_ledger(expense.user_id, expense.payer)
+        for p in (expense.participants or []):
             if p == expense.payer:
                 continue
-            owed = round(shares.get(p, 0.0) - settled.get(p, 0.0), 2)
-            if owed > 0.001:
+            if float(ledger.get(p, {}).get(expense.id, 0.0)) > 0.001:
                 return True
         return False
 
     @classmethod
-    def to_dicts_with_outstanding(cls, expenses, user_id):
-        """Serialize expenses; has_outstanding uses all-time settlements for that bill."""
+    def _build_settlement_ledger(cls, user_id, payer, expenses=None, settlements=None):
+        """FIFO-allocated outstanding per debtor per bill, for bills paid by `payer`.
+
+        Returns {debtor: {expense_id: outstanding_amount}}.
+
+        Linked settlements are already exact per-bill (via settled_by_person_for_expense,
+        unchanged). Only the *unlinked* pool per debtor needs allocation, and it is
+        allocated against that debtor's bills with this payer oldest-first (FIFO), so a
+        general settle-up permanently clears the bills it covered even if new, unrelated
+        debt accrues afterward (instead of a single all-time aggregate number that lets
+        later debt make an already-settled bill look outstanding again).
+
+        Scoped to the same direction only (debtor -> payer). Does not net against the
+        reverse direction (payer -> debtor), which is a separate ledger call when that
+        debtor is themselves a payer elsewhere. Known limitation: if two people frequently
+        swap payer/debtor roles with each other, each direction is tracked independently.
+        """
         from app.models.settlement import Settlement
 
-        shared_ids = [e.id for e in expenses if not e.is_personal]
-        settled_map = Settlement.settled_by_expense_ids(user_id, shared_ids)
+        if expenses is None:
+            expenses = cls.fetch_for_user(user_id)
+        if settlements is None:
+            settlements = Settlement.fetch_for_user(user_id)
+
+        payer_bills = [e for e in expenses if not e.is_personal and e.payer == payer]
+        bill_ids = [e.id for e in payer_bills]
+        linked_settled = Settlement.settled_by_expense_ids(user_id, bill_ids)
+
+        unlinked_pool = {}
+        for s in settlements:
+            if s.expense_id is not None or s.to_person != payer:
+                continue
+            unlinked_pool[s.from_person] = unlinked_pool.get(s.from_person, 0.0) + float(s.amount)
+
+        by_debtor = {}
+        for e in sorted(payer_bills, key=lambda e: (e.expense_date, e.id)):
+            shares = _equal_shares(float(e.amount), e.participants or [], e.participants or [])
+            for p in (e.participants or []):
+                if p == payer:
+                    continue
+                remaining = round(shares.get(p, 0.0) - linked_settled.get(e.id, {}).get(p, 0.0), 2)
+                if remaining > 0.001:
+                    by_debtor.setdefault(p, []).append((e.id, remaining))
+
+        ledger = {}
+        for debtor, bills in by_debtor.items():
+            pool_left = max(0.0, unlinked_pool.get(debtor, 0.0))
+            ledger[debtor] = {}
+            for expense_id, remaining in bills:
+                consumed = min(remaining, pool_left)
+                ledger[debtor][expense_id] = round(remaining - consumed, 2)
+                pool_left -= consumed
+        return ledger
+
+    @classmethod
+    def to_dicts_with_outstanding(cls, expenses, user_id, all_expenses=None, all_settlements=None):
+        """Serialize expenses; has_outstanding uses a per-payer FIFO settlement ledger.
+
+        `all_expenses`/`all_settlements` let a caller that already has the all-time lists
+        (e.g. bootstrap_payload when the active period is already "All time") pass them in
+        to avoid a duplicate all-time fetch. Fetched once here (not once per distinct payer).
+        """
+        from app.models.settlement import Settlement
+
+        shared = [e for e in expenses if not e.is_personal]
+
+        if all_expenses is None:
+            all_expenses = cls.fetch_for_user(user_id)
+        if all_settlements is None:
+            all_settlements = Settlement.fetch_for_user(user_id)
+
+        ledgers = {}
+        for e in shared:
+            if e.payer not in ledgers:
+                ledgers[e.payer] = cls._build_settlement_ledger(
+                    user_id, e.payer, expenses=all_expenses, settlements=all_settlements
+                )
         result = []
         for e in expenses:
             d = e.to_dict()
-            d["has_outstanding"] = cls._has_outstanding(e, settled_map.get(e.id, {}))
+            d["has_outstanding"] = cls._has_outstanding(e, ledgers.get(e.payer))
             result.append(d)
         return result
 
@@ -174,41 +240,56 @@ class Expense(db.Model):
             if row.is_personal:
                 continue
             amount = float(row.amount)
-            share = amount / len(row.participants)
+            parts = row.participants or []
+            if not parts:
+                continue
+            shares = _equal_shares(amount, parts, parts)
             net[row.payer] = net.get(row.payer, 0.0) + amount
-            for p in row.participants:
-                net[p] = net.get(p, 0.0) - share
+            for p in parts:
+                net[p] = net.get(p, 0.0) - shares.get(p, 0.0)
         net = Settlement.apply_to_balances(user_id, net, settlements=settlements)
         return {k: round(v, 2) for k, v in net.items()}
 
     @classmethod
-    def outstanding_for_expense(cls, expense):
-        from app.models.settlement import Settlement
+    def pairwise_amount_owed(cls, user_id, from_person, to_person, expenses=None, settlements=None):
+        """How much from_person currently owes to_person (all-time pairwise), or 0."""
+        summary = cls.compute_pairwise_with_self(
+            user_id, me=to_person, expenses=expenses, settlements=settlements
+        )
+        for entry in summary.get("owe_you") or []:
+            if entry.get("person") == from_person:
+                return float(entry.get("amount") or 0)
+        return 0.0
 
+    @classmethod
+    def outstanding_for_expense(cls, expense, ledger=None):
         if expense.is_personal:
             return {"payer": expense.payer, "outstanding": {}, "settled": {}}
 
         amount = float(expense.amount)
-        participants = expense.participants
+        participants = expense.participants or []
         shares = _equal_shares(amount, participants, participants)
-        settled = Settlement.settled_by_person_for_expense(expense.user_id, expense.id)
+        payer = expense.payer
+        if ledger is None:
+            ledger = cls._build_settlement_ledger(expense.user_id, payer)
 
         outstanding = {}
         settled_people = {}
         for p in participants:
-            if p == expense.payer:
+            if p == payer:
                 continue
             share = shares.get(p, 0.0)
-            paid = round(settled.get(p, 0.0), 2)
-            owed = round(share - paid, 2)
+            # The FIFO ledger already resolves linked settlements on this bill plus this
+            # debtor's oldest-first share of the all-time unlinked settlement pool.
+            owed = float(ledger.get(p, {}).get(expense.id, 0.0))
             if owed > 0.001:
                 outstanding[p] = owed
-            elif paid > 0.001 or share <= 0.001:
-                settled_people[p] = round(share if share > 0 else paid, 2)
+            else:
+                settled_people[p] = share
 
         return {
             "expense_id": expense.id,
-            "payer": expense.payer,
+            "payer": payer,
             "description": expense.description,
             "outstanding": outstanding,
             "settled": settled_people,
@@ -228,14 +309,17 @@ class Expense(db.Model):
             if row.is_personal:
                 continue
             amount = float(row.amount)
-            share = amount / len(row.participants)
+            parts = row.participants or []
+            if not parts:
+                continue
+            shares = _equal_shares(amount, parts, parts)
             payer = row.payer
             if payer == me:
-                for p in row.participants:
+                for p in parts:
                     if p != me:
-                        pairwise[p] = pairwise.get(p, 0.0) + share
-            elif me in row.participants:
-                pairwise[payer] = pairwise.get(payer, 0.0) - share
+                        pairwise[p] = pairwise.get(p, 0.0) + shares.get(p, 0.0)
+            elif me in parts:
+                pairwise[payer] = pairwise.get(payer, 0.0) - shares.get(me, 0.0)
 
         for row in settlements:
             amount = float(row.amount)
@@ -366,20 +450,35 @@ class Expense(db.Model):
         from app.models.settlement import Settlement
 
         expenses = cls.fetch_for_user(user_id, start_date=start_date, end_date=end_date)
-        settlements = Settlement.fetch_for_user(user_id, start_date=start_date, end_date=end_date)
+        # History list still by settlement_date; balance math uses linked-follow-expense rule.
+        settlements_list = Settlement.fetch_for_user(
+            user_id, start_date=start_date, end_date=end_date
+        )
+        period_ids = [e.id for e in expenses]
+        balance_settlements = Settlement.fetch_for_balance_period(
+            user_id, period_ids, start_date=start_date, end_date=end_date
+        )
+        # When the active period is already "All time", expenses/settlements_list above
+        # already are the all-time lists — reuse them instead of re-fetching for the ledger.
+        is_all_time = start_date is None and end_date is None
         payload = {
             "people": Person.list_all(user_id),
             "groups": Group.list_all(user_id),
-            "expenses": cls.to_dicts_with_outstanding(expenses, user_id),
-            "settlements": [r.to_dict() for r in settlements],
+            "expenses": cls.to_dicts_with_outstanding(
+                expenses,
+                user_id,
+                all_expenses=expenses if is_all_time else None,
+                all_settlements=settlements_list if is_all_time else None,
+            ),
+            "settlements": [r.to_dict() for r in settlements_list],
             "balances": cls.compute_balances(
-                user_id, expenses=expenses, settlements=settlements
+                user_id, expenses=expenses, settlements=balance_settlements
             ),
             "report": cls.compute_report(
                 user_id,
                 filter_type=filter_type,
                 expenses=expenses,
-                settlements=settlements,
+                settlements=balance_settlements,
             ),
         }
         payload.update(cls.compute_monthly_budget_summary(user_id))

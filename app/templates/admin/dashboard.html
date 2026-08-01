@@ -81,35 +81,78 @@
   }
   .role-badge.role-admin { background:var(--accent-soft); color:var(--accent-dark); }
   .badge {
-    font-size:0.75rem; font-weight:600; padding:3px 10px; border-radius:20px; display:inline-block;
+    font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; display: inline-block;
   }
-  .badge.on { color:var(--positive); background:var(--positive-soft); }
-  .badge.off { color:var(--negative); background:var(--negative-soft); }
-  .actions-cell { display:flex; gap:8px; flex-wrap:wrap; }
-  .muted-dash { color:var(--muted); }
+  .badge.on { color: var(--positive); background: var(--positive-soft); }
+  .badge.off { color: var(--negative); background: var(--negative-soft); }
+  .status-radios {
+    display: inline-flex;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--surface);
+    vertical-align: middle;
+  }
+  .status-radios label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 5px 11px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+    min-height: 30px;
+    transition: background .15s ease, color .15s ease;
+  }
+  .status-radios label + label { border-left: 1.5px solid var(--border); }
+  .status-radios input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+  }
+  .status-radios label:has(input:checked).status-active {
+    background: var(--positive-soft);
+    color: var(--positive);
+  }
+  .status-radios label:has(input:checked).status-deactivated {
+    background: var(--negative-soft);
+    color: var(--negative);
+  }
+  .status-radios.is-busy {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .actions-cell { display: flex; gap: 8px; flex-wrap: wrap; }
+  .muted-dash { color: var(--muted); }
 
   @media (max-width:700px) {
-    .stats { grid-template-columns:1fr 1fr; }
+    .stats { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width:640px) {
-    .panel-head { display:none; }
-    table, thead, tbody, tr, th, td { display:block; width:100%; }
-    thead { display:none; }
-    table { border:none; }
+    .panel-head { display: none; }
+    table, thead, tbody, tr, th, td { display: block; width: 100%; }
+    thead { display: none; }
+    table { border: none; }
     tbody tr {
-      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-      margin-bottom:12px; padding:4px 0; box-shadow:var(--shadow);
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 12px; padding: 4px 0; box-shadow: var(--shadow);
     }
     td {
-      display:flex; justify-content:space-between; align-items:center; gap:12px;
-      border-bottom:1px solid var(--border); padding:10px 14px;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      border-bottom: 1px solid var(--border); padding: 10px 14px;
     }
-    tr td:last-child { border-bottom:none; }
+    tr td:last-child { border-bottom: none; }
     td::before {
-      content:attr(data-label); font-size:0.72rem; font-weight:600; color:var(--muted);
-      text-transform:uppercase; letter-spacing:0.04em; flex-shrink:0;
+      content: attr(data-label); font-size: 0.72rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.04em; flex-shrink: 0;
     }
-    .actions-cell { justify-content:flex-end; }
+    .actions-cell { justify-content: flex-end; }
+    .status-radios { flex-shrink: 0; }
   }
 </style>
 </head>
@@ -168,15 +211,27 @@
           <td data-label="Email">{{ u.email or '-' }}</td>
           <td data-label="Role"><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
           <td data-label="Status">
+            {% if u.role != 'admin' %}
+            <div class="status-radios" data-user-id="{{ u.id }}" data-was-active="{{ 'true' if u.is_active else 'false' }}">
+              <label class="status-active">
+                <input type="radio" name="status-{{ u.id }}" value="active" {% if u.is_active %}checked{% endif %} onchange="setUserStatus({{ u.id }}, true)" />
+                Active
+              </label>
+              <label class="status-deactivated">
+                <input type="radio" name="status-{{ u.id }}" value="deactivated" {% if not u.is_active %}checked{% endif %} onchange="setUserStatus({{ u.id }}, false)" />
+                Deactivated
+              </label>
+            </div>
+            {% else %}
             <span class="badge {{ 'on' if u.is_active else 'off' }}">
               {{ 'Active' if u.is_active else 'Disabled' }}
             </span>
+            {% endif %}
           </td>
           <td data-label="Joined">{{ u.created_at.strftime('%b %d, %Y') }}</td>
           <td data-label="Actions">
             {% if u.role != 'admin' %}
             <div class="actions-cell">
-              <button type="button" class="secondary" onclick="toggleUser({{ u.id }})">Toggle</button>
               <button type="button" class="danger" onclick="deleteUser({{ u.id }})">Delete</button>
             </div>
             {% else %}
@@ -190,14 +245,40 @@
   </div>
 </div>
 <script>
-async function toggleUser(id) {
-  const res = await fetch(`/admin/users/${id}/toggle`, { method: 'POST' });
-  if (res.ok) location.reload();
-  else alert((await res.json()).error || 'Failed');
+async function setUserStatus(id, wantActive) {
+  const group = document.querySelector('.status-radios[data-user-id="' + id + '"]');
+  if (!group) return;
+  const wasActive = group.dataset.wasActive === 'true';
+  if (wantActive === wasActive) return;
+
+  group.classList.add('is-busy');
+  try {
+    const res = await fetch('/admin/users/' + id + '/toggle', { method: 'POST' });
+    if (res.ok) {
+      location.reload();
+      return;
+    }
+    const data = await res.json().catch(function () { return {}; });
+    alert(data.error || 'Failed');
+    revertStatusRadios(group, wasActive);
+  } catch (err) {
+    alert('Failed');
+    revertStatusRadios(group, wasActive);
+  } finally {
+    group.classList.remove('is-busy');
+  }
 }
+
+function revertStatusRadios(group, wasActive) {
+  const activeInput = group.querySelector('input[value="active"]');
+  const deactivatedInput = group.querySelector('input[value="deactivated"]');
+  if (activeInput) activeInput.checked = wasActive;
+  if (deactivatedInput) deactivatedInput.checked = !wasActive;
+}
+
 async function deleteUser(id) {
   if (!confirm('Delete this user and all their data?')) return;
-  const res = await fetch(`/admin/users/${id}`, { method: 'DELETE' });
+  const res = await fetch('/admin/users/' + id, { method: 'DELETE' });
   if (res.ok) location.reload();
   else alert((await res.json()).error || 'Failed');
 }

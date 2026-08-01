@@ -50,17 +50,21 @@ class Settlement(db.Model):
         return cls.query.filter_by(user_id=user_id)
 
     @classmethod
-    def fetch_for_user(cls, user_id):
+    def fetch_for_user(cls, user_id, start_date=None, end_date=None):
+        q = cls._query_for_user(user_id)
+        if start_date is not None:
+            q = q.filter(cls.settlement_date >= start_date)
+        if end_date is not None:
+            q = q.filter(cls.settlement_date <= end_date)
         return (
-            cls._query_for_user(user_id)
-            .options(joinedload(cls.expense))
+            q.options(joinedload(cls.expense))
             .order_by(cls.settlement_date.desc(), cls.created_at.desc())
             .all()
         )
 
     @classmethod
-    def list_all(cls, user_id):
-        return [r.to_dict() for r in cls.fetch_for_user(user_id)]
+    def list_all(cls, user_id, start_date=None, end_date=None):
+        return [r.to_dict() for r in cls.fetch_for_user(user_id, start_date=start_date, end_date=end_date)]
 
     @classmethod
     def get_for_user(cls, settlement_id, user_id):
@@ -98,6 +102,23 @@ class Settlement(db.Model):
             .all()
         )
         return {person: float(total) for person, total in rows}
+
+    @classmethod
+    def settled_by_expense_ids(cls, user_id, expense_ids):
+        """All-time settled amounts keyed by expense_id -> {person: total}. Not period-scoped."""
+        if not expense_ids:
+            return {}
+        rows = (
+            cls._query_for_user(user_id)
+            .filter(cls.expense_id.in_(expense_ids))
+            .with_entities(cls.expense_id, cls.from_person, func.sum(cls.amount))
+            .group_by(cls.expense_id, cls.from_person)
+            .all()
+        )
+        out = {}
+        for expense_id, person, total in rows:
+            out.setdefault(expense_id, {})[person] = float(total)
+        return out
 
     @classmethod
     def apply_to_balances(cls, user_id, net, settlements=None):

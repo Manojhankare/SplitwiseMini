@@ -55,6 +55,36 @@
   }
   .topbar-sub { font-size:0.72rem; color:var(--muted); margin:0; }
 
+  .loading-bar {
+    height:3px; width:100%; overflow:hidden; background:transparent;
+    opacity:0; transition:opacity .15s ease; pointer-events:none;
+  }
+  .loading-bar.active { opacity:1; }
+  .loading-bar.active::after {
+    content:''; display:block; height:100%; width:38%;
+    background:var(--grad-accent);
+    border-radius:2px;
+    animation:loadslide .85s ease-in-out infinite;
+  }
+  @keyframes loadslide {
+    from { transform:translateX(-120%); }
+    to { transform:translateX(320%); }
+  }
+  .app.is-loading main { opacity:0.55; pointer-events:none; transition:opacity .15s ease; }
+  .app.is-loading .period-bar { opacity:0.7; pointer-events:none; }
+
+  .period-bar {
+    padding:0 16px 10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  }
+  .period-bar input[type="month"],
+  .period-bar input[type="date"] {
+    width:auto; min-width:0; flex:0 1 auto; min-height:36px; padding:6px 10px; font-size:0.85rem;
+  }
+  .period-range {
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center; width:100%;
+  }
+  .period-hint { font-size:0.72rem; color:var(--muted); font-weight:500; margin:0 0 10px; }
+
   main { padding:2px 16px 8px; }
 
   .tab-panel { display:none; animation:fadein .15s ease; }
@@ -303,6 +333,26 @@
   .settlement-row:last-child { border-bottom:none; }
   .settlement-meta { color:var(--muted); font-size:0.78rem; margin-top:2px; }
   .row-actions { display:flex; gap:6px; flex-shrink:0; }
+
+  #printSheet { display:none; }
+  @media print {
+    body { background:#fff !important; }
+    .app, .bottom-nav, #settleModal, #loadingBar { display:none !important; }
+    #printSheet {
+      display:block !important; padding:24px; max-width:100%;
+      color:#111; font-family:Georgia, 'Times New Roman', serif; font-size:12pt;
+    }
+    #printSheet h1 { font-size:18pt; margin:0 0 4px; }
+    #printSheet .print-meta { color:#444; font-size:10pt; margin:0 0 16px; }
+    #printSheet h2 { font-size:12pt; margin:18px 0 8px; border-bottom:1px solid #ccc; padding-bottom:4px; }
+    #printSheet .print-status { font-size:14pt; font-weight:700; margin:12px 0; }
+    #printSheet table { width:100%; border-collapse:collapse; font-size:10pt; margin-bottom:8px; }
+    #printSheet th, #printSheet td { border-bottom:1px solid #ddd; padding:6px 4px; text-align:left; }
+    #printSheet th { font-weight:700; color:#333; }
+    #printSheet td.num, #printSheet th.num { text-align:right; font-variant-numeric:tabular-nums; }
+    #printSheet .print-totals { margin-top:12px; font-size:11pt; }
+    #printSheet .print-totals div { margin:4px 0; }
+  }
 </style>
 </head>
 <body>
@@ -314,6 +364,17 @@
         <h1 id="pageTitle">Add expense</h1>
         <p class="topbar-sub" id="pageSub">Log a new bill or purchase</p>
       </div>
+    </div>
+  </div>
+  <div id="loadingBar" class="loading-bar" aria-hidden="true"></div>
+  <div id="periodBar" class="period-bar hidden">
+    <input type="month" id="periodMonthInput" aria-label="Month" onchange="onPeriodMonthChange()" />
+    <button type="button" class="link-action" id="periodRangeToggle" onclick="togglePeriodRange()">Range</button>
+    <button type="button" class="link-action" id="periodAllBtn" onclick="setPeriodAllTime()">All time</button>
+    <div id="periodRangeRow" class="period-range hidden">
+      <input type="date" id="periodFrom" aria-label="From date" />
+      <input type="date" id="periodTo" aria-label="To date" />
+      <button type="button" class="link-action" onclick="applyPeriodRange()">Apply</button>
     </div>
   </div>
 
@@ -344,6 +405,7 @@
           <div id="participantChips" class="chips" style="margin-top:10px"></div>
         </div>
         <button type="button" id="addStructuredBtn" class="block" onclick="addStructuredExpense()">Add expense</button>
+        <button type="button" id="cancelEditBtn" class="block secondary hidden" onclick="cancelEditExpense()" style="margin-top:8px">Cancel edit</button>
         <div id="formStatus" class="status"></div>
       </div>
     </section>
@@ -370,6 +432,7 @@
     <section class="tab-panel" data-panel="balances">
       <div class="card" id="section-balances">
         <h2><span class="dot"></span>Who owes what</h2>
+        <p class="period-hint" id="balancesPeriodHint">For selected period</p>
         <div id="balances"><div class="empty">No shared expenses yet.</div></div>
       </div>
       <div class="card">
@@ -475,13 +538,26 @@
   </div>
 </div>
 
+<div id="printSheet" aria-hidden="true"></div>
+
 <script>
 let people = [];
 let groups = [];
 let settlements = [];
+let lastExpenses = [];
+let lastBalances = {};
 let reportFilter = 'all';
 let settleExpenseId = null;
 let settleOutstandingData = null;
+let editingExpenseId = null;
+const CURRENT_USERNAME = {{ (current_username or 'Self')|tojson }};
+
+const _now = new Date();
+let periodMode = 'month'; // month | range | all
+let periodYear = _now.getFullYear();
+let periodMonth = _now.getMonth() + 1;
+let periodFrom = '';
+let periodTo = '';
 
 document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
 
@@ -492,15 +568,128 @@ const TAB_META = {
   settings: { title: 'Settings',    sub: 'People, groups & account' }
 };
 
+function pad2(n) { return String(n).padStart(2, '0'); }
+function monthValue(y, m) { return `${y}-${pad2(m)}`; }
+
+function periodQuery() {
+  if (periodMode === 'all') return '';
+  if (periodMode === 'range' && periodFrom && periodTo) {
+    return `from=${encodeURIComponent(periodFrom)}&to=${encodeURIComponent(periodTo)}`;
+  }
+  return `year=${periodYear}&month=${periodMonth}`;
+}
+
+function periodLabel() {
+  if (periodMode === 'all') return 'All time';
+  if (periodMode === 'range') return `${periodFrom} → ${periodTo}`;
+  const d = new Date(periodYear, periodMonth - 1, 1);
+  return d.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+}
+
+function syncPeriodControls() {
+  const monthInput = document.getElementById('periodMonthInput');
+  const rangeRow = document.getElementById('periodRangeRow');
+  const allBtn = document.getElementById('periodAllBtn');
+  const rangeToggle = document.getElementById('periodRangeToggle');
+  monthInput.value = monthValue(periodYear, periodMonth);
+  document.getElementById('periodFrom').value = periodFrom || '';
+  document.getElementById('periodTo').value = periodTo || '';
+  rangeRow.classList.toggle('hidden', periodMode !== 'range');
+  allBtn.style.opacity = periodMode === 'all' ? '1' : '0.7';
+  rangeToggle.style.opacity = periodMode === 'range' ? '1' : '0.7';
+  monthInput.style.opacity = periodMode === 'month' ? '1' : '0.7';
+  const hint = document.getElementById('balancesPeriodHint');
+  if (hint) hint.textContent = `For selected period · ${periodLabel()}`;
+}
+
+function onPeriodMonthChange() {
+  const v = document.getElementById('periodMonthInput').value;
+  if (!v) return;
+  const [y, m] = v.split('-').map(Number);
+  periodMode = 'month';
+  periodYear = y;
+  periodMonth = m;
+  document.getElementById('periodRangeRow').classList.add('hidden');
+  syncPeriodControls();
+  refresh();
+}
+
+function togglePeriodRange() {
+  const row = document.getElementById('periodRangeRow');
+  if (row.classList.contains('hidden')) {
+    if (!periodFrom || !periodTo) {
+      const start = `${periodYear}-${pad2(periodMonth)}-01`;
+      const last = new Date(periodYear, periodMonth, 0).getDate();
+      periodFrom = start;
+      periodTo = `${periodYear}-${pad2(periodMonth)}-${pad2(last)}`;
+    }
+    periodMode = 'range';
+    row.classList.remove('hidden');
+    syncPeriodControls();
+  } else {
+    row.classList.add('hidden');
+    if (periodMode === 'range') {
+      periodMode = 'month';
+      syncPeriodControls();
+    }
+  }
+}
+
+function applyPeriodRange() {
+  const from = document.getElementById('periodFrom').value;
+  const to = document.getElementById('periodTo').value;
+  if (!from || !to) { alert('Pick both from and to dates'); return; }
+  if (from > to) { alert('From must be on or before to'); return; }
+  periodMode = 'range';
+  periodFrom = from;
+  periodTo = to;
+  syncPeriodControls();
+  refresh();
+}
+
+function setPeriodAllTime() {
+  periodMode = 'all';
+  document.getElementById('periodRangeRow').classList.add('hidden');
+  syncPeriodControls();
+  refresh();
+}
+
+function ensurePeriodIncludesDate(dateStr) {
+  if (!dateStr || periodMode === 'all') return;
+  const d = String(dateStr).slice(0, 10);
+  if (periodMode === 'month') {
+    const [y, m] = d.split('-').map(Number);
+    if (y !== periodYear || m !== periodMonth) {
+      periodYear = y;
+      periodMonth = m;
+      syncPeriodControls();
+    }
+    return;
+  }
+  if (periodMode === 'range' && (d < periodFrom || d > periodTo)) {
+    const [y, m] = d.split('-').map(Number);
+    periodMode = 'month';
+    periodYear = y;
+    periodMonth = m;
+    document.getElementById('periodRangeRow').classList.add('hidden');
+    syncPeriodControls();
+  }
+}
+
 function showTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.getElementById('pageTitle').textContent = TAB_META[tab].title;
   document.getElementById('pageSub').textContent = TAB_META[tab].sub;
+  document.getElementById('periodBar').classList.toggle('hidden', tab !== 'report' && tab !== 'balances');
   window.scrollTo(0, 0);
 }
 
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+function displayName(n) {
+  if (!n || String(n).toLowerCase() === 'self') return cap(CURRENT_USERNAME || 'Self');
+  return cap(n);
+}
 function fmt(n) { return '₹' + Number(n).toFixed(2); }
 
 function setFormStatus(msg, type) {
@@ -717,18 +906,20 @@ async function addStructuredExpense() {
   btn.disabled = true;
   setFormStatus('Saving...', '');
   try {
-    const res = await fetch('/api/add', {
-      method: 'POST',
+    const body = { description, amount, payer, participants: selectedParticipants, is_personal: isPersonal, date };
+    const url = editingExpenseId ? `/api/expenses/${editingExpenseId}` : '/api/add';
+    const method = editingExpenseId ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ description, amount, payer, participants: selectedParticipants, is_personal: isPersonal, date })
+      body: JSON.stringify(body)
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed');
-    setFormStatus(`Added: ${data.description} — ${fmt(data.amount)}`, 'ok');
-    document.getElementById('desc').value = '';
-    document.getElementById('amount').value = '';
-    selectedParticipants = ['self'];
-    renderParticipantChips();
+    const verb = editingExpenseId ? 'Updated' : 'Added';
+    setFormStatus(`${verb}: ${data.description} — ${fmt(data.amount)}`, 'ok');
+    resetExpenseForm();
+    ensurePeriodIncludesDate(data.date || date);
     await refresh();
   } catch (err) {
     setFormStatus(err.message, 'error');
@@ -737,13 +928,69 @@ async function addStructuredExpense() {
   }
 }
 
+function resetExpenseForm() {
+  document.getElementById('desc').value = '';
+  document.getElementById('amount').value = '';
+  document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('isPersonal').checked = false;
+  togglePersonal();
+  selectedParticipants = ['self'];
+  renderParticipantChips();
+  editingExpenseId = null;
+  document.getElementById('addStructuredBtn').textContent = 'Add expense';
+  document.getElementById('cancelEditBtn').classList.add('hidden');
+  TAB_META.add = { title: 'Add expense', sub: 'Log a new bill or purchase' };
+  if (document.querySelector('.tab-panel.active')?.dataset.panel === 'add') {
+    document.getElementById('pageTitle').textContent = TAB_META.add.title;
+    document.getElementById('pageSub').textContent = TAB_META.add.sub;
+  }
+}
+
+function cancelEditExpense() {
+  resetExpenseForm();
+  setFormStatus('Edit cancelled', '');
+}
+
+function editExpense(id) {
+  const e = lastExpenses.find(x => x.id === id);
+  if (!e) {
+    alert('Expense not found in current list. Try All time or another month.');
+    return;
+  }
+  editingExpenseId = id;
+  document.getElementById('desc').value = e.description || '';
+  document.getElementById('amount').value = e.amount;
+  document.getElementById('expDate').value = e.date || new Date().toISOString().slice(0, 10);
+  document.getElementById('isPersonal').checked = !!e.is_personal;
+  togglePersonal();
+
+  renderPeople();
+  const payerSel = document.getElementById('payer');
+  if ([...payerSel.options].some(o => o.value === e.payer)) {
+    payerSel.value = e.payer;
+  } else {
+    payerSel.value = 'self';
+  }
+
+  selectedParticipants = e.is_personal ? ['self'] : [...(e.participants || [])];
+  if (!selectedParticipants.length) selectedParticipants = ['self'];
+  renderParticipantChips();
+
+  document.getElementById('addStructuredBtn').textContent = 'Save changes';
+  document.getElementById('cancelEditBtn').classList.remove('hidden');
+  TAB_META.add = { title: 'Edit expense', sub: 'Fix amount, people, or details' };
+  showTab('add');
+  setFormStatus('Editing — update fields and save', '');
+  window.scrollTo(0, 0);
+}
+
 function settlePersonOptions() {
   return ['self', ...people.map(p => p.name)];
 }
 
 function populateSettleSelects(fromVal, toVal) {
   const opts = settlePersonOptions().map(n =>
-    `<option value="${n}">${cap(n)}</option>`
+    `<option value="${n}">${displayName(n)}</option>`
   ).join('');
   const fromSel = document.getElementById('settleFrom');
   const toSel = document.getElementById('settleTo');
@@ -771,30 +1018,52 @@ function renderSettleOutstanding() {
   const ctx = document.getElementById('settleExpenseContext');
   const settleAllBtn = document.getElementById('settleAllBtn');
 
-  if (!settleOutstandingData || !settleOutstandingData.outstanding) {
+  if (!settleOutstandingData) {
     el.innerHTML = '';
     ctx.classList.add('hidden');
     settleAllBtn.classList.add('hidden');
     return;
   }
 
-  const entries = Object.entries(settleOutstandingData.outstanding);
-  ctx.textContent = `${settleOutstandingData.description} — paid by ${cap(settleOutstandingData.payer)}`;
+  const outstanding = settleOutstandingData.outstanding || {};
+  const settledMap = settleOutstandingData.settled || {};
+  const entries = Object.entries(outstanding);
+  const settledEntries = Object.entries(settledMap);
+
+  ctx.textContent = `${settleOutstandingData.description} — paid by ${displayName(settleOutstandingData.payer)}`;
   ctx.classList.remove('hidden');
 
-  if (entries.length === 0) {
+  const outstandingHtml = entries.length
+    ? entries.map(([person, amt]) => `
+      <div class="outstanding-row">
+        <span>${displayName(person)} owes ${fmt(amt)}</span>
+        <button type="button" class="secondary" onclick="quickSettle(${JSON.stringify(person)}, ${JSON.stringify(settleOutstandingData.payer)}, ${amt})">Settle</button>
+      </div>
+    `).join('')
+    : '';
+
+  const settledHtml = settledEntries.length
+    ? settledEntries.map(([person, amt]) => `
+      <div class="outstanding-row">
+        <span style="color:var(--positive)">${displayName(person)} settled ${fmt(amt)}</span>
+      </div>
+    `).join('')
+    : '';
+
+  if (!entries.length && !settledEntries.length) {
     el.innerHTML = '<div class="empty">Everyone has settled their share for this expense.</div>';
     settleAllBtn.classList.add('hidden');
     return;
   }
 
-  el.innerHTML = entries.map(([person, amt]) => `
-    <div class="outstanding-row">
-      <span>${cap(person)} owes ${fmt(amt)}</span>
-      <button type="button" class="secondary" onclick="quickSettle('${person}', '${settleOutstandingData.payer}', ${amt})">Settle</button>
-    </div>
-  `).join('');
-  settleAllBtn.classList.remove('hidden');
+  if (!entries.length && settledEntries.length) {
+    el.innerHTML = settledHtml + '<div class="empty" style="margin-top:8px">Everyone has settled their share for this expense.</div>';
+    settleAllBtn.classList.add('hidden');
+    return;
+  }
+
+  el.innerHTML = outstandingHtml + settledHtml;
+  settleAllBtn.classList.toggle('hidden', entries.length === 0);
 }
 
 function openSettlePerson(name, balance) {
@@ -857,6 +1126,7 @@ async function quickSettle(fromPerson, toPerson, amount) {
     return;
   }
   setSettleStatus(`Recorded: ${cap(fromPerson)} → ${cap(toPerson)} ${fmt(amount)}`, 'ok');
+  ensurePeriodIncludesDate(date);
   if (settleExpenseId) {
     const outRes = await fetch(`/api/expenses/${settleExpenseId}/outstanding`);
     settleOutstandingData = await outRes.json();
@@ -898,6 +1168,7 @@ async function submitSettlement() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed');
     setSettleStatus(`Recorded: ${cap(from_person)} → ${cap(to_person)} ${fmt(amount)}`, 'ok');
+    ensurePeriodIncludesDate(data.date || date);
     if (settleExpenseId) {
       const outRes = await fetch(`/api/expenses/${settleExpenseId}/outstanding`);
       settleOutstandingData = await outRes.json();
@@ -938,6 +1209,7 @@ async function settleAllForExpense() {
       return;
     }
   }
+  ensurePeriodIncludesDate(date);
   setSettleStatus('All shares settled', 'ok');
   const outRes = await fetch(`/api/expenses/${settleExpenseId}/outstanding`);
   settleOutstandingData = await outRes.json();
@@ -1008,33 +1280,136 @@ function renderReport(data) {
 }
 
 async function refreshReport() {
-  const res = await fetch(`/api/report?filter=${reportFilter}`);
+  const pq = periodQuery();
+  const qs = pq ? `filter=${reportFilter}&${pq}` : `filter=${reportFilter}`;
+  const res = await fetch(`/api/report?${qs}`);
   const data = await res.json();
   renderReport(data);
 }
 
 function renderBalances(balances) {
+  lastBalances = balances || {};
   const balancesEl = document.getElementById('balances');
-  const names = Object.keys(balances || {});
+  const names = Object.keys(lastBalances);
   if (names.length === 0) {
     balancesEl.innerHTML = '<div class="empty">No shared expenses yet.</div>';
     return;
   }
-  balancesEl.innerHTML = names.sort((a, b) => balances[b] - balances[a]).map(name => {
-    const v = balances[name];
+  balancesEl.innerHTML = names.sort((a, b) => lastBalances[b] - lastBalances[a]).map(name => {
+    const v = lastBalances[name];
     const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : '';
     const label = v > 0.001 ? 'is owed' : v < -0.001 ? 'owes' : 'settled';
     const settleBtn = Math.abs(v) > 0.001
-      ? `<button type="button" class="secondary" onclick="openSettlePerson('${name}', ${v})">Settle</button>`
+      ? `<button type="button" class="secondary" onclick='openSettlePerson(${JSON.stringify(name)}, ${v})'>Settle</button>`
       : '';
+    const printBtn = `<button type="button" class="secondary" onclick='printPersonStatement(${JSON.stringify(name)})'>Print</button>`;
     return `<div class="balance-row">
       <span>${cap(name)}</span>
       <div class="row-actions">
         <span class="amt ${cls}">${label} ${fmt(Math.abs(v))}</span>
+        ${printBtn}
         ${settleBtn}
       </div>
     </div>`;
   }).join('');
+}
+
+function personShareOnExpense(e, name) {
+  if (e.is_personal) {
+    return e.payer === name ? Number(e.amount) : 0;
+  }
+  const parts = e.participants || [];
+  if (!parts.includes(name) && e.payer !== name) return 0;
+  if (!parts.includes(name)) return 0;
+  return Number(e.amount) / parts.length;
+}
+
+function buildPersonStatement(name) {
+  const bal = lastBalances[name] || 0;
+  const status = bal > 0.001
+    ? `is owed ${fmt(Math.abs(bal))}`
+    : bal < -0.001
+      ? `owes ${fmt(Math.abs(bal))}`
+      : `settled ${fmt(0)}`;
+
+  const relatedExpenses = (lastExpenses || []).filter(e => {
+    if (e.is_personal) return e.payer === name;
+    return e.payer === name || (e.participants || []).includes(name);
+  });
+
+  const relatedSettlements = (settlements || []).filter(s =>
+    s.from_person === name || s.to_person === name
+  );
+
+  let shareTotal = 0;
+  let paidOut = 0;
+  let received = 0;
+
+  const expenseRows = relatedExpenses.map(e => {
+    const share = personShareOnExpense(e, name);
+    shareTotal += share;
+    const split = e.is_personal ? 'personal' : `${(e.participants || []).length}-way`;
+    return `<tr>
+      <td>${e.date}</td>
+      <td>${e.description}</td>
+      <td class="num">${fmt(e.amount)}</td>
+      <td class="num">${share ? fmt(share) : '—'}</td>
+      <td>${displayName(e.payer)}</td>
+      <td>${split}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6">No expenses in this period.</td></tr>';
+
+  const settlementRows = relatedSettlements.map(s => {
+    if (s.from_person === name) paidOut += Number(s.amount);
+    if (s.to_person === name) received += Number(s.amount);
+    const link = s.expense_description || 'General settle-up';
+    return `<tr>
+      <td>${s.date}</td>
+      <td>${displayName(s.from_person)} → ${displayName(s.to_person)}</td>
+      <td class="num">${fmt(s.amount)}</td>
+      <td>${link}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="4">No settlements in this period.</td></tr>';
+
+  const printed = new Date().toLocaleString();
+  return `
+    <h1>Splitwise Mini</h1>
+    <p class="print-meta">Statement for <b>${displayName(name)}</b><br>
+      Period: ${periodLabel()} · Printed: ${printed}</p>
+    <div class="print-status">${displayName(name)} ${status}</div>
+
+    <h2>Expenses</h2>
+    <table>
+      <thead><tr>
+        <th>Date</th><th>Description</th><th class="num">Total</th>
+        <th class="num">Their share</th><th>Paid by</th><th>Split</th>
+      </tr></thead>
+      <tbody>${expenseRows}</tbody>
+    </table>
+
+    <h2>Settlements</h2>
+    <table>
+      <thead><tr>
+        <th>Date</th><th>From → To</th><th class="num">Amount</th><th>Linked</th>
+      </tr></thead>
+      <tbody>${settlementRows}</tbody>
+    </table>
+
+    <div class="print-totals">
+      <div><b>Total share of expenses:</b> ${fmt(shareTotal)}</div>
+      <div><b>Paid in settlements:</b> ${fmt(paidOut)}</div>
+      <div><b>Received in settlements:</b> ${fmt(received)}</div>
+      <div><b>Net balance (period):</b> ${status}</div>
+    </div>
+  `;
+}
+
+function printPersonStatement(name) {
+  const sheet = document.getElementById('printSheet');
+  sheet.innerHTML = buildPersonStatement(name);
+  sheet.setAttribute('aria-hidden', 'false');
+  window.print();
+  sheet.setAttribute('aria-hidden', 'true');
 }
 
 function renderSettlementsList() {
@@ -1060,13 +1435,14 @@ function renderExpensesList(expenses) {
   }
   expensesEl.innerHTML = expenses.map(e => {
     const tag = e.is_personal ? 'personal' : e.participants.join(', ');
-    const settleBtn = e.is_personal
-      ? ''
-      : `<button type="button" class="secondary" onclick="openSettleExpense(${e.id})">Settle</button>`;
+    const settleBtn = (!e.is_personal && e.has_outstanding)
+      ? `<button type="button" class="secondary" onclick="openSettleExpense(${e.id})">Settle</button>`
+      : '';
     return `<div class="expense-row"><div class="left">
       <span>${e.date} · ${e.description} — ${fmt(e.amount)}</span>
       <span class="meta">paid by ${cap(e.payer)} · ${e.is_personal ? 'personal' : 'split: ' + tag}</span>
     </div><div class="right row-actions">
+      <button type="button" class="secondary" onclick="editExpense(${e.id})">edit</button>
       ${settleBtn}
       <button type="button" class="secondary" onclick="deleteExpense(${e.id})">delete</button>
     </div></div>`;
@@ -1074,27 +1450,43 @@ function renderExpensesList(expenses) {
 }
 
 async function refresh() {
-  const res = await fetch(`/api/bootstrap?filter=${reportFilter}`);
-  const data = await res.json();
-  if (!res.ok) {
-    console.error(data.error || 'bootstrap failed');
-    return;
+  const bar = document.getElementById('loadingBar');
+  const app = document.querySelector('.app');
+  bar.classList.add('active');
+  bar.setAttribute('aria-hidden', 'false');
+  app.classList.add('is-loading');
+  try {
+    const pq = periodQuery();
+    const qs = pq ? `filter=${reportFilter}&${pq}` : `filter=${reportFilter}`;
+    const res = await fetch(`/api/bootstrap?${qs}`);
+    const data = await res.json();
+    if (!res.ok) {
+      console.error(data.error || 'bootstrap failed');
+      return;
+    }
+
+    people = data.people || [];
+    groups = data.groups || [];
+    settlements = data.settlements || [];
+    const expenses = data.expenses || [];
+    const balances = data.balances || {};
+    lastExpenses = expenses;
+    lastBalances = balances;
+
+    renderPeople();
+    renderGroups();
+    renderReport(data.report);
+    renderBalances(balances);
+    renderSettlementsList();
+    renderExpensesList(expenses);
+  } finally {
+    bar.classList.remove('active');
+    bar.setAttribute('aria-hidden', 'true');
+    app.classList.remove('is-loading');
   }
-
-  people = data.people || [];
-  groups = data.groups || [];
-  settlements = data.settlements || [];
-  const expenses = data.expenses || [];
-  const balances = data.balances || {};
-
-  renderPeople();
-  renderGroups();
-  renderReport(data.report);
-  renderBalances(balances);
-  renderSettlementsList();
-  renderExpensesList(expenses);
 }
 
+syncPeriodControls();
 refresh();
 renderParticipantChips();
 </script>

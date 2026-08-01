@@ -37,6 +37,9 @@ Multi-user expense tracker: shared bills with groups, personal spending, itemize
 
 ## API (all require login)
 - `GET /api/bootstrap?filter=all|shared|personal` — people, groups, expenses, settlements, balances, report in one response
+- Period (optional on bootstrap / expenses / settlements / balances / report; omit = all time):
+  - `year=2026&month=8` — calendar month
+  - `from=2026-08-01&to=2026-08-31` — inclusive range (wins if both styles sent)
 - `GET/POST /api/people`, `DELETE /api/people/<id>`
 - `GET/POST /api/groups`, `PUT/DELETE /api/groups/<id>`
 - `POST /api/add` — structured body:
@@ -50,8 +53,13 @@ Multi-user expense tracker: shared bills with groups, personal spending, itemize
     "date": "2026-07-03"
   }
   ```
-- `GET /api/expenses`, `/api/balances`, `/api/report?filter=all|shared|personal`
+- `PUT /api/expenses/<id>` — same body as add; update an existing expense
+- `GET /api/expenses`, `/api/settlements`, `/api/balances`, `/api/report?filter=all|shared|personal`
+- `GET /api/expenses/<id>/outstanding` — full outstanding for settle (not period-scoped)
+- `POST /api/settlements`, `DELETE /api/settlements/<id>`
 - `DELETE /api/delete/<id>`
+
+UI defaults Report/Balances to the **current local month** via period params; people/groups and mutations stay unscoped.
 
 ## Admin API
 - `GET /admin/users`

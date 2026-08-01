@@ -78,20 +78,44 @@ class Expense(db.Model):
         return exp
 
     @classmethod
+    def update(cls, expense_id, user_id, description, amount, payer, participants, expense_date=None, is_personal=False):
+        exp = cls.get_for_user(expense_id, user_id)
+        if not exp:
+            return None
+        if is_personal:
+            participants = [payer]
+        exp.description = description
+        exp.amount = amount
+        exp.payer = payer
+        exp.participants = participants
+        exp.is_personal = is_personal
+        if expense_date is not None:
+            exp.expense_date = expense_date
+        db.session.commit()
+        return exp
+
+    @classmethod
     def _query_for_user(cls, user_id):
         return cls.query.filter_by(user_id=user_id)
 
     @classmethod
-    def fetch_for_user(cls, user_id):
+    def fetch_for_user(cls, user_id, start_date=None, end_date=None):
+        q = cls._query_for_user(user_id)
+        if start_date is not None:
+            q = q.filter(cls.expense_date >= start_date)
+        if end_date is not None:
+            q = q.filter(cls.expense_date <= end_date)
         return (
-            cls._query_for_user(user_id)
-            .order_by(cls.expense_date.desc(), cls.created_at.desc())
+            q.order_by(cls.expense_date.desc(), cls.created_at.desc())
             .all()
         )
 
     @classmethod
-    def list_all(cls, user_id):
-        return [r.to_dict() for r in cls.fetch_for_user(user_id)]
+    def list_all(cls, user_id, start_date=None, end_date=None):
+        return cls.to_dicts_with_outstanding(
+            cls.fetch_for_user(user_id, start_date=start_date, end_date=end_date),
+            user_id,
+        )
 
     @classmethod
     def get_for_user(cls, expense_id, user_id):
@@ -103,6 +127,38 @@ class Expense(db.Model):
         if exp:
             db.session.delete(exp)
             db.session.commit()
+
+    @classmethod
+    def _has_outstanding(cls, expense, settled=None):
+        if expense.is_personal:
+            return False
+        if settled is None:
+            from app.models.settlement import Settlement
+            settled = Settlement.settled_by_person_for_expense(expense.user_id, expense.id)
+        amount = float(expense.amount)
+        participants = expense.participants
+        shares = _equal_shares(amount, participants, participants)
+        for p in participants:
+            if p == expense.payer:
+                continue
+            owed = round(shares.get(p, 0.0) - settled.get(p, 0.0), 2)
+            if owed > 0.001:
+                return True
+        return False
+
+    @classmethod
+    def to_dicts_with_outstanding(cls, expenses, user_id):
+        """Serialize expenses; has_outstanding uses all-time settlements for that bill."""
+        from app.models.settlement import Settlement
+
+        shared_ids = [e.id for e in expenses if not e.is_personal]
+        settled_map = Settlement.settled_by_expense_ids(user_id, shared_ids)
+        result = []
+        for e in expenses:
+            d = e.to_dict()
+            d["has_outstanding"] = cls._has_outstanding(e, settled_map.get(e.id, {}))
+            result.append(d)
+        return result
 
     @classmethod
     def compute_balances(cls, user_id, expenses=None, settlements=None):
@@ -130,7 +186,7 @@ class Expense(db.Model):
         from app.models.settlement import Settlement
 
         if expense.is_personal:
-            return {"payer": expense.payer, "outstanding": {}}
+            return {"payer": expense.payer, "outstanding": {}, "settled": {}}
 
         amount = float(expense.amount)
         participants = expense.participants
@@ -138,18 +194,24 @@ class Expense(db.Model):
         settled = Settlement.settled_by_person_for_expense(expense.user_id, expense.id)
 
         outstanding = {}
+        settled_people = {}
         for p in participants:
             if p == expense.payer:
                 continue
-            owed = round(shares.get(p, 0.0) - settled.get(p, 0.0), 2)
+            share = shares.get(p, 0.0)
+            paid = round(settled.get(p, 0.0), 2)
+            owed = round(share - paid, 2)
             if owed > 0.001:
                 outstanding[p] = owed
+            elif paid > 0.001 or share <= 0.001:
+                settled_people[p] = round(share if share > 0 else paid, 2)
 
         return {
             "expense_id": expense.id,
             "payer": expense.payer,
             "description": expense.description,
             "outstanding": outstanding,
+            "settled": settled_people,
         }
 
     @classmethod
@@ -247,17 +309,17 @@ class Expense(db.Model):
         }
 
     @classmethod
-    def bootstrap_payload(cls, user_id, filter_type="all"):
+    def bootstrap_payload(cls, user_id, filter_type="all", start_date=None, end_date=None):
         from app.models.group import Group
         from app.models.person import Person
         from app.models.settlement import Settlement
 
-        expenses = cls.fetch_for_user(user_id)
-        settlements = Settlement.fetch_for_user(user_id)
+        expenses = cls.fetch_for_user(user_id, start_date=start_date, end_date=end_date)
+        settlements = Settlement.fetch_for_user(user_id, start_date=start_date, end_date=end_date)
         return {
             "people": Person.list_all(user_id),
             "groups": Group.list_all(user_id),
-            "expenses": [r.to_dict() for r in expenses],
+            "expenses": cls.to_dicts_with_outstanding(expenses, user_id),
             "settlements": [r.to_dict() for r in settlements],
             "balances": cls.compute_balances(
                 user_id, expenses=expenses, settlements=settlements

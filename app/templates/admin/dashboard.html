@@ -232,6 +232,7 @@
           <td data-label="Actions">
             {% if u.role != 'admin' %}
             <div class="actions-cell">
+              <button type="button" class="secondary" data-user-id="{{ u.id }}" data-username="{{ u.username }}" onclick="updatePassword(this)">Password</button>
               <button type="button" class="danger" onclick="deleteUser({{ u.id }})">Delete</button>
             </div>
             {% else %}
@@ -274,6 +275,28 @@ function revertStatusRadios(group, wasActive) {
   const deactivatedInput = group.querySelector('input[value="deactivated"]');
   if (activeInput) activeInput.checked = wasActive;
   if (deactivatedInput) deactivatedInput.checked = !wasActive;
+}
+
+async function updatePassword(btn) {
+  const id = btn.getAttribute('data-user-id');
+  const username = btn.getAttribute('data-username') || 'user';
+  const password = window.prompt('New password for ' + username + ' (min 4 characters):');
+  if (password === null) return;
+  if (password.length < 4) {
+    alert('Password must be at least 4 characters');
+    return;
+  }
+  const res = await fetch('/admin/users/' + id + '/password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ password: password }),
+  });
+  if (res.ok) {
+    alert('Password updated for ' + username);
+    return;
+  }
+  const data = await res.json().catch(function () { return {}; });
+  alert(data.error || 'Failed');
 }
 
 async function deleteUser(id) {

@@ -39,7 +39,7 @@ Multi-user expense tracker: shared bills with groups, personal spending, itemize
 ## Auth
 - `/register` — open sign-up; each user gets isolated people, groups, expenses
 - `/login` — session login
-- `/admin` — admin dashboard (user list, enable/disable, delete)
+- `/admin` — admin dashboard (user list, enable/disable, set password, delete)
 
 ## API (all require login)
 - `GET /api/bootstrap?filter=all|shared|personal` — people, groups, expenses, settlements, balances, report, plus monthly budget fields (`monthly_budget`, `budget_spent`, `budget_personal`, `budget_my_shared`, `budget_shared_total`) for the **current UTC month** (independent of period filters)
@@ -72,6 +72,7 @@ UI defaults Report/Balances to the **current local month** via period params; pe
 ## Admin API
 - `GET /admin/users`
 - `POST /admin/users/<id>/toggle`
+- `POST /admin/users/<id>/password` — body `{ "password": "..." }` (min 4 chars; non-admin users only)
 - `DELETE /admin/users/<id>`
 
 ## SaaS notes

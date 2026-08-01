@@ -35,6 +35,20 @@ def toggle_user(user_id):
     return jsonify(user.to_dict())
 
 
+@admin_bp.route("/users/<int:user_id>/password", methods=["POST"])
+@login_required
+@admin_required
+def set_user_password(user_id):
+    data = request.get_json(silent=True) or {}
+    password = data.get("password") or ""
+    if len(password) < 4:
+        return jsonify({"error": "Password must be at least 4 characters"}), 400
+    user = User.set_user_password(user_id, password)
+    if not user:
+        return jsonify({"error": "Cannot modify this user"}), 400
+    return jsonify({"ok": True, "id": user.id})
+
+
 @admin_bp.route("/users/<int:user_id>", methods=["DELETE"])
 @login_required
 @admin_required

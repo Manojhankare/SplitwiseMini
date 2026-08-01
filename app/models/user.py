@@ -82,6 +82,15 @@ class User(UserMixin, db.Model):
             db.session.commit()
 
     @classmethod
+    def set_user_password(cls, user_id, password):
+        user = db.session.get(cls, user_id)
+        if not user or user.role == "admin":
+            return None
+        user.set_password(password)
+        db.session.commit()
+        return user
+
+    @classmethod
     def toggle_active(cls, user_id):
         user = db.session.get(cls, user_id)
         if user and user.role != "admin":

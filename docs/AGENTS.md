@@ -47,7 +47,7 @@ Improve or extend Splitwise Mini without breaking existing behavior: auth isolat
 - **Settlements ≠ spend:** do not fold settlements into consumption budget.
 - **Consumption vs cash:** budget tracks your share, not necessarily what you paid out of pocket.
 - **Vercel:** production often skips `create_all`; missing ALTER → 500s on User queries selecting new columns.
-- **Hero “This month”:** label is **My spend** (`budget_spent`); **Gang bills** is full shared totals.
+- **Hero primary figure:** **Left this month** (`monthly_budget − budget_spent`) when a target is set; **Over budget** if spent past target; **My spend this month** if no target. Settlement net is only in **You owe** / **You’re owed**. **Shared bills** = full shared totals (`budget_shared_total`).
 
 ## What to pick when stuck
 

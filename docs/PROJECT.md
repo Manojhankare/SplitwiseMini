@@ -54,13 +54,13 @@ For that month:
 - **budget_personal** — personal expenses where `payer == "self"` (full amount)
 - **budget_my_shared** — shared expenses where `"self"` is a participant; amount = `_equal_shares(...)["self"]`
 - **budget_spent** — personal + my shared (counts toward the target)
-- **budget_shared_total** — sum of full shared bill amounts (“gang bills”; context only, not toward budget)
+- **budget_shared_total** — sum of full shared bill amounts (“shared bills”; context only, not toward budget)
 
 Settlements are **not** included (settle-up is debt, not new spend).
 
 Budget is **consumption** (your share), not cash you paid. If you paid a shared bill but are not in `participants`, that bill does not add to `budget_spent`.
 
-UI: hero shows My spend, Gang bills, progress vs target; Settings → Monthly budget saves via `PUT /api/settings/budget`. Bootstrap includes budget fields from a **separate** current-month expense fetch (not the period-filtered list).
+UI home: compact hero strip — primary figure is **Left this month** (`monthly_budget − budget_spent`) or **Over budget** / **My spend this month** if no target; thin progress; denser tiles for You owe, You’re owed, My spend, Shared bills. Add tab stays default so the form sits under the strip. Settings → Monthly budget via `PUT /api/settings/budget`. Bootstrap budget fields come from a **separate** current-month expense fetch (not the period-filtered list).
 
 ## Period filters
 
@@ -80,7 +80,7 @@ UI defaults Report/Balances to the current *local* month. Budget month is always
 
 ## UI structure (`index.html`)
 
-- Sticky greeting + username + hero (balance + budget)
+- Compact greeting + slim budget hero (left this month / my spend) + Add as default tab
 - Tabs: Add · Report · Balances · Settings (floating bottom nav)
 - Period bar on Report/Balances
 - Settle modal (bottom sheet)

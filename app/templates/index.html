@@ -72,16 +72,16 @@
 
   /* ========== Header / Hero ========== */
   .topbar {
-    padding: var(--space-3) var(--space-2) var(--space-1);
+    padding: var(--space-2) var(--space-2) 4px;
   }
   .greeting {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--muted);
-    margin: 0 0 4px;
+    margin: 0 0 2px;
   }
   .greeting-name {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--ink);
     margin: 0;
@@ -89,13 +89,13 @@
     text-transform: capitalize;
   }
   .page-meta {
-    margin-top: var(--space-1);
+    margin-top: 4px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0;
   }
   .page-meta h1 {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--muted);
     margin: 0;
@@ -108,84 +108,36 @@
   }
 
   .hero-card {
-    margin: var(--space-2) var(--space-2) 0;
-    padding: var(--space-3);
-    border-radius: var(--radius);
+    margin: var(--space-1) var(--space-2) 0;
+    padding: 14px var(--space-2);
+    border-radius: 16px;
     background: var(--grad-hero);
     color: #fff;
-    box-shadow: 0 16px 40px rgba(79, 70, 229, 0.28);
+    box-shadow: 0 12px 28px rgba(79, 70, 229, 0.22);
     animation: fadeSlide .35s ease;
   }
   .hero-label {
-    font-size: 12px;
-    font-weight: 500;
-    opacity: 0.85;
-    margin: 0 0 6px;
-  }
-  .hero-balance {
-    font-size: 32px;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    margin: 0 0 var(--space-3);
-    font-variant-numeric: tabular-nums;
-  }
-  .hero-stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-1);
-  }
-  .hero-stat {
-    background: rgba(255,255,255,0.12);
-    border-radius: 12px;
-    padding: 10px 8px;
-    min-width: 0;
-  }
-  .hero-stat-label {
-    display: block;
     font-size: 11px;
     font-weight: 500;
-    opacity: 0.8;
-    margin-bottom: 4px;
-  }
-  .hero-stat-value {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .hero-budget {
-    margin-top: var(--space-2);
-    padding-top: var(--space-2);
-    border-top: 1px solid rgba(255,255,255,0.15);
-  }
-  .hero-budget-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-  .hero-budget-title {
-    font-size: 12px;
-    font-weight: 500;
     opacity: 0.85;
-    margin: 0;
+    margin: 0 0 2px;
   }
-  .hero-budget-amounts {
-    font-size: 13px;
-    font-weight: 600;
+  .hero-balance {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0 0 8px;
     font-variant-numeric: tabular-nums;
-    margin: 0;
-    text-align: right;
+  }
+  .hero-balance.is-over {
+    color: #FECACA;
   }
   .hero-budget-bar {
-    height: 8px;
+    height: 6px;
     border-radius: 999px;
     background: rgba(255,255,255,0.18);
     overflow: hidden;
+    margin-bottom: 6px;
   }
   .hero-budget-bar > span {
     display: block;
@@ -199,22 +151,51 @@
   .hero-budget-bar.over > span { background: #FCA5A5; }
   .hero-budget-meta {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 4px 8px;
+    margin: 0 0 10px;
     font-size: 11px;
-    opacity: 0.85;
+    opacity: 0.9;
+    font-variant-numeric: tabular-nums;
   }
   .hero-budget-hint {
-    margin: 8px 0 0;
+    margin: 0 0 8px;
     font-size: 11px;
-    opacity: 0.8;
+    opacity: 0.85;
   }
   .hero-budget-hint a {
     color: #fff;
     font-weight: 600;
     text-decoration: underline;
     cursor: pointer;
+  }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  .hero-stat {
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 6px 8px;
+    min-width: 0;
+  }
+  .hero-stat-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    opacity: 0.8;
+    margin-bottom: 2px;
+  }
+  .hero-stat-value {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* ========== Loading ========== */
@@ -774,7 +755,7 @@
     .hero-stat-value { font-size: 15px; }
   }
   @media (min-width: 768px) {
-    .hero-balance { font-size: 36px; }
+    .hero-balance { font-size: 32px; }
   }
 
   /* ========== Print ========== */
@@ -810,9 +791,17 @@
     </div>
   </header>
 
-  <div class="hero-card" aria-label="Balance summary">
-    <p class="hero-label">Current Balance</p>
+  <div class="hero-card" aria-label="Monthly budget summary">
+    <p class="hero-label" id="heroBalanceLabel">Left this month</p>
     <p class="hero-balance" id="heroBalance">₹0.00</p>
+    <div class="hero-budget-bar" id="heroBudgetBar" aria-hidden="true"><span id="heroBudgetFill"></span></div>
+    <div class="hero-budget-meta">
+      <span id="heroBudgetSpentTarget"><span id="heroThisMonthDetail">₹0.00</span><span id="heroBudgetTargetWrap"> / <span id="heroBudgetTarget">—</span></span></span>
+      <span id="heroBudgetBreakdown">Personal ₹0 · My share ₹0</span>
+    </div>
+    <p class="hero-budget-hint hidden" id="heroBudgetHint">
+      <a onclick="showTab('settings')">Set a monthly budget</a> in Settings
+    </p>
     <div class="hero-stats">
       <div class="hero-stat">
         <span class="hero-stat-label">You owe</span>
@@ -827,26 +816,9 @@
         <span class="hero-stat-value" id="heroThisMonth">₹0.00</span>
       </div>
       <div class="hero-stat">
-        <span class="hero-stat-label">Gang bills</span>
+        <span class="hero-stat-label">Shared bills</span>
         <span class="hero-stat-value" id="heroGangBills">₹0.00</span>
       </div>
-    </div>
-    <div class="hero-budget" id="heroBudgetBlock">
-      <div class="hero-budget-head">
-        <p class="hero-budget-title">Monthly budget</p>
-        <p class="hero-budget-amounts">
-          <span id="heroThisMonthDetail">₹0.00</span>
-          <span id="heroBudgetTargetWrap"> / <span id="heroBudgetTarget">—</span></span>
-        </p>
-      </div>
-      <div class="hero-budget-bar" id="heroBudgetBar" aria-hidden="true"><span id="heroBudgetFill"></span></div>
-      <div class="hero-budget-meta">
-        <span id="heroBudgetBreakdown">Personal ₹0 · My share ₹0</span>
-        <span id="heroBudgetRemaining"></span>
-      </div>
-      <p class="hero-budget-hint hidden" id="heroBudgetHint">
-        <a onclick="showTab('settings')">Set a monthly budget</a> in Settings
-      </p>
     </div>
   </div>
 
@@ -964,7 +936,7 @@
 
       <div class="card" id="section-budget">
         <h2><span class="dot"></span>Monthly budget</h2>
-        <p class="period-hint">Uses your personal expenses + your share of shared bills. Gang bill totals are shown separately on the home card.</p>
+        <p class="period-hint">Uses your personal expenses + your share of shared bills. Shared bill totals are shown separately on the home card.</p>
         <label for="monthlyBudgetInput">Target (₹ / month)</label>
         <div class="row">
           <input type="number" id="monthlyBudgetInput" min="0" step="0.01" placeholder="e.g. 2000" />
@@ -1131,15 +1103,16 @@ function updateHeroSummary() {
     if (v > 0.001) youreOwed += v;
     else if (v < -0.001) youOwe += Math.abs(v);
   });
-  const selfBal = Number((lastBalances || {}).self);
-  const net = Number.isFinite(selfBal) ? selfBal : (youreOwed - youOwe);
+  // Prefer pairwise for owe tiles (period-aware from loaded data).
+  // Settlement net is no longer the hero headline.
 
   const spent = Number(lastBudgetSummary.budget_spent) || 0;
   const personal = Number(lastBudgetSummary.budget_personal) || 0;
   const myShared = Number(lastBudgetSummary.budget_my_shared) || 0;
-  const gang = Number(lastBudgetSummary.budget_shared_total) || 0;
+  const sharedTotal = Number(lastBudgetSummary.budget_shared_total) || 0;
   const target = lastBudgetSummary.monthly_budget;
 
+  const labelEl = document.getElementById('heroBalanceLabel');
   const balEl = document.getElementById('heroBalance');
   const oweEl = document.getElementById('heroYouOwe');
   const owedEl = document.getElementById('heroYoureOwed');
@@ -1151,15 +1124,13 @@ function updateHeroSummary() {
   const barEl = document.getElementById('heroBudgetBar');
   const fillEl = document.getElementById('heroBudgetFill');
   const breakdownEl = document.getElementById('heroBudgetBreakdown');
-  const remainingEl = document.getElementById('heroBudgetRemaining');
   const hintEl = document.getElementById('heroBudgetHint');
   const budgetInput = document.getElementById('monthlyBudgetInput');
 
-  if (balEl) balEl.textContent = (net < 0 ? '−' : '') + fmt(Math.abs(net));
   if (oweEl) oweEl.textContent = fmt(youOwe);
   if (owedEl) owedEl.textContent = fmt(youreOwed);
   if (monthEl) monthEl.textContent = fmt(spent);
-  if (gangEl) gangEl.textContent = fmt(gang);
+  if (gangEl) gangEl.textContent = fmt(sharedTotal);
   if (detailEl) detailEl.textContent = fmt(spent);
   if (breakdownEl) {
     breakdownEl.textContent = `Personal ${fmt(personal)} · My share ${fmt(myShared)}`;
@@ -1172,25 +1143,31 @@ function updateHeroSummary() {
     budgetInput.value = hasTarget ? Number(target) : '';
   }
 
+  if (balEl) balEl.classList.remove('is-over');
+
   if (hasTarget) {
     const t = Number(target);
+    const left = t - spent;
+    const over = left < -0.001;
+    if (labelEl) labelEl.textContent = over ? 'Over budget' : 'Left this month';
+    if (balEl) {
+      balEl.textContent = fmt(Math.abs(left));
+      if (over) balEl.classList.add('is-over');
+    }
     const pct = Math.min(100, (spent / t) * 100);
     if (targetEl) targetEl.textContent = fmt(t);
     if (barEl) {
       barEl.classList.remove('warn', 'over');
-      if (spent > t) barEl.classList.add('over');
+      if (over) barEl.classList.add('over');
       else if (spent / t >= 0.8) barEl.classList.add('warn');
     }
     if (fillEl) fillEl.style.width = pct + '%';
-    if (remainingEl) {
-      const left = t - spent;
-      remainingEl.textContent = left >= 0 ? `${fmt(left)} left` : `${fmt(Math.abs(left))} over`;
-    }
   } else {
+    if (labelEl) labelEl.textContent = 'My spend this month';
+    if (balEl) balEl.textContent = fmt(spent);
     if (targetEl) targetEl.textContent = '—';
     if (fillEl) fillEl.style.width = '0%';
     if (barEl) barEl.classList.remove('warn', 'over');
-    if (remainingEl) remainingEl.textContent = '';
   }
 }
 

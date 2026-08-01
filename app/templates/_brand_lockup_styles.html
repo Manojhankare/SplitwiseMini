@@ -1,0 +1,48 @@
+.brand-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 0 auto 22px;
+  text-align: center;
+}
+.brand-lockup-mark {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+.brand-lockup-word {
+  font-weight: 700;
+  font-size: 1.65rem;
+  letter-spacing: -0.03em;
+  color: #0B1220;
+  line-height: 1;
+}
+.brand-lockup-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  color: #6D5EF5;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.brand-lockup-mini::before,
+.brand-lockup-mini::after {
+  content: "";
+  display: block;
+  width: 22px;
+  height: 1.5px;
+  background: currentColor;
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+.brand-lockup--lg .brand-lockup-mark { width: 88px; height: 88px; }
+.brand-lockup--lg .brand-lockup-word { font-size: 1.85rem; }
+.brand-lockup--lg .brand-lockup-mini { font-size: 0.78rem; gap: 12px; }
+.brand-lockup--lg .brand-lockup-mini::before,
+.brand-lockup--lg .brand-lockup-mini::after { width: 28px; }

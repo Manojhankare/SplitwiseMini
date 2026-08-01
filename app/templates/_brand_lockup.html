@@ -1,0 +1,20 @@
+{#
+  Brand lockup: transparent mark + HTML wordmark (not logo-lockup.png).
+
+  USE THIS (include `_brand_lockup.html` + `_brand_lockup_styles.html`) on:
+  - Public / marketing headers (home, login, register, future landing/about)
+  - Any glass, gradient, or non-white background where a white PNG box would show
+
+  DO NOT use logo-lockup.png for page headers — it has an opaque white plate.
+
+  USE logo-mark.png ALONE (no “Splitwise / MINI” text) for compact chrome:
+  - App topbar, boot splash, loading chip, small inline marks in Settings
+  - Favicon / apple-touch / OG: use app-icon.png
+
+  Optional: set brand_class = "brand-lockup--lg" before include for larger mark.
+#}
+<div class="brand-lockup{% if brand_class is defined and brand_class %} {{ brand_class }}{% endif %}" role="img" aria-label="Splitwise Mini">
+  <img class="brand-lockup-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="88" height="88" />
+  <div class="brand-lockup-word">Splitwise</div>
+  <div class="brand-lockup-mini">MINI</div>
+</div>

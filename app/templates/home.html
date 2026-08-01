@@ -3,11 +3,30 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Log in - Splitwise Mini</title>
+<title>Splitwise Mini - Split bills without the mess</title>
 <link rel="icon" href="{{ url_for('static', filename='brand/app-icon.png') }}" type="image/png" />
-{% set seo_title = 'Log in - Splitwise Mini' %}
-{% set seo_description = 'Log in to Splitwise Mini to track shared expenses, settle balances, and manage your monthly budget, privately with your own account.' %}
+{% set seo_title = 'Splitwise Mini - Split bills without the mess' %}
+{% set seo_description = 'Splitwise Mini - a simple private expense splitter for roommates and friends. Track shared bills, settle up, and stay on budget.' %}
+{% set seo_path = '/' %}
 {% include '_seo.html' %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Splitwise Mini",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "url": {{ (request.url_root.rstrip('/') ~ '/')|tojson }},
+  "description": "A simple private expense splitter for roommates and friends. Track shared bills, settle up, and stay on budget.",
+  "author": {
+    "@type": "Person",
+    "name": "Manoj Hankare",
+    "url": "https://manojhankare.in"
+  },
+  "codeRepository": "https://github.com/Manojhankare/SplitwiseMini",
+  "image": {{ url_for('static', filename='brand/app-icon.png', _external=True)|tojson }}
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,9 +39,6 @@
     --border: rgba(15, 23, 42, 0.08);
     --purple: #6D5EF5;
     --teal: #14B8A6;
-    --field: rgba(255, 255, 255, 0.92);
-    --negative: #DC2626;
-    --negative-soft: #FEE2E2;
     --grad-cta: linear-gradient(135deg, #6D5EF5 0%, #4F46E5 48%, #0D9488 100%);
     --font-display: 'Fraunces', Georgia, serif;
     --font-body: 'Outfit', system-ui, sans-serif;
@@ -34,9 +50,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 28px 18px;
     font-family: var(--font-body);
     color: var(--ink);
+    padding: 28px 20px;
     background:
       radial-gradient(900px 520px at 12% 8%, rgba(109, 94, 245, 0.22), transparent 55%),
       radial-gradient(780px 480px at 92% 88%, rgba(20, 184, 166, 0.2), transparent 50%),
@@ -68,12 +84,14 @@
     0%, 100% { transform: translate(0, 0) scale(1); }
     50% { transform: translate(18px, -14px) scale(1.06); }
   }
-  .card {
+
+  .hero {
     position: relative;
     z-index: 1;
     width: 100%;
     max-width: 400px;
-    padding: 28px 24px 24px;
+    text-align: center;
+    padding: 36px 28px 28px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 28px;
@@ -88,99 +106,89 @@
     from { opacity: 0; transform: translateY(18px) scale(0.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
-  .brand { margin: 0 0 14px; text-align: center; }
-  .brand .brand-lockup { margin: 0; }
+
+  .brand-lockup {
+    animation: floaty 4.5s ease-in-out infinite;
+  }
   .brand-lockup-word { font-family: var(--font-display); }
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
   h1 {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 1.55rem;
-    margin: 0 0 6px;
-    letter-spacing: -0.02em;
-    text-align: center;
+    font-size: clamp(1.85rem, 5.5vw, 2.35rem);
+    margin: 0 0 12px;
+    letter-spacing: -0.035em;
+    line-height: 1.12;
   }
-  p.sub {
+  .lead {
     color: var(--muted);
-    font-size: 0.92rem;
-    margin: 0 0 18px;
-    line-height: 1.4;
-    text-align: center;
+    font-size: 1.02rem;
+    font-weight: 450;
+    margin: 0 0 28px;
+    line-height: 1.55;
   }
-  label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 5px;
-    margin-top: 12px;
-  }
-  label:first-of-type { margin-top: 0; }
-  input {
-    width: 100%;
-    background: var(--field);
-    border: 1.5px solid rgba(15, 23, 42, 0.12);
-    color: var(--ink);
-    border-radius: 12px;
-    padding: 10px 12px;
-    font-size: 0.95rem;
-    font-family: inherit;
-    min-height: 42px;
-    transition: border-color .15s ease, box-shadow .15s ease;
-  }
-  input:focus {
-    outline: none;
-    border-color: var(--purple);
-    box-shadow: 0 0 0 3px rgba(109, 94, 245, 0.18);
-  }
-  button {
-    width: 100%;
-    margin-top: 18px;
-    background: var(--grad-cta);
-    color: #fff;
-    border: none;
-    padding: 12px;
-    border-radius: 14px;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    min-height: 48px;
-    font-family: inherit;
-    box-shadow: 0 12px 28px -10px rgba(79, 70, 229, 0.55);
-    transition: filter .15s ease, transform .05s ease;
-  }
-  button:hover { filter: brightness(1.04); }
-  button:active { transform: translateY(1px); }
-  .flash {
+
+  .ctas {
     display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    color: #991B1B;
-    background: var(--negative-soft);
-    border: 1px solid #FECACA;
-    font-size: 0.85rem;
-    margin-top: 16px;
-    padding: 10px 12px;
-    border-radius: 12px;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 26px;
   }
-  .link {
-    display: block;
-    text-align: center;
-    margin-top: 14px;
-    color: var(--muted);
-    font-size: 0.88rem;
-    font-weight: 600;
+  .btn-login {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 56px;
+    padding: 16px 22px;
+    border-radius: 14px;
+    font-size: 1.08rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
     text-decoration: none;
+    color: #fff;
+    background: var(--grad-cta);
+    box-shadow: 0 12px 28px -10px rgba(79, 70, 229, 0.55);
+    transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
   }
-  .link b { color: var(--ink); font-weight: 700; }
-  .link:hover { color: var(--purple); }
-  .link:hover b { color: var(--purple); }
+  .btn-login:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 16px 32px -10px rgba(79, 70, 229, 0.6);
+  }
+  .btn-login:active { transform: translateY(1px); }
+
+  .btn-register {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: color .15s ease, background .15s ease;
+  }
+  .btn-register:hover {
+    color: var(--purple);
+    background: rgba(109, 94, 245, 0.08);
+  }
+  .btn-register b { font-weight: 700; color: var(--ink); }
+  .btn-register:hover b { color: var(--purple); }
+
   .footer-links {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    margin-top: 16px;
-    padding-top: 14px;
+    gap: 10px;
+    padding-top: 20px;
     border-top: 1px solid var(--border);
   }
   .github-footer {
@@ -191,6 +199,7 @@
     font-weight: 500;
     color: var(--muted);
     text-decoration: none;
+    transition: color .15s ease;
   }
   .github-footer:hover { color: var(--ink); }
   .github-footer svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
@@ -208,34 +217,24 @@
     text-decoration: underline;
     color: var(--purple);
   }
+
   @media (prefers-reduced-motion: reduce) {
-    .orb-a, .orb-b, .card { animation: none; }
+  .orb-a, .orb-b, .brand-lockup, .hero { animation: none; }
   }
 </style>
 </head>
 <body>
   <div class="orb orb-a" aria-hidden="true"></div>
   <div class="orb orb-b" aria-hidden="true"></div>
-  <div class="card">
-    <div class="brand">
-      {% set brand_class = 'brand-lockup--lg' %}
-      {% include '_brand_lockup.html' %}
+  <main class="hero">
+    {% set brand_class = 'brand-lockup--lg' %}
+    {% include '_brand_lockup.html' %}
+    <h1>Split bills without the mess</h1>
+    <p class="lead">Track shared expenses, settle up with friends, and stay on budget, privately in your own account.</p>
+    <div class="ctas">
+      <a class="btn-login" href="{{ url_for('auth.login') }}">Log in</a>
+      <a class="btn-register" href="{{ url_for('auth.register') }}">New here? <b>Create account</b></a>
     </div>
-    <h1>Welcome back</h1>
-    <p class="sub">Log in to keep track of who owes what.</p>
-    <form method="post">
-      <label for="username">Username</label>
-      <input type="text" id="username" name="username" required autocomplete="username" />
-      <label for="password">Password</label>
-      <input type="password" id="password" name="password" required autocomplete="current-password" />
-      <button type="submit">Log in</button>
-    </form>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="flash">{{ message }}</div>
-      {% endfor %}
-    {% endwith %}
-    <a class="link" href="{{ url_for('auth.register') }}">New here? <b>Create an account</b></a>
     <div class="footer-links">
       <a class="github-footer" href="https://github.com/Manojhankare/SplitwiseMini" target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
@@ -243,6 +242,6 @@
       </a>
       <p class="made-by">Made by <a href="https://manojhankare.in" target="_blank" rel="noopener noreferrer">manojhankare.in</a></p>
     </div>
-  </div>
+  </main>
 </body>
 </html>

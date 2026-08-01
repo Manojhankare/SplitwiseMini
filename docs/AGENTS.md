@@ -23,7 +23,8 @@ Improve or extend Splitwise Mini without breaking existing behavior: auth isolat
 | HTTP API | `app/controllers/expense_controller.py`, `auth_controller.py`, `admin_controller.py` |
 | Domain logic / shares / balances / budget | `app/models/expense.py`, `settlement.py`, `user.py` |
 | Main UI | `app/templates/index.html` |
-| Pages / login | `app/controllers/page_controller.py`, `templates/login.html` |
+| Pages / login | `app/controllers/page_controller.py`, `templates/home.html`, `login.html`, `register.html` |
+| Branding | See **Brand assets** below; partials `_brand_lockup.html` / `_brand_lockup_styles.html` |
 | App wiring | `app/__init__.py`, `app/config.py` |
 | DB patches | `scripts/` |
 | Product/architecture context | `docs/PROJECT.md` |
@@ -75,6 +76,19 @@ Improve or extend Splitwise Mini without breaking existing behavior: auth isolat
 - API: `GET/PUT /api/settings/budget`
 - Bootstrap keys: `monthly_budget`, `budget_personal`, `budget_my_shared`, `budget_spent`, `budget_shared_total`
 - SQL: `scripts/add_monthly_budget.sql`
+
+## Brand assets
+
+Files live in `app/static/brand/` (cut from `logo_designs.png` via `scripts/cut_brand_assets.py`).
+
+| Asset / pattern | When to use |
+|-----------------|-------------|
+| **HTML lockup** (`{% include '_brand_lockup.html' %}` + styles) | Page headers on home, login, register, and any future marketing/auth surface. Transparent `logo-mark.png` + text **Splitwise** + **MINI**. Prefer this over a lockup PNG on glass/gradient backgrounds. |
+| `logo-mark.png` alone | Compact UI: app topbar, boot splash, loading chip, small Settings marks. No wordmark text beside it unless space is clearly marketing-sized. |
+| `app-icon.png` | Favicon, apple-touch-icon, Open Graph / JSON-LD image. |
+| `logo-lockup.png` | Avoid for UI headers — opaque white plate shows as a box on non-white backgrounds. Prefer the HTML lockup instead. |
+
+Do not invent a new wordmark PNG for headers; extend `_brand_lockup.html` if the composed lockup needs a size variant (`brand-lockup--lg` already exists).
 
 ## Out of scope unless asked
 

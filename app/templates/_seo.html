@@ -1,6 +1,6 @@
 {# Shared SEO / social meta. Pass seo_title, seo_description; optional seo_robots, seo_path. #}
 {% set _title = seo_title|default('Splitwise Mini') %}
-{% set _desc = seo_description|default('Splitwise Mini — a simple private expense splitter for roommates and friends. Track shared bills, settle up, and stay on budget.') %}
+{% set _desc = seo_description|default('Splitwise Mini - a simple private expense splitter for roommates and friends. Track shared bills, settle up, and stay on budget.') %}
 {% set _robots = seo_robots|default('index, follow') %}
 {% set _path = seo_path|default(request.path) %}
 {% set _canonical = (request.url_root.rstrip('/') ~ _path) %}

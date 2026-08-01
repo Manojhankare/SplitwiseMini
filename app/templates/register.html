@@ -3,135 +3,409 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Create account — Splitwise Mini</title>
+<title>Create account - Splitwise Mini</title>
 <link rel="icon" href="{{ url_for('static', filename='brand/app-icon.png') }}" type="image/png" />
-{% set seo_title = 'Create account — Splitwise Mini' %}
+{% set seo_title = 'Create account - Splitwise Mini' %}
 {% set seo_description = 'Create a free Splitwise Mini account to split bills with roommates and friends. Your expenses stay private to your account.' %}
 {% include '_seo.html' %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+{% include '_brand_lockup_styles.html' %}
   :root {
-    --bg:#F1F5F9; --surface:#FFFFFF; --surface-2:#E2E8F0;
-    --ink:#0F172A; --muted:#64748B; --border:#CBD5E1;
-    --accent:#2563EB; --accent-dark:#1D4ED8; --accent-soft:#DBEAFE;
-    --negative:#DC2626; --negative-soft:#FEE2E2;
-    --grad-bg:linear-gradient(160deg, #F8FAFC 0%, #EFF6FF 38%, #DBEAFE 72%, #E0E7FF 100%);
-    --grad-accent:linear-gradient(135deg, #3B82F6 0%, #2563EB 45%, #4F46E5 100%);
-    --grad-accent-hover:linear-gradient(135deg, #2563EB 0%, #1D4ED8 50%, #4338CA 100%);
-    --radius:18px; --radius-sm:10px;
-    --shadow:0 1px 2px rgba(15,23,42,0.05), 0 16px 32px -12px rgba(37,99,235,0.18);
-    --font-display:'Fraunces', Georgia, serif;
-    --font-body:'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --ink: #0B1220;
+    --muted: #5B6578;
+    --surface: rgba(255, 255, 255, 0.78);
+    --border: rgba(15, 23, 42, 0.08);
+    --purple: #6D5EF5;
+    --teal: #14B8A6;
+    --field: rgba(255, 255, 255, 0.92);
+    --negative: #DC2626;
+    --negative-soft: #FEE2E2;
+    --grad-cta: linear-gradient(135deg, #6D5EF5 0%, #4F46E5 48%, #0D9488 100%);
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Outfit', system-ui, sans-serif;
   }
-  * { box-sizing:border-box; }
+  * { box-sizing: border-box; }
   body {
-    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
-    font-family:var(--font-body); color:var(--ink); padding:24px;
-    background:var(--grad-bg);
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 18px;
+    font-family: var(--font-body);
+    color: var(--ink);
+    background:
+      radial-gradient(900px 520px at 12% 8%, rgba(109, 94, 245, 0.22), transparent 55%),
+      radial-gradient(780px 480px at 92% 88%, rgba(20, 184, 166, 0.2), transparent 50%),
+      radial-gradient(640px 400px at 70% 12%, rgba(99, 102, 241, 0.1), transparent 45%),
+      linear-gradient(165deg, #F7F8FC 0%, #EEF2FF 42%, #E8F8F5 100%);
+    overflow-x: hidden;
+    position: relative;
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-a {
+    width: 220px; height: 220px;
+    top: 8%; left: -40px;
+    background: rgba(109, 94, 245, 0.35);
+    animation: drift 10s ease-in-out infinite;
+  }
+  .orb-b {
+    width: 260px; height: 260px;
+    bottom: 4%; right: -60px;
+    background: rgba(20, 184, 166, 0.3);
+    animation: drift 12s ease-in-out infinite reverse;
+  }
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(18px, -14px) scale(1.06); }
   }
   .card {
-    background:linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%); border:1px solid var(--border); border-radius:var(--radius);
-    box-shadow:var(--shadow); padding:36px 32px; width:100%; max-width:400px;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 400px;
+    padding: 28px 24px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.7) inset,
+      0 24px 60px -28px rgba(79, 70, 229, 0.35);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    animation: rise .55s cubic-bezier(.22, 1, .36, 1);
   }
-  .brand {
-    display: flex;
-    justify-content: center;
-    margin: 0 0 28px;
-    text-align: center;
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
-  .brand-logo {
-    display: block;
-    height: auto;
-    width: min(260px, 100%);
-    max-height: 120px;
-    object-fit: contain;
-    margin: 0 auto;
-  }
+  .brand { margin: 0 0 14px; text-align: center; }
+  .brand .brand-lockup { margin: 0; }
+  .brand-lockup-word { font-family: var(--font-display); }
   h1 {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 1.65rem;
-    margin: 0 0 8px;
+    font-size: 1.55rem;
+    margin: 0 0 6px;
     letter-spacing: -0.02em;
     text-align: center;
   }
   p.sub {
     color: var(--muted);
     font-size: 0.92rem;
-    margin: 0 0 26px;
+    margin: 0 0 18px;
     line-height: 1.4;
     text-align: center;
   }
-  label { display:block; font-size:0.8rem; font-weight:600; color:var(--ink); margin-bottom:6px; margin-top:16px; }
-  label:first-of-type { margin-top:0; }
-  .optional { font-weight:400; color:var(--muted); text-transform:none; }
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 5px;
+    margin-top: 12px;
+  }
+  label:first-of-type { margin-top: 0; }
   input {
-    width:100%; background:var(--bg); border:1.5px solid var(--border); color:var(--ink);
-    border-radius:var(--radius-sm); padding:12px 14px; font-size:0.98rem; font-family:inherit;
-    min-height:46px; transition:border-color .15s ease, background .15s ease;
+    width: 100%;
+    background: var(--field);
+    border: 1.5px solid rgba(15, 23, 42, 0.12);
+    color: var(--ink);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    min-height: 42px;
+    transition: border-color .15s ease, box-shadow .15s ease;
   }
-  input:focus { outline:none; border-color:var(--accent); background:var(--surface); }
-  .hint { font-size:0.78rem; color:var(--muted); margin-top:5px; }
+  input:focus {
+    outline: none;
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(109, 94, 245, 0.18);
+  }
+  .hint { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+  .field-status {
+    font-size: 0.75rem;
+    margin-top: 4px;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .field-status:empty { display: none; }
+  .field-status.is-ok { color: #0F766E; }
+  .field-status.is-bad { color: #B91C1C; }
+  .field-status.is-wait { color: var(--muted); }
+  input.is-ok {
+    border-color: #14B8A6;
+  }
+  input.is-bad {
+    border-color: #F87171;
+  }
+  button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    filter: none;
+    transform: none;
+    box-shadow: none;
+  }
   button {
-    width:100%; margin-top:26px; background:var(--grad-accent); color:#fff; border:none;
-    padding:13px; border-radius:var(--radius-sm); font-size:0.98rem; font-weight:600;
-    cursor:pointer; min-height:46px; transition:filter .15s ease, transform .05s ease;
-    font-family:inherit; box-shadow:0 4px 14px -6px rgba(37,99,235,0.55);
+    width: 100%;
+    margin-top: 18px;
+    background: var(--grad-cta);
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 48px;
+    font-family: inherit;
+    box-shadow: 0 12px 28px -10px rgba(79, 70, 229, 0.55);
+    transition: filter .15s ease, transform .05s ease;
   }
-  button:hover { background:var(--grad-accent-hover); filter:brightness(1.03); }
-  button:active { transform:translateY(1px); }
+  button:hover { filter: brightness(1.04); }
+  button:disabled:hover { filter: none; }
+  button:active { transform: translateY(1px); }
   .flash {
-    display:flex; align-items:flex-start; gap:8px; color:#991B1B; background:var(--negative-soft);
-    border:1px solid #FECACA; font-size:0.85rem; margin-top:16px; padding:10px 12px; border-radius:var(--radius-sm);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: #991B1B;
+    background: var(--negative-soft);
+    border: 1px solid #FECACA;
+    font-size: 0.85rem;
+    margin-top: 16px;
+    padding: 10px 12px;
+    border-radius: 12px;
   }
-  .link { display:block; text-align:center; margin-top:22px; color:var(--muted); font-size:0.88rem; text-decoration:none; }
-  .link b { color:var(--accent); font-weight:600; }
-  .link:hover b { text-decoration:underline; }
+  .link {
+    display: block;
+    text-align: center;
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .link b { color: var(--ink); font-weight: 700; }
+  .link:hover { color: var(--purple); }
+  .link:hover b { color: var(--purple); }
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
   .github-footer {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border);
-    font-size: 0.85rem; color: var(--muted); text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
   }
   .github-footer:hover { color: var(--ink); }
   .github-footer svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
   .made-by {
-    display: block; text-align: center; margin-top: 12px;
-    font-size: 0.8rem; color: var(--muted); text-decoration: none;
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--muted);
   }
-  .made-by a { color: var(--ink); font-weight: 600; text-decoration: none; }
-  .made-by a:hover { text-decoration: underline; color: var(--accent); }
+  .made-by a {
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .made-by a:hover {
+    text-decoration: underline;
+    color: var(--purple);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .orb-a, .orb-b, .card { animation: none; }
+  }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="brand">
-    <img class="brand-logo" src="{{ url_for('static', filename='brand/logo-lockup.png') }}" alt="Splitwise Mini" />
+  <div class="orb orb-a" aria-hidden="true"></div>
+  <div class="orb orb-b" aria-hidden="true"></div>
+  <div class="card">
+    <div class="brand">
+      {% set brand_class = 'brand-lockup--lg' %}
+      {% include '_brand_lockup.html' %}
+    </div>
+    <h1>Create your account</h1>
+    <p class="sub">Your data stays private. Only you can see it.</p>
+    <form method="post" id="registerForm">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required autocomplete="username" minlength="2" maxlength="80" value="{{ form.username if form is defined else '' }}" />
+      <div class="field-status" id="usernameStatus" aria-live="polite"></div>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required autocomplete="email" maxlength="120" value="{{ form.email if form is defined else '' }}" />
+      <div class="field-status" id="emailStatus" aria-live="polite"></div>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required autocomplete="new-password" minlength="4" />
+      <div class="hint">At least 4 characters.</div>
+      <button type="submit" id="registerSubmit">Create account</button>
+    </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    <a class="link" href="{{ url_for('auth.login') }}">Already have an account? <b>Log in</b></a>
+    <div class="footer-links">
+      <a class="github-footer" href="https://github.com/Manojhankare/SplitwiseMini" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
+        Star on GitHub
+      </a>
+      <p class="made-by">Made by <a href="https://manojhankare.in" target="_blank" rel="noopener noreferrer">manojhankare.in</a></p>
+    </div>
   </div>
-  <h1>Create your account</h1>
-  <p class="sub">Your data stays private — only you can see it.</p>
-  <form method="post">
-    <label for="username">Username</label>
-    <input type="text" id="username" name="username" required autocomplete="username" />
-    <label for="email">Email <span class="optional">(optional)</span></label>
-    <input type="email" id="email" name="email" autocomplete="email" />
-    <label for="password">Password</label>
-    <input type="password" id="password" name="password" required autocomplete="new-password" minlength="4" />
-    <div class="hint">At least 4 characters.</div>
-    <button type="submit">Create account</button>
-  </form>
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for category, message in messages %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
-  {% endwith %}
-  <a class="link" href="{{ url_for('auth.login') }}">Already have an account? <b>Log in</b></a>
-  <a class="github-footer" href="https://github.com/Manojhankare/SplitwiseMini" target="_blank" rel="noopener noreferrer">
-    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
-    Star on GitHub
-  </a>
-  <p class="made-by">Made by <a href="https://manojhankare.in" target="_blank" rel="noopener noreferrer">manojhankare.in</a></p>
-</div>
+<script>
+(function () {
+  const usernameInput = document.getElementById("username");
+  const usernameStatus = document.getElementById("usernameStatus");
+  const emailInput = document.getElementById("email");
+  const emailStatus = document.getElementById("emailStatus");
+  const submit = document.getElementById("registerSubmit");
+  const usernameCheckUrl = {{ url_for('auth.check_username')|tojson }};
+  const emailCheckUrl = {{ url_for('auth.check_email')|tojson }};
+
+  const state = { usernameOk: false, emailOk: false };
+  let usernameTimer = null;
+  let emailTimer = null;
+  let usernameReq = 0;
+  let emailReq = 0;
+
+  function syncSubmit() {
+    const u = usernameInput.value.trim();
+    const e = emailInput.value.trim();
+    const usernameBlocking = u.length > 0 && !state.usernameOk;
+    const emailBlocking = e.length > 0 && !state.emailOk;
+    submit.disabled = usernameBlocking || emailBlocking;
+  }
+
+  function setFieldStatus(input, statusEl, key, text, kind) {
+    statusEl.textContent = text || "";
+    statusEl.className = "field-status" + (kind ? " is-" + kind : "");
+    input.classList.toggle("is-ok", kind === "ok");
+    input.classList.toggle("is-bad", kind === "bad");
+    state[key] = kind === "ok";
+    syncSubmit();
+  }
+
+  function checkUsername() {
+    const username = usernameInput.value.trim().toLowerCase();
+    if (!username) {
+      setFieldStatus(usernameInput, usernameStatus, "usernameOk", "", "");
+      return;
+    }
+    if (username.length < 2) {
+      setFieldStatus(usernameInput, usernameStatus, "usernameOk", "At least 2 characters.", "bad");
+      return;
+    }
+    const id = ++usernameReq;
+    setFieldStatus(usernameInput, usernameStatus, "usernameOk", "Checking…", "wait");
+    fetch(usernameCheckUrl + "?username=" + encodeURIComponent(username), {
+      headers: { Accept: "application/json" },
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (id !== usernameReq) return;
+        if (data.available) setFieldStatus(usernameInput, usernameStatus, "usernameOk", "Username is available.", "ok");
+        else if (data.reason === "taken") setFieldStatus(usernameInput, usernameStatus, "usernameOk", "Username already taken.", "bad");
+        else if (data.reason === "too_short") setFieldStatus(usernameInput, usernameStatus, "usernameOk", "At least 2 characters.", "bad");
+        else setFieldStatus(usernameInput, usernameStatus, "usernameOk", "Could not check username.", "bad");
+      })
+      .catch(function () {
+        if (id !== usernameReq) return;
+        setFieldStatus(usernameInput, usernameStatus, "usernameOk", "Could not check username.", "bad");
+      });
+  }
+
+  function checkEmail() {
+    const email = emailInput.value.trim().toLowerCase();
+    if (!email) {
+      setFieldStatus(emailInput, emailStatus, "emailOk", "", "");
+      return;
+    }
+    if (email.indexOf("@") < 1 || email.split("@").pop().indexOf(".") < 1) {
+      setFieldStatus(emailInput, emailStatus, "emailOk", "Enter a valid email address.", "bad");
+      return;
+    }
+    const id = ++emailReq;
+    setFieldStatus(emailInput, emailStatus, "emailOk", "Checking…", "wait");
+    fetch(emailCheckUrl + "?email=" + encodeURIComponent(email), {
+      headers: { Accept: "application/json" },
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (id !== emailReq) return;
+        if (data.available) setFieldStatus(emailInput, emailStatus, "emailOk", "Email is available.", "ok");
+        else if (data.reason === "taken") setFieldStatus(emailInput, emailStatus, "emailOk", "Email already registered.", "bad");
+        else if (data.reason === "invalid" || data.reason === "empty") setFieldStatus(emailInput, emailStatus, "emailOk", "Enter a valid email address.", "bad");
+        else setFieldStatus(emailInput, emailStatus, "emailOk", "Could not check email.", "bad");
+      })
+      .catch(function () {
+        if (id !== emailReq) return;
+        setFieldStatus(emailInput, emailStatus, "emailOk", "Could not check email.", "bad");
+      });
+  }
+
+  usernameInput.addEventListener("input", function () {
+    clearTimeout(usernameTimer);
+    if (!usernameInput.value.trim()) {
+      setFieldStatus(usernameInput, usernameStatus, "usernameOk", "", "");
+      return;
+    }
+    setFieldStatus(usernameInput, usernameStatus, "usernameOk", "Checking…", "wait");
+    usernameTimer = setTimeout(checkUsername, 350);
+  });
+  usernameInput.addEventListener("blur", function () {
+    clearTimeout(usernameTimer);
+    checkUsername();
+  });
+
+  emailInput.addEventListener("input", function () {
+    clearTimeout(emailTimer);
+    if (!emailInput.value.trim()) {
+      setFieldStatus(emailInput, emailStatus, "emailOk", "", "");
+      return;
+    }
+    setFieldStatus(emailInput, emailStatus, "emailOk", "Checking…", "wait");
+    emailTimer = setTimeout(checkEmail, 350);
+  });
+  emailInput.addEventListener("blur", function () {
+    clearTimeout(emailTimer);
+    checkEmail();
+  });
+
+  document.getElementById("registerForm").addEventListener("submit", function (e) {
+    const u = usernameInput.value.trim();
+    const em = emailInput.value.trim();
+    if ((u.length >= 2 && !state.usernameOk) || (em.length > 0 && !state.emailOk)) {
+      e.preventDefault();
+      checkUsername();
+      checkEmail();
+    }
+  });
+
+  if (usernameInput.value.trim()) checkUsername();
+  if (emailInput.value.trim()) checkEmail();
+})();
+</script>
 </body>
 </html>

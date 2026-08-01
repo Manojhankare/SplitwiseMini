@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Admin — Splitwise Mini</title>
+<title>Admin - Splitwise Mini</title>
 <link rel="icon" href="{{ url_for('static', filename='brand/app-icon.png') }}" type="image/png" />
-{% set seo_title = 'Admin — Splitwise Mini' %}
+{% set seo_title = 'Admin - Splitwise Mini' %}
 {% set seo_description = 'Admin dashboard for Splitwise Mini.' %}
 {% set seo_robots = 'noindex, nofollow' %}
 {% include '_seo.html' %}
@@ -124,7 +124,7 @@
       </div>
     </div>
     <div class="top-actions">
-      <a class="back" href="{{ url_for('page.index') }}">&larr; Back to app</a>
+      <a class="back" href="{{ url_for('page.app') }}">&larr; Back to app</a>
       <form method="post" action="{{ url_for('auth.logout') }}">
         <button type="submit" class="secondary">Log out</button>
       </form>
@@ -165,7 +165,7 @@
         <tr data-user-id="{{ u.id }}">
           <td data-label="ID" class="mono">{{ u.id }}</td>
           <td data-label="Username">{{ u.username }}</td>
-          <td data-label="Email">{{ u.email or '—' }}</td>
+          <td data-label="Email">{{ u.email or '-' }}</td>
           <td data-label="Role"><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
           <td data-label="Status">
             <span class="badge {{ 'on' if u.is_active else 'off' }}">
@@ -180,7 +180,7 @@
               <button type="button" class="danger" onclick="deleteUser({{ u.id }})">Delete</button>
             </div>
             {% else %}
-            <span class="muted-dash">—</span>
+            <span class="muted-dash">-</span>
             {% endif %}
           </td>
         </tr>

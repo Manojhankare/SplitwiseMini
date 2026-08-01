@@ -20,9 +20,9 @@ app/
   extensions.py        # db, login_manager
   models/              # User, Person, Group, Expense, Settlement
   controllers/         # auth, page, expense (/api), admin
-  templates/           # index.html (main app), login, register, admin
-scripts/               # one-off SQL ALTERs / indexes for existing DBs
-docs/                  # this file + AGENTS.md
+  templates/           # home (landing), index (/app), login, register, admin; brand: `_brand_lockup*`
+scripts/               # one-off SQL ALTERs / indexes for existing DBs; cut_brand_assets.py
+docs/                  # this file + AGENTS.md (includes Brand assets: when to use mark+text vs mark alone)
 ```
 
 **Important:** `db.create_all()` creates missing *tables* on a fresh DB. It does **not** add columns to existing tables. Production schema changes need scripts under `scripts/` (e.g. `add_monthly_budget.sql`).
@@ -79,6 +79,7 @@ UI defaults Report/Balances to the current *local* month. Budget month is always
 ## Auth & multi-tenant
 
 - Register / login session; data scoped by `current_user.id`
+- Register requires **email** (stored for future password recovery); username/email availability checked live via `GET /api/check-username` and `GET /api/check-email`
 - Admin role: `/admin` user management
 - Always filter mutations and reads by `user_id`
 

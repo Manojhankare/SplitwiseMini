@@ -459,7 +459,7 @@ class Expense(db.Model):
             user_id, period_ids, start_date=start_date, end_date=end_date
         )
         # When the active period is already "All time", expenses/settlements_list above
-        # already are the all-time lists — reuse them instead of re-fetching for the ledger.
+        # already are the all-time lists - reuse them instead of re-fetching for the ledger.
         is_all_time = start_date is None and end_date is None
         payload = {
             "people": Person.list_all(user_id),

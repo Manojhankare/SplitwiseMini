@@ -53,7 +53,8 @@ class User(UserMixin, db.Model):
 
     @classmethod
     def create(cls, username, password, email=None, role="user"):
-        user = cls(username=username.strip().lower(), email=email, role=role)
+        normalized_email = email.strip().lower() if email else None
+        user = cls(username=username.strip().lower(), email=normalized_email, role=role)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
@@ -62,6 +63,12 @@ class User(UserMixin, db.Model):
     @classmethod
     def get_by_username(cls, username):
         return cls.query.filter_by(username=username.strip().lower()).first()
+
+    @classmethod
+    def get_by_email(cls, email):
+        if not email:
+            return None
+        return cls.query.filter_by(email=email.strip().lower()).first()
 
     @classmethod
     def list_all(cls):

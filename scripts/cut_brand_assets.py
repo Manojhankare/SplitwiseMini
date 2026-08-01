@@ -159,7 +159,7 @@ def lockup_bbox():
     )
 
 
-# logo-lockup (wordmark is wider than the S — use mark+text extents)
+# logo-lockup (wordmark is wider than the S - use mark+text extents)
 lockup = im.crop(lockup_bbox())
 lockup.save(OUT / "logo-lockup.png")
 print("logo-lockup", lockup.size)

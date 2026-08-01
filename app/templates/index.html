@@ -4,6 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Splitwise Mini</title>
+<link rel="icon" href="{{ url_for('static', filename='brand/app-icon.png') }}" type="image/png" />
+{% set seo_title = 'Splitwise Mini' %}
+{% set seo_description = 'Splitwise Mini — track shared expenses, settle balances, and manage your monthly budget.' %}
+{% set seo_robots = 'noindex, nofollow' %}
+{% include '_seo.html' %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -72,68 +77,89 @@
 
   /* ========== Header / Hero ========== */
   .topbar {
-    padding: var(--space-2) var(--space-2) 4px;
+    padding: 8px var(--space-2) 0;
   }
-  .greeting {
+  .topbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+  }
+  .topbar-logo {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    object-fit: contain;
+    display: block;
+  }
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+  }
+  .greeting-line {
+    margin: 0;
     font-size: 13px;
-    font-weight: 500;
     color: var(--muted);
-    margin: 0 0 2px;
+    font-weight: 500;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .greeting-name {
-    font-size: 20px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--ink);
-    margin: 0;
-    letter-spacing: -0.02em;
     text-transform: capitalize;
   }
-  .page-meta {
-    margin-top: 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-  .page-meta h1 {
+  .page-title {
     font-size: 13px;
     font-weight: 600;
     color: var(--muted);
     margin: 0;
+    flex-shrink: 0;
   }
-  .page-meta .topbar-sub {
-    font-size: 12px;
-    color: var(--muted);
-    margin: 0;
-    opacity: 0.85;
-  }
+  .topbar-sub { display: none; }
 
   .hero-card {
     margin: var(--space-1) var(--space-2) 0;
-    padding: 14px var(--space-2);
-    border-radius: 16px;
+    padding: 10px var(--space-2);
+    border-radius: 14px;
     background: var(--grad-hero);
     color: #fff;
-    box-shadow: 0 12px 28px rgba(79, 70, 229, 0.22);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.18);
     animation: fadeSlide .35s ease;
+  }
+  .hero-card.hidden { display: none; }
+  .hero-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
   }
   .hero-label {
     font-size: 11px;
     font-weight: 500;
     opacity: 0.85;
-    margin: 0 0 2px;
+    margin: 0;
   }
   .hero-balance {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 700;
     letter-spacing: -0.03em;
-    margin: 0 0 8px;
+    margin: 0;
     font-variant-numeric: tabular-nums;
   }
   .hero-balance.is-over {
     color: #FECACA;
   }
   .hero-budget-bar {
-    height: 6px;
+    height: 4px;
     border-radius: 999px;
     background: rgba(255,255,255,0.18);
     overflow: hidden;
@@ -153,14 +179,14 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 4px 8px;
-    margin: 0 0 10px;
+    gap: 2px 8px;
+    margin: 0 0 6px;
     font-size: 11px;
     opacity: 0.9;
     font-variant-numeric: tabular-nums;
   }
   .hero-budget-hint {
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     font-size: 11px;
     opacity: 0.85;
   }
@@ -172,25 +198,28 @@
   }
   .hero-stats {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
   }
   .hero-stat {
     background: rgba(255,255,255,0.12);
-    border-radius: 10px;
-    padding: 6px 8px;
+    border-radius: 8px;
+    padding: 5px 6px;
     min-width: 0;
   }
   .hero-stat-label {
     display: block;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 500;
     opacity: 0.8;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .hero-stat-value {
     display: block;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
@@ -253,6 +282,16 @@
     box-shadow: var(--shadow);
     transition: transform .15s ease, box-shadow .15s ease;
   }
+  #section-add {
+    padding: var(--space-2);
+  }
+  #section-add .form-group {
+    margin-bottom: var(--space-2);
+    padding-bottom: var(--space-2);
+  }
+  #section-add .form-group-title {
+    margin-bottom: var(--space-1);
+  }
   h2 {
     font-size: 14px; color: var(--muted); text-transform: none; letter-spacing: -0.01em;
     margin: 0 0 var(--space-2); font-weight: 600;
@@ -289,7 +328,7 @@
   }
   @media (max-width: 380px) {
     .field-row { grid-template-columns: 1fr; }
-    .hero-stats { grid-template-columns: 1fr; }
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
   }
 
   label {
@@ -528,7 +567,10 @@
     font-weight: 600; font-size: 15px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .expense-row .meta { color: var(--muted); font-size: 12px; line-height: 1.4; }
+  .expense-row .meta {
+    color: var(--muted); font-size: 12px; line-height: 1.4;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   .expense-row .right {
     flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
   }
@@ -653,6 +695,36 @@
     padding: 10px 14px; border-radius: var(--radius-sm); min-height: 40px;
     display: inline-flex; align-items: center;
   }
+  .github-card .github-row {
+    display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;
+  }
+  .github-card .github-copy { flex: 1; min-width: 0; }
+  .github-card .github-copy p {
+    margin: 4px 0 0; font-size: 13px; color: var(--muted); line-height: 1.4;
+  }
+  .github-card .github-mark {
+    width: 40px; height: 40px; flex-shrink: 0; object-fit: contain;
+  }
+  a.github-star {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--ink); color: #fff; text-decoration: none;
+    font-size: 14px; font-weight: 600; padding: 10px 14px;
+    border-radius: var(--radius-sm); min-height: 40px; flex-shrink: 0;
+  }
+  a.github-star:hover { filter: brightness(1.08); }
+  a.github-star svg { width: 16px; height: 16px; fill: currentColor; }
+  .made-by {
+    margin: 12px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .made-by a {
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .made-by a:hover { text-decoration: underline; color: var(--primary); }
 
   /* ========== Bottom nav (floating, 4 equal tabs) ========== */
   .bottom-nav {
@@ -750,14 +822,14 @@
 
   /* ========== Responsive ========== */
   @media (min-width: 480px) {
-    .topbar { padding: var(--space-4) var(--space-3) var(--space-2); }
+    .topbar { padding: 10px var(--space-3) 0; }
     main { padding: var(--space-2) var(--space-3) var(--space-3); }
     .hero-card { margin-left: var(--space-3); margin-right: var(--space-3); }
     .period-bar { padding-left: var(--space-3); padding-right: var(--space-3); }
-    .hero-stat-value { font-size: 15px; }
+    .hero-stat-value { font-size: 13px; }
   }
   @media (min-width: 768px) {
-    .hero-balance { font-size: 32px; }
+    .hero-balance { font-size: 26px; }
   }
 
   /* ========== Print ========== */
@@ -785,17 +857,21 @@
 <body>
 <div class="app">
   <header class="topbar">
-    <p class="greeting" id="greetingText">Good evening 👋</p>
-    <p class="greeting-name">{{ current_username }}</p>
-    <div class="page-meta">
-      <h1 id="pageTitle">Add expense</h1>
-      <p class="topbar-sub" id="pageSub">Log a new bill or purchase</p>
+    <div class="topbar-row">
+      <div class="topbar-left">
+        <img class="topbar-logo" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="28" height="28" />
+        <p class="greeting-line"><span id="greetingText">Good evening</span>, <strong class="greeting-name">{{ current_username }}</strong></p>
+      </div>
+      <h1 class="page-title" id="pageTitle">Add expense</h1>
     </div>
+    <p class="topbar-sub" id="pageSub" aria-hidden="true">Log a new bill or purchase</p>
   </header>
 
-  <div class="hero-card" aria-label="Monthly budget summary">
-    <p class="hero-label" id="heroBalanceLabel">Left this month</p>
-    <p class="hero-balance" id="heroBalance">₹0.00</p>
+  <div class="hero-card hidden" id="heroCard" aria-label="Monthly budget summary">
+    <div class="hero-top">
+      <p class="hero-label" id="heroBalanceLabel">Left this month</p>
+      <p class="hero-balance" id="heroBalance">₹0.00</p>
+    </div>
     <div class="hero-budget-bar" id="heroBudgetBar" aria-hidden="true"><span id="heroBudgetFill"></span></div>
     <div class="hero-budget-meta">
       <span id="heroBudgetSpentTarget"><span id="heroThisMonthDetail">₹0.00</span><span id="heroBudgetTargetWrap"> / <span id="heroBudgetTarget">—</span></span></span>
@@ -975,6 +1051,22 @@
         <button type="button" onclick="createGroup()">Create group</button>
         <div id="groupsList" class="chips" style="margin-top:14px"><div class="empty">No groups yet.</div></div>
       </div>
+
+      <div class="card github-card" id="section-github">
+        <h2><span class="dot"></span>Open source</h2>
+        <div class="github-row">
+          <img class="github-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="40" height="40" />
+          <div class="github-copy">
+            <strong>Splitwise Mini</strong>
+            <p>If this helped you split bills, a GitHub star helps others find it.</p>
+          </div>
+          <a class="github-star" href="https://github.com/Manojhankare/SplitwiseMini" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
+            Star on GitHub
+          </a>
+        </div>
+        <p class="made-by">Made by <a href="https://manojhankare.in" target="_blank" rel="noopener noreferrer">manojhankare.in</a></p>
+      </div>
     </section>
 
   </main>
@@ -1069,8 +1161,7 @@ function setGreeting() {
   const el = document.getElementById('greetingText');
   if (!el) return;
   const h = new Date().getHours();
-  const part = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-  el.textContent = part + ' 👋';
+  el.textContent = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
 }
 
 function updateHeroSummary() {
@@ -1314,6 +1405,7 @@ function showTab(tab) {
   document.getElementById('pageTitle').textContent = TAB_META[tab].title;
   document.getElementById('pageSub').textContent = TAB_META[tab].sub;
   document.getElementById('periodBar').classList.toggle('hidden', tab !== 'report' && tab !== 'balances');
+  document.getElementById('heroCard').classList.toggle('hidden', tab === 'add');
   window.scrollTo(0, 0);
 }
 
@@ -2145,8 +2237,7 @@ function renderExpensesList(expenses) {
       </div>
       <div class="left">
         <span class="expense-title">${e.description}</span>
-        <span class="meta">${e.date}</span>
-        <span class="meta">paid by ${cap(e.payer)} · ${e.is_personal ? 'personal' : 'split: ' + tag}${settledBadge ? ' · ' + settledBadge : ''}</span>
+        <span class="meta">${e.date} · paid by ${cap(e.payer)} · ${e.is_personal ? 'personal' : 'split: ' + tag}${settledBadge ? ' · ' + settledBadge : ''}</span>
       </div>
       <div class="right">
         <span class="expense-amount">${fmt(e.amount)}</span>

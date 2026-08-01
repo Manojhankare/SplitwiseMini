@@ -1,0 +1,26 @@
+{# Shared SEO / social meta. Pass seo_title, seo_description; optional seo_robots, seo_path. #}
+{% set _title = seo_title|default('Splitwise Mini') %}
+{% set _desc = seo_description|default('Splitwise Mini — a simple private expense splitter for roommates and friends. Track shared bills, settle up, and stay on budget.') %}
+{% set _robots = seo_robots|default('index, follow') %}
+{% set _path = seo_path|default(request.path) %}
+{% set _canonical = (request.url_root.rstrip('/') ~ _path) %}
+{% set _image = url_for('static', filename='brand/app-icon.png', _external=True) %}
+<meta name="description" content="{{ _desc }}" />
+<meta name="author" content="Manoj Hankare" />
+<meta name="robots" content="{{ _robots }}" />
+<meta name="theme-color" content="#4F46E5" />
+<link rel="canonical" href="{{ _canonical }}" />
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='brand/app-icon.png') }}" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Splitwise Mini" />
+<meta property="og:title" content="{{ _title }}" />
+<meta property="og:description" content="{{ _desc }}" />
+<meta property="og:url" content="{{ _canonical }}" />
+<meta property="og:image" content="{{ _image }}" />
+<meta property="og:image:alt" content="Splitwise Mini app icon" />
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="{{ _title }}" />
+<meta name="twitter:description" content="{{ _desc }}" />
+<meta name="twitter:image" content="{{ _image }}" />

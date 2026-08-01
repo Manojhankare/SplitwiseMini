@@ -8,6 +8,7 @@ from app.models.expense import Expense
 from app.models.group import Group
 from app.models.person import Person
 from app.models.settlement import Settlement
+from app.models.user import User
 
 expense_bp = Blueprint("expense", __name__, url_prefix="/api")
 
@@ -415,5 +416,50 @@ def expense_outstanding(expense_id):
         if not expense:
             return jsonify({"error": "expense not found"}), 404
         return jsonify(Expense.outstanding_for_expense(expense))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@expense_bp.route("/settings/budget", methods=["GET"])
+@login_required
+def get_budget():
+    try:
+        budget = current_user.monthly_budget
+        return jsonify({
+            "monthly_budget": float(budget) if budget is not None else None,
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@expense_bp.route("/settings/budget", methods=["PUT"])
+@login_required
+def put_budget():
+    data = request.get_json(silent=True) or {}
+    if "monthly_budget" not in data:
+        return jsonify({"error": "monthly_budget is required (number or null)"}), 400
+
+    raw = data.get("monthly_budget")
+    if raw is None or raw == "":
+        amount = None
+    else:
+        try:
+            amount = float(raw)
+        except (TypeError, ValueError):
+            return jsonify({"error": "monthly_budget must be a number or null"}), 400
+        if amount < 0:
+            return jsonify({"error": "monthly_budget cannot be negative"}), 400
+        if amount == 0:
+            amount = None
+        else:
+            amount = round(amount, 2)
+
+    try:
+        user = User.set_monthly_budget(current_user.id, amount)
+        if not user:
+            return jsonify({"error": "user not found"}), 404
+        return jsonify({
+            "monthly_budget": float(user.monthly_budget) if user.monthly_budget is not None else None,
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500

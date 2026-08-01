@@ -15,6 +15,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), default="user", nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
+    monthly_budget = db.Column(db.Numeric(12, 2), nullable=True)
     created_at = db.Column(
         db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -37,8 +38,18 @@ class User(UserMixin, db.Model):
             "email": self.email,
             "role": self.role,
             "is_active": self.is_active,
+            "monthly_budget": float(self.monthly_budget) if self.monthly_budget is not None else None,
             "created_at": self.created_at.isoformat(),
         }
+
+    @classmethod
+    def set_monthly_budget(cls, user_id, amount):
+        user = db.session.get(cls, user_id)
+        if not user:
+            return None
+        user.monthly_budget = amount
+        db.session.commit()
+        return user
 
     @classmethod
     def create(cls, username, password, email=None, role="user"):

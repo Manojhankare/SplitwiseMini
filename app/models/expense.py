@@ -309,6 +309,57 @@ class Expense(db.Model):
         }
 
     @classmethod
+    def compute_monthly_budget_summary(cls, user_id, me="self"):
+        """Consumption budget for the current UTC calendar month.
+
+        Separate from bootstrap period filters. Settlements are ignored.
+        """
+        from calendar import monthrange
+
+        from app.models.user import User
+
+        now = datetime.now(timezone.utc).date()
+        start = now.replace(day=1)
+        end = now.replace(day=monthrange(now.year, now.month)[1])
+        month_expenses = cls.fetch_for_user(user_id, start_date=start, end_date=end)
+
+        budget_personal = 0.0
+        budget_my_shared = 0.0
+        budget_shared_total = 0.0
+
+        for row in month_expenses:
+            amount = float(row.amount)
+            if row.is_personal:
+                if row.payer == me:
+                    budget_personal += amount
+                continue
+
+            budget_shared_total += amount
+            parts = row.participants or []
+            if me not in parts:
+                continue
+            shares = _equal_shares(amount, parts, parts)
+            budget_my_shared += shares.get(me, 0.0)
+
+        budget_personal = round(budget_personal, 2)
+        budget_my_shared = round(budget_my_shared, 2)
+        budget_spent = round(budget_personal + budget_my_shared, 2)
+        budget_shared_total = round(budget_shared_total, 2)
+
+        user = db.session.get(User, user_id)
+        monthly_budget = (
+            float(user.monthly_budget) if user and user.monthly_budget is not None else None
+        )
+
+        return {
+            "monthly_budget": monthly_budget,
+            "budget_personal": budget_personal,
+            "budget_my_shared": budget_my_shared,
+            "budget_spent": budget_spent,
+            "budget_shared_total": budget_shared_total,
+        }
+
+    @classmethod
     def bootstrap_payload(cls, user_id, filter_type="all", start_date=None, end_date=None):
         from app.models.group import Group
         from app.models.person import Person
@@ -316,7 +367,7 @@ class Expense(db.Model):
 
         expenses = cls.fetch_for_user(user_id, start_date=start_date, end_date=end_date)
         settlements = Settlement.fetch_for_user(user_id, start_date=start_date, end_date=end_date)
-        return {
+        payload = {
             "people": Person.list_all(user_id),
             "groups": Group.list_all(user_id),
             "expenses": cls.to_dicts_with_outstanding(expenses, user_id),
@@ -331,3 +382,5 @@ class Expense(db.Model):
                 settlements=settlements,
             ),
         }
+        payload.update(cls.compute_monthly_budget_summary(user_id))
+        return payload

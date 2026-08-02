@@ -1981,7 +1981,7 @@ if (window.swminiTheme) {
   updateSettingsHubSummaries();
 }
 
-function openSettingsPanel(name) {
+function openSettingsPanelDom(name) {
   const hub = document.getElementById('settingsHub');
   if (hub) hub.classList.add('hidden');
   document.querySelectorAll('[data-settings-panel]').forEach(panel => {
@@ -1990,11 +1990,27 @@ function openSettingsPanel(name) {
   window.scrollTo(0, 0);
 }
 
-function closeSettingsPanel() {
+function closeSettingsPanelDom() {
   const hub = document.getElementById('settingsHub');
   if (hub) hub.classList.remove('hidden');
   document.querySelectorAll('[data-settings-panel]').forEach(panel => panel.classList.add('hidden'));
-  if (editingGroupId != null) cancelGroupEdit();
+  if (typeof editingGroupId !== 'undefined' && editingGroupId != null) cancelGroupEdit();
+}
+
+function openSettingsPanel(name) {
+  applyTabDom('settings', { keepPanel: true });
+  openSettingsPanelDom(name);
+  queueNavSync();
+}
+
+function closeSettingsPanel() {
+  const hadPanel = !!(lastKnownAppState && lastKnownAppState.panel);
+  closeSettingsPanelDom();
+  if (hadPanel) {
+    replaceAppState({ tab: 'settings', panel: null });
+    return;
+  }
+  queueNavSync();
 }
 
 function updateSettingsHubSummaries() {
@@ -2370,15 +2386,191 @@ function ensurePeriodIncludesDate(dateStr) {
   }
 }
 
-function showTab(tab) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+function showAppToast(msg) {
+  try {
+    const toast = document.getElementById('eggToast');
+    if (!toast) return;
+    toast.textContent = msg || '';
+    toast.classList.add('is-on');
+    if (showAppToast._timer) clearTimeout(showAppToast._timer);
+    showAppToast._timer = setTimeout(function () {
+      toast.classList.remove('is-on');
+    }, 2500);
+  } catch (_) {}
+}
+
+const APP_TABS = ['add', 'report', 'balances', 'settings'];
+const APP_PANELS = ['appearance', 'budget', 'people', 'groups'];
+let _appNavSilent = false;
+let _navSyncQueued = false;
+let _leaveArmedUntil = 0;
+let lastKnownAppState = { sw: 1, tab: 'add', panel: null };
+
+function normalizeAppState(state) {
+  const tab = state && APP_TABS.indexOf(state.tab) >= 0 ? state.tab : 'add';
+  let panel = state && state.panel ? state.panel : null;
+  if (tab !== 'settings') panel = null;
+  else if (panel && APP_PANELS.indexOf(panel) < 0) panel = null;
+  return { sw: 1, tab: tab, panel: panel };
+}
+
+function statesEqual(a, b) {
+  return !!(a && b && a.tab === b.tab && a.panel === b.panel);
+}
+
+function readDomAppState() {
+  const active = document.querySelector('.nav-btn.active');
+  const tab = (active && active.dataset.tab) || 'add';
+  let panel = null;
+  if (tab === 'settings') {
+    const open = document.querySelector('[data-settings-panel]:not(.hidden)');
+    if (open) panel = open.getAttribute('data-settings-panel');
+  }
+  return normalizeAppState({ tab: tab, panel: panel });
+}
+
+function applyTabDom(tab, opts) {
+  if (!TAB_META[tab]) tab = 'add';
+  document.querySelectorAll('.tab-panel').forEach(function (p) {
+    p.classList.toggle('active', p.dataset.panel === tab);
+  });
+  document.querySelectorAll('.nav-btn').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
   document.getElementById('pageTitle').textContent = TAB_META[tab].title;
   document.getElementById('pageSub').textContent = TAB_META[tab].sub;
   document.getElementById('periodBar').classList.toggle('hidden', tab !== 'report' && tab !== 'balances');
   document.getElementById('heroCard').classList.toggle('hidden', tab === 'add');
-  if (tab === 'settings') closeSettingsPanel();
+  if (tab === 'settings') {
+    if (!(opts && opts.keepPanel)) closeSettingsPanelDom();
+  } else {
+    closeSettingsPanelDom();
+  }
   window.scrollTo(0, 0);
+}
+
+function applyAppLocation(state) {
+  state = normalizeAppState(state);
+  _appNavSilent = true;
+  try {
+    if (state.tab === 'settings' && state.panel) {
+      applyTabDom('settings', { keepPanel: true });
+      openSettingsPanelDom(state.panel);
+    } else {
+      applyTabDom(state.tab);
+    }
+    lastKnownAppState = state;
+  } finally {
+    _appNavSilent = false;
+  }
+}
+
+function pushAppState(state) {
+  state = normalizeAppState(state);
+  lastKnownAppState = state;
+  try {
+    history.pushState(state, '', location.pathname + location.search);
+  } catch (_) {}
+}
+
+function replaceAppState(state) {
+  state = normalizeAppState(state);
+  lastKnownAppState = state;
+  try {
+    history.replaceState(state, '', location.pathname + location.search);
+  } catch (_) {}
+}
+
+function isPanelToHubTransition(prev, next) {
+  return !!(
+    prev && next &&
+    prev.tab === 'settings' && next.tab === 'settings' &&
+    prev.panel && !next.panel
+  );
+}
+
+function queueNavSync() {
+  if (_appNavSilent) return;
+  if (_navSyncQueued) return;
+  _navSyncQueued = true;
+  const run = function () {
+    _navSyncQueued = false;
+    try {
+      const next = readDomAppState();
+      if (statesEqual(next, lastKnownAppState)) return;
+      if (isPanelToHubTransition(lastKnownAppState, next)) {
+        replaceAppState(next);
+        return;
+      }
+      pushAppState(next);
+    } catch (_) {}
+  };
+  if (typeof queueMicrotask === 'function') queueMicrotask(run);
+  else Promise.resolve().then(run);
+}
+
+function clearLightOverlays() {
+  try {
+    const opts = document.getElementById('participantOptions');
+    if (opts) opts.classList.add('hidden');
+    document.querySelectorAll('details.menu[open]').forEach(function (m) {
+      m.removeAttribute('open');
+    });
+  } catch (_) {}
+}
+
+function onAppPopState(e) {
+  try {
+    const payerMenu = document.getElementById('payerMenu');
+    const payerBackdrop = document.getElementById('payerBackdrop');
+    const payerOpen = (payerMenu && !payerMenu.classList.contains('hidden')) ||
+      (payerBackdrop && !payerBackdrop.classList.contains('hidden'));
+    if (payerOpen) {
+      closePayerDropdown();
+      try {
+        history.pushState(lastKnownAppState, '', location.pathname + location.search);
+      } catch (_) {}
+      return;
+    }
+
+    const modal = document.getElementById('settleModal');
+    if (modal && !modal.classList.contains('hidden')) {
+      closeSettleModal();
+      try {
+        history.pushState(lastKnownAppState, '', location.pathname + location.search);
+      } catch (_) {}
+      return;
+    }
+
+    clearLightOverlays();
+
+    const state = e.state;
+    if (state && state.sw === 1) {
+      applyAppLocation(state);
+      return;
+    }
+    const now = Date.now();
+    if (now < _leaveArmedUntil) return;
+    _leaveArmedUntil = now + 2000;
+    try {
+      history.pushState(lastKnownAppState, '', location.pathname + location.search);
+    } catch (_) {}
+    showAppToast('Press back again to leave');
+  } catch (_) {}
+}
+
+function initAppNav() {
+  try {
+    if (!window.history || typeof history.pushState !== 'function') return;
+    lastKnownAppState = normalizeAppState({ tab: 'add', panel: null });
+    history.replaceState(lastKnownAppState, '', location.pathname + location.search);
+    window.addEventListener('popstate', onAppPopState);
+  } catch (_) {}
+}
+
+function showTab(tab) {
+  applyTabDom(tab);
+  queueNavSync();
 }
 
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
@@ -3588,6 +3780,7 @@ refresh();
 renderParticipantChips();
 syncPayerDropdown();
 updateHeroSummary();
+initAppNav();
 
 (function initAboutEasterEgg() {
   try {
@@ -3600,27 +3793,15 @@ updateHeroSummary();
 
   try {
     const btn = document.getElementById('settingsAboutEgg');
-    const toast = document.getElementById('eggToast');
-    if (!btn || !toast) return;
+    if (!btn) return;
 
     let taps = 0;
     let lastTap = 0;
     let cooldownUntil = 0;
-    let toastTimer = null;
     const TAP_WINDOW_MS = 2000;
     const NEED = 7;
     const COOLDOWN_MS = 8000;
-    const TOAST_MS = 2500;
     const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    function showEggToast(msg) {
-      toast.textContent = msg;
-      toast.classList.add('is-on');
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(function () {
-        toast.classList.remove('is-on');
-      }, TOAST_MS);
-    }
 
     function burstConfetti(originEl) {
       if (reduceMotion) return;
@@ -3660,7 +3841,7 @@ updateHeroSummary();
         setTimeout(function () { btn.classList.remove('is-spinning'); }, 600);
         burstConfetti(btn);
       }
-      showEggToast('Made with care by Manoj Hankare');
+      showAppToast('Made with care by Manoj Hankare');
     });
   } catch (_) {}
 })();

@@ -90,6 +90,7 @@ UI defaults Report/Balances to the current *local* month. Budget month is always
 - Compact greeting + slim budget hero (left this month / my spend) + Add as default tab
 - Tabs: Add · Report · Balances · Settings (floating bottom nav)
 - Settings: denser hub (profile wash, compact rows, About band) with live summaries + Log out; one detail panel at a time (panels unchanged / stay in DOM so theme/budget/people/group IDs keep working); deep link from hero budget hint opens Budget panel after hub reset; Settings About logo has a client-only 7-tap easter egg (toast + optional spin/confetti)
+- In-app back (thin): History API for tabs + Settings panels; panel→hub uses `replaceState` (so ‹ Settings does not re-open the panel on swipe-back); settle + Paid-by sheets close on back without their own stack entries; light overlays (combo/menus) clear on back; double-back toast “Press back again to leave”. Known limits: no hash restore on refresh; signed-in `/login`→`/app` redirect can bounce if user leaves then hits login in history; OS can still dismiss PWA.
 - Period bar on Report/Balances
 - Settle modal (bottom sheet)
 - IDs and `onclick` / `fetch` paths are wired tightly — preserve them when restyling

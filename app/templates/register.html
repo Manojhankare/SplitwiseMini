@@ -8,22 +8,14 @@
 {% set seo_title = 'Create account - Splitwise Mini' %}
 {% set seo_description = 'Create a free Splitwise Mini account to split bills with roommates and friends. Your expenses stay private to your account.' %}
 {% include '_seo.html' %}
+{% include '_theme_boot.html' %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+{% include '_theme_tokens.html' %}
 {% include '_brand_lockup_styles.html' %}
   :root {
-    --ink: #0B1220;
-    --muted: #5B6578;
-    --surface: rgba(255, 255, 255, 0.78);
-    --border: rgba(15, 23, 42, 0.08);
-    --purple: #6D5EF5;
-    --teal: #14B8A6;
-    --field: rgba(255, 255, 255, 0.92);
-    --negative: #DC2626;
-    --negative-soft: #FEE2E2;
-    --grad-cta: linear-gradient(135deg, #6D5EF5 0%, #4F46E5 48%, #0D9488 100%);
     --font-display: 'Fraunces', Georgia, serif;
     --font-body: 'Outfit', system-ui, sans-serif;
   }
@@ -38,10 +30,10 @@
     font-family: var(--font-body);
     color: var(--ink);
     background:
-      radial-gradient(900px 520px at 12% 8%, rgba(109, 94, 245, 0.22), transparent 55%),
-      radial-gradient(780px 480px at 92% 88%, rgba(20, 184, 166, 0.2), transparent 50%),
-      radial-gradient(640px 400px at 70% 12%, rgba(99, 102, 241, 0.1), transparent 45%),
-      linear-gradient(165deg, #F7F8FC 0%, #EEF2FF 42%, #E8F8F5 100%);
+      radial-gradient(900px 520px at 12% 8%, var(--page-rad-a), transparent 55%),
+      radial-gradient(780px 480px at 92% 88%, var(--page-rad-b), transparent 50%),
+      radial-gradient(640px 400px at 70% 12%, var(--page-rad-c), transparent 45%),
+      var(--page-grad);
     overflow-x: hidden;
     position: relative;
   }
@@ -55,13 +47,13 @@
   .orb-a {
     width: 220px; height: 220px;
     top: 8%; left: -40px;
-    background: rgba(109, 94, 245, 0.35);
+    background: var(--orb-a);
     animation: drift 10s ease-in-out infinite;
   }
   .orb-b {
     width: 260px; height: 260px;
     bottom: 4%; right: -60px;
-    background: rgba(20, 184, 166, 0.3);
+    background: var(--orb-b);
     animation: drift 12s ease-in-out infinite reverse;
   }
   @keyframes drift {
@@ -74,12 +66,12 @@
     width: 100%;
     max-width: 400px;
     padding: 28px 24px 24px;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--surface-glass);
+    border: 1px solid var(--border-soft);
     border-radius: 28px;
     box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.7) inset,
-      0 24px 60px -28px rgba(79, 70, 229, 0.35);
+      0 1px 0 color-mix(in srgb, var(--surface) 70%, transparent) inset,
+      0 24px 60px -28px var(--shadow-accent);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     animation: rise .55s cubic-bezier(.22, 1, .36, 1);
@@ -117,7 +109,7 @@
   label:first-of-type { margin-top: 0; }
   input {
     width: 100%;
-    background: var(--field);
+    background: var(--surface);
     border: 1.5px solid rgba(15, 23, 42, 0.12);
     color: var(--ink);
     border-radius: 12px;
@@ -129,7 +121,7 @@
   }
   input:focus {
     outline: none;
-    border-color: var(--purple);
+    border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(109, 94, 245, 0.18);
   }
   .hint { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
@@ -179,9 +171,9 @@
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    color: #991B1B;
-    background: var(--negative-soft);
-    border: 1px solid #FECACA;
+    color: var(--danger);
+    background: var(--danger-soft);
+    border: 1px solid var(--danger);
     font-size: 0.85rem;
     margin-top: 16px;
     padding: 10px 12px;
@@ -197,8 +189,8 @@
     text-decoration: none;
   }
   .link b { color: var(--ink); font-weight: 700; }
-  .link:hover { color: var(--purple); }
-  .link:hover b { color: var(--purple); }
+  .link:hover { color: var(--primary); }
+  .link:hover b { color: var(--primary); }
   .footer-links {
     display: flex;
     flex-direction: column;
@@ -231,7 +223,7 @@
   }
   .made-by a:hover {
     text-decoration: underline;
-    color: var(--purple);
+    color: var(--primary);
   }
   @media (prefers-reduced-motion: reduce) {
     .orb-a, .orb-b, .card { animation: none; }

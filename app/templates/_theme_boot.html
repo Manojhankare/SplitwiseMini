@@ -1,0 +1,70 @@
+<script>
+(function () {
+  var KEY = 'swmini.theme';
+  var MODES = { light: 1, dark: 1 };
+  var ACCENTS = { indigo: 1, teal: 1, rose: 1, amber: 1, slate: 1 };
+  var DEFAULTS = { mode: 'light', accent: 'indigo' };
+
+  function readStored() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (!data || typeof data !== 'object') return null;
+      return data;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function normalize(data) {
+    var mode = data && MODES[data.mode] ? data.mode : DEFAULTS.mode;
+    var accent = data && ACCENTS[data.accent] ? data.accent : DEFAULTS.accent;
+    return { mode: mode, accent: accent };
+  }
+
+  function writeStored(theme) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(theme));
+    } catch (e) { /* private mode */ }
+  }
+
+  function paint(theme) {
+    var root = document.documentElement;
+    root.setAttribute('data-mode', theme.mode);
+    root.setAttribute('data-accent', theme.accent);
+    root.style.colorScheme = theme.mode;
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      var map = { indigo: '#4F46E5', teal: '#0D9488', rose: '#E11D48', amber: '#D97706', slate: '#475569' };
+      meta.setAttribute('content', map[theme.accent] || map.indigo);
+    }
+  }
+
+  function applyTheme(partial, opts) {
+    opts = opts || {};
+    var cur = normalize(readStored() || DEFAULTS);
+    if (partial && partial.mode) cur.mode = MODES[partial.mode] ? partial.mode : cur.mode;
+    if (partial && partial.accent) cur.accent = ACCENTS[partial.accent] ? partial.accent : cur.accent;
+    cur = normalize(cur);
+    paint(cur);
+    if (opts.persist !== false) writeStored(cur);
+    if (typeof window.__swminiOnThemeChange === 'function') {
+      try { window.__swminiOnThemeChange(cur); } catch (e) {}
+    }
+    return cur;
+  }
+
+  var initial = normalize(readStored() || DEFAULTS);
+  paint(initial);
+  writeStored(initial);
+
+  window.swminiTheme = {
+    KEY: KEY,
+    DEFAULTS: DEFAULTS,
+    read: function () { return normalize(readStored() || DEFAULTS); },
+    apply: applyTheme,
+    paint: paint
+  };
+})();
+</script>

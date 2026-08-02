@@ -90,6 +90,15 @@ Files live in `app/static/brand/` (cut from `logo_designs.png` via `scripts/cut_
 
 Do not invent a new wordmark PNG for headers; extend `_brand_lockup.html` if the composed lockup needs a size variant (`brand-lockup--lg` already exists).
 
+## Themes (Light/Dark + accents)
+
+- Partials: `_theme_tokens.html`, `_theme_boot.html` (FOUC from `localStorage` `swmini.theme`).
+- Applied on home, login, register, `/app`, `/admin`.
+- Default: `light` + `indigo`. Accents: indigo, teal, rose, amber, slate.
+- User changes theme in Settings → Appearance: writes localStorage + `PUT /api/settings/theme`.
+- Bootstrap includes `theme_mode` / `theme_accent`; when set, they overwrite localStorage after login.
+- Existing DBs: run `scripts/add_user_theme.sql` before relying on those columns.
+
 ## Out of scope unless asked
 
 - Force-push, rewriting unrelated history

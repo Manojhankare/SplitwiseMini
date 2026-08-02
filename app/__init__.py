@@ -48,6 +48,7 @@ def create_app(config_class=Config):
         if current_user.is_authenticated:
             return {
                 "current_username": current_user.username,
+                "current_email": current_user.email or "",
                 "is_admin": current_user.role == "admin",
             }
         return {}

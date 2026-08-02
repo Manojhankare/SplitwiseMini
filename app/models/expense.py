@@ -482,4 +482,8 @@ class Expense(db.Model):
             ),
         }
         payload.update(cls.compute_monthly_budget_summary(user_id))
+        from app.models.user import User
+        user = db.session.get(User, user_id)
+        payload["theme_mode"] = user.theme_mode if user else None
+        payload["theme_accent"] = user.theme_accent if user else None
         return payload

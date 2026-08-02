@@ -20,12 +20,12 @@ app/
   extensions.py        # db, login_manager
   models/              # User, Person, Group, Expense, Settlement
   controllers/         # auth, page, expense (/api), admin
-  templates/           # home (landing), index (/app), login, register, admin; brand: `_brand_lockup*`
-scripts/               # one-off SQL ALTERs / indexes for existing DBs; cut_brand_assets.py
-docs/                  # this file + AGENTS.md (includes Brand assets: when to use mark+text vs mark alone)
+  templates/           # home, index (/app), login, register, admin; brand + `_theme_tokens` / `_theme_boot`
+scripts/               # SQL ALTERs; cut_brand_assets.py
+docs/                  # this file + AGENTS.md (Brand assets + themes)
 ```
 
-**Important:** `db.create_all()` creates missing *tables* on a fresh DB. It does **not** add columns to existing tables. Production schema changes need scripts under `scripts/` (e.g. `add_monthly_budget.sql`).
+**Important:** `db.create_all()` creates missing *tables* on a fresh DB. It does **not** add columns to existing tables. Production schema changes need scripts under `scripts/` (e.g. `add_monthly_budget.sql`, `add_user_theme.sql`).
 
 ## Domains
 
@@ -38,6 +38,7 @@ docs/                  # this file + AGENTS.md (includes Brand assets: when to u
 | **Balances** | Net ledger per person for a period (zero-sum across people) |
 | **Report** | Itemized rows + self pairwise summary |
 | **Budget** | Monthly *consumption* target for the current UTC calendar month |
+| **Theme** | Light/Dark + accent; `localStorage` + optional `users.theme_mode` / `theme_accent` |
 
 ## Balance semantics
 
@@ -80,6 +81,7 @@ UI defaults Report/Balances to the current *local* month. Budget month is always
 
 - Register / login session; data scoped by `current_user.id`
 - Register requires **email** (stored for future password recovery); username/email availability checked live via `GET /api/check-username` and `GET /api/check-email`
+- **Theme:** Light/Dark + accents (indigo/teal/rose/amber/slate). FOUC via `localStorage` key `swmini.theme` on all pages; logged-in users sync `users.theme_mode` / `theme_accent` through bootstrap and `PUT /api/settings/theme`. Default: light + indigo.
 - Admin role: `/admin` user management
 - Always filter mutations and reads by `user_id`
 
@@ -87,6 +89,7 @@ UI defaults Report/Balances to the current *local* month. Budget month is always
 
 - Compact greeting + slim budget hero (left this month / my spend) + Add as default tab
 - Tabs: Add · Report · Balances · Settings (floating bottom nav)
+- Settings: hub list (profile, Appearance / Budget / People / Groups rows with live summaries, About, Log out) + one detail panel at a time; panels stay in the DOM when hidden so theme/budget/people/group IDs keep working; deep link from hero budget hint opens Budget panel after hub reset
 - Period bar on Report/Balances
 - Settle modal (bottom sheet)
 - IDs and `onclick` / `fetch` paths are wired tightly — preserve them when restyling
@@ -97,6 +100,7 @@ Run in Supabase SQL editor when deploying related features:
 
 - `scripts/add_indexes.sql`
 - `scripts/add_monthly_budget.sql` — `ALTER TABLE users ADD COLUMN IF NOT EXISTS monthly_budget ...`
+- `scripts/add_user_theme.sql` — `theme_mode`, `theme_accent` VARCHAR(16) nullable
 
 ## Related docs
 

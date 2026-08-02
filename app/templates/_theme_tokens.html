@@ -1,0 +1,173 @@
+{# Shared Light/Dark + accent tokens. Include inside <style> or as a style block. #}
+:root,
+html[data-mode="light"] {
+  color-scheme: light;
+  --bg: #F7F8FA;
+  --surface: #FFFFFF;
+  --surface-2: #F3F4F6;
+  --surface-glass: rgba(255, 255, 255, 0.78);
+  --ink: #111827;
+  --muted: #6B7280;
+  --border: #E5E7EB;
+  --border-soft: rgba(15, 23, 42, 0.08);
+  --success: #10B981;
+  --success-soft: #D1FAE5;
+  --danger: #EF4444;
+  --danger-soft: #FEE2E2;
+  --warning: #F59E0B;
+  --warning-soft: #FEF3C7;
+  --shadow: 0 10px 35px rgba(0, 0, 0, 0.06);
+  --shadow-nav: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --splash-bg: #F4F3F8;
+  --splash-label: #3F4656;
+  --overlay-scrim: rgba(244, 243, 248, 0.42);
+  --btn-on-accent: #FFFFFF;
+  --btn-contrast: #111827;
+  --btn-contrast-text: #FFFFFF;
+  --focus-ring: rgba(79, 70, 229, 0.18);
+  --shadow-accent: rgba(79, 70, 229, 0.35);
+  --report-head: #EEF0F3;
+  --row-hover: rgba(79, 70, 229, 0.04);
+  --orb-a: rgba(109, 94, 245, 0.35);
+  --orb-b: rgba(20, 184, 166, 0.3);
+  --page-grad: linear-gradient(165deg, #F7F8FC 0%, #EEF2FF 42%, #E8F8F5 100%);
+  --page-rad-a: rgba(109, 94, 245, 0.22);
+  --page-rad-b: rgba(20, 184, 166, 0.2);
+  --page-rad-c: rgba(99, 102, 241, 0.1);
+  /* default accent until data-accent is set */
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --primary-soft: #EEF2FF;
+  --grad-hero: linear-gradient(145deg, #4F46E5 0%, #4338CA 55%, #3730A3 100%);
+  --grad-btn: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%);
+  --grad-cta: linear-gradient(135deg, #6D5EF5 0%, #4F46E5 48%, #0D9488 100%);
+  --load-track: rgba(109, 94, 245, 0.14);
+  --load-bar: linear-gradient(90deg, #6D5EF5 0%, #4F46E5 45%, #14B8A6 100%);
+  --theme-color: #4F46E5;
+}
+
+html[data-mode="dark"] {
+  color-scheme: dark;
+  --bg: #0B1220;
+  --surface: #151C2C;
+  --surface-2: #1E2738;
+  --surface-glass: rgba(21, 28, 44, 0.82);
+  --ink: #E8EDF7;
+  --muted: #9AA6BC;
+  --border: #2A3548;
+  --border-soft: rgba(232, 237, 247, 0.1);
+  --success: #34D399;
+  --success-soft: rgba(16, 185, 129, 0.18);
+  --danger: #F87171;
+  --danger-soft: rgba(239, 68, 68, 0.18);
+  --warning: #FBBF24;
+  --warning-soft: rgba(245, 158, 11, 0.18);
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --shadow-nav: 0 10px 36px rgba(0, 0, 0, 0.5);
+  --splash-bg: #0B1220;
+  --splash-label: #C5CEE0;
+  --overlay-scrim: rgba(11, 18, 32, 0.55);
+  --btn-on-accent: #FFFFFF;
+  --btn-contrast: #E8EDF7;
+  --btn-contrast-text: #0B1220;
+  --report-head: #1E2738;
+  --row-hover: rgba(255, 255, 255, 0.04);
+  --orb-a: rgba(109, 94, 245, 0.28);
+  --orb-b: rgba(20, 184, 166, 0.22);
+  --page-grad: linear-gradient(165deg, #0B1220 0%, #121A2B 45%, #0F1C24 100%);
+  --page-rad-a: rgba(109, 94, 245, 0.2);
+  --page-rad-b: rgba(20, 184, 166, 0.14);
+  --page-rad-c: rgba(99, 102, 241, 0.1);
+}
+
+html[data-accent="indigo"] {
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --primary-soft: #EEF2FF;
+  --grad-hero: linear-gradient(145deg, #4F46E5 0%, #4338CA 55%, #3730A3 100%);
+  --grad-btn: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%);
+  --grad-cta: linear-gradient(135deg, #6D5EF5 0%, #4F46E5 48%, #0D9488 100%);
+  --focus-ring: rgba(79, 70, 229, 0.18);
+  --shadow-accent: rgba(79, 70, 229, 0.4);
+  --load-track: rgba(109, 94, 245, 0.14);
+  --load-bar: linear-gradient(90deg, #6D5EF5 0%, #4F46E5 45%, #14B8A6 100%);
+  --theme-color: #4F46E5;
+}
+html[data-mode="dark"][data-accent="indigo"] {
+  --primary-soft: rgba(79, 70, 229, 0.22);
+  --row-hover: rgba(99, 102, 241, 0.1);
+}
+
+html[data-accent="teal"] {
+  --primary: #0D9488;
+  --primary-hover: #0F766E;
+  --primary-soft: #CCFBF1;
+  --grad-hero: linear-gradient(145deg, #14B8A6 0%, #0D9488 55%, #0F766E 100%);
+  --grad-btn: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%);
+  --grad-cta: linear-gradient(135deg, #2DD4BF 0%, #0D9488 50%, #0369A1 100%);
+  --focus-ring: rgba(13, 148, 136, 0.22);
+  --shadow-accent: rgba(13, 148, 136, 0.4);
+  --load-track: rgba(13, 148, 136, 0.16);
+  --load-bar: linear-gradient(90deg, #2DD4BF 0%, #0D9488 50%, #0369A1 100%);
+  --theme-color: #0D9488;
+}
+html[data-mode="dark"][data-accent="teal"] {
+  --primary-soft: rgba(13, 148, 136, 0.22);
+  --row-hover: rgba(45, 212, 191, 0.1);
+}
+
+html[data-accent="rose"] {
+  --primary: #E11D48;
+  --primary-hover: #BE123C;
+  --primary-soft: #FFE4E6;
+  --grad-hero: linear-gradient(145deg, #F43F5E 0%, #E11D48 55%, #BE123C 100%);
+  --grad-btn: linear-gradient(135deg, #F43F5E 0%, #E11D48 100%);
+  --grad-cta: linear-gradient(135deg, #FB7185 0%, #E11D48 50%, #9F1239 100%);
+  --focus-ring: rgba(225, 29, 72, 0.22);
+  --shadow-accent: rgba(225, 29, 72, 0.4);
+  --load-track: rgba(225, 29, 72, 0.16);
+  --load-bar: linear-gradient(90deg, #FB7185 0%, #E11D48 55%, #9F1239 100%);
+  --theme-color: #E11D48;
+}
+html[data-mode="dark"][data-accent="rose"] {
+  --primary-soft: rgba(225, 29, 72, 0.22);
+  --row-hover: rgba(251, 113, 133, 0.1);
+}
+
+html[data-accent="amber"] {
+  --primary: #D97706;
+  --primary-hover: #B45309;
+  --primary-soft: #FEF3C7;
+  --grad-hero: linear-gradient(145deg, #F59E0B 0%, #D97706 55%, #B45309 100%);
+  --grad-btn: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  --grad-cta: linear-gradient(135deg, #FBBF24 0%, #D97706 50%, #C2410C 100%);
+  --focus-ring: rgba(217, 119, 6, 0.22);
+  --shadow-accent: rgba(217, 119, 6, 0.4);
+  --load-track: rgba(217, 119, 6, 0.16);
+  --load-bar: linear-gradient(90deg, #FBBF24 0%, #D97706 55%, #C2410C 100%);
+  --theme-color: #D97706;
+}
+html[data-mode="dark"][data-accent="amber"] {
+  --primary-soft: rgba(217, 119, 6, 0.22);
+  --row-hover: rgba(251, 191, 36, 0.1);
+}
+
+html[data-accent="slate"] {
+  --primary: #475569;
+  --primary-hover: #334155;
+  --primary-soft: #E2E8F0;
+  --grad-hero: linear-gradient(145deg, #64748B 0%, #475569 55%, #334155 100%);
+  --grad-btn: linear-gradient(135deg, #64748B 0%, #475569 100%);
+  --grad-cta: linear-gradient(135deg, #94A3B8 0%, #475569 50%, #1E293B 100%);
+  --focus-ring: rgba(71, 85, 105, 0.22);
+  --shadow-accent: rgba(71, 85, 105, 0.4);
+  --load-track: rgba(71, 85, 105, 0.18);
+  --load-bar: linear-gradient(90deg, #94A3B8 0%, #475569 55%, #1E293B 100%);
+  --theme-color: #475569;
+}
+html[data-mode="dark"][data-accent="slate"] {
+  --primary: #94A3B8;
+  --primary-hover: #CBD5E1;
+  --primary-soft: rgba(148, 163, 184, 0.18);
+  --row-hover: rgba(148, 163, 184, 0.1);
+}

@@ -505,3 +505,37 @@ def put_budget():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@expense_bp.route("/settings/theme", methods=["GET"])
+@login_required
+def get_theme():
+    try:
+        return jsonify({
+            "theme_mode": current_user.theme_mode,
+            "theme_accent": current_user.theme_accent,
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@expense_bp.route("/settings/theme", methods=["PUT"])
+@login_required
+def put_theme():
+    data = request.get_json(silent=True) or {}
+    mode = (data.get("theme_mode") or "").strip().lower()
+    accent = (data.get("theme_accent") or "").strip().lower()
+    if mode not in User.THEME_MODES:
+        return jsonify({"error": "theme_mode must be light or dark"}), 400
+    if accent not in User.THEME_ACCENTS:
+        return jsonify({"error": "theme_accent must be indigo, teal, rose, amber, or slate"}), 400
+    try:
+        user = User.set_theme(current_user.id, mode, accent)
+        if not user:
+            return jsonify({"error": "user not found"}), 404
+        return jsonify({
+            "theme_mode": user.theme_mode,
+            "theme_accent": user.theme_accent,
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

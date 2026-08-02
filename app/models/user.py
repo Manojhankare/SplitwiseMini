@@ -16,10 +16,15 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), default="user", nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     monthly_budget = db.Column(db.Numeric(12, 2), nullable=True)
+    theme_mode = db.Column(db.String(16), nullable=True)
+    theme_accent = db.Column(db.String(16), nullable=True)
     created_at = db.Column(
         db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
     )
+
+    THEME_MODES = frozenset({"light", "dark"})
+    THEME_ACCENTS = frozenset({"indigo", "teal", "rose", "amber", "slate"})
 
     people = db.relationship("Person", backref="user", cascade="all, delete-orphan")
     groups = db.relationship("Group", backref="user", cascade="all, delete-orphan")
@@ -39,6 +44,8 @@ class User(UserMixin, db.Model):
             "role": self.role,
             "is_active": self.is_active,
             "monthly_budget": float(self.monthly_budget) if self.monthly_budget is not None else None,
+            "theme_mode": self.theme_mode,
+            "theme_accent": self.theme_accent,
             "created_at": self.created_at.isoformat(),
         }
 
@@ -48,6 +55,18 @@ class User(UserMixin, db.Model):
         if not user:
             return None
         user.monthly_budget = amount
+        db.session.commit()
+        return user
+
+    @classmethod
+    def set_theme(cls, user_id, mode, accent):
+        if mode not in cls.THEME_MODES or accent not in cls.THEME_ACCENTS:
+            return None
+        user = db.session.get(cls, user_id)
+        if not user:
+            return None
+        user.theme_mode = mode
+        user.theme_accent = accent
         db.session.commit()
         return user
 

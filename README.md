@@ -14,6 +14,7 @@ Multi-user expense tracker: shared bills with groups, personal spending, itemize
 1. Drop all existing tables in Supabase (fresh schema), or on an existing DB run:
    - `scripts/add_indexes.sql`
    - `scripts/add_monthly_budget.sql` (adds `users.monthly_budget`)
+   - `scripts/add_user_theme.sql` (adds `users.theme_mode`, `users.theme_accent`)
 2. Copy `.env.example` to `.env` and fill in values (prefer Supabase **pooler** URL on port `6543`).
 3. `pip install -r requirements.txt`
 4. Set `FLASK_ENV=development` locally, then `python run.py` — creates tables and seeds admin from `ADMIN_USERNAME` / `ADMIN_PASSWORD`.
@@ -42,7 +43,7 @@ Multi-user expense tracker: shared bills with groups, personal spending, itemize
 - `/admin` — admin dashboard (user list, enable/disable, set password, delete)
 
 ## API (all require login)
-- `GET /api/bootstrap?filter=all|shared|personal` — people, groups, expenses, settlements, balances, report, plus monthly budget fields (`monthly_budget`, `budget_spent`, `budget_personal`, `budget_my_shared`, `budget_shared_total`) for the **current UTC month** (independent of period filters)
+- `GET /api/bootstrap?filter=all|shared|personal` — people, groups, expenses, settlements, balances, report, plus monthly budget fields (`monthly_budget`, `budget_spent`, `budget_personal`, `budget_my_shared`, `budget_shared_total`) for the **current UTC month** (independent of period filters), plus `theme_mode` / `theme_accent` when set
 - Period (optional on bootstrap / expenses / settlements / balances / report; omit = all time):
   - `year=2026&month=8` — calendar month
   - `from=2026-08-01&to=2026-08-31` — inclusive range (wins if both styles sent)
@@ -66,6 +67,8 @@ Multi-user expense tracker: shared bills with groups, personal spending, itemize
 - `DELETE /api/delete/<id>`
 - `GET /api/settings/budget` — `{ "monthly_budget": 2000 | null }`
 - `PUT /api/settings/budget` — body `{ "monthly_budget": 2000 }` (`null` or `0` clears)
+- `GET /api/settings/theme` — `{ "theme_mode": "light"|"dark"|null, "theme_accent": "indigo"|...|null }`
+- `PUT /api/settings/theme` — body `{ "theme_mode": "light"|"dark", "theme_accent": "indigo"|"teal"|"rose"|"amber"|"slate" }` (also mirrored in browser `localStorage` key `swmini.theme`)
 
 UI defaults Report/Balances to the **current local month** via period params; people/groups and mutations stay unscoped. Budget progress always uses the **current UTC month**.
 
@@ -76,4 +79,4 @@ UI defaults Report/Balances to the **current local month** via period params; pe
 - `DELETE /admin/users/<id>`
 
 ## SaaS notes
-User model includes `role`, `is_active`, `created_at`, `monthly_budget` for personal limits / future billing integration. No payment features yet.
+User model includes `role`, `is_active`, `created_at`, `monthly_budget`, `theme_mode`, `theme_accent`. No payment features yet.

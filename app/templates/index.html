@@ -9,32 +9,17 @@
 {% set seo_description = 'Splitwise Mini - track shared expenses, settle balances, and manage your monthly budget.' %}
 {% set seo_robots = 'noindex, nofollow' %}
 {% include '_seo.html' %}
+{% include '_theme_boot.html' %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  /* ========== Tokens ========== */
+{% include '_theme_tokens.html' %}
+  /* ========== App layout tokens ========== */
   :root {
-    --bg: #F7F8FA;
-    --surface: #FFFFFF;
-    --surface-2: #F3F4F6;
-    --ink: #111827;
-    --muted: #6B7280;
-    --border: #E5E7EB;
-    --primary: #4F46E5;
-    --primary-hover: #4338CA;
-    --primary-soft: #EEF2FF;
-    --success: #10B981;
-    --success-soft: #D1FAE5;
-    --danger: #EF4444;
-    --danger-soft: #FEE2E2;
-    --warning: #F59E0B;
-    --warning-soft: #FEF3C7;
     --radius: 20px;
     --radius-sm: 14px;
     --radius-xs: 10px;
-    --shadow: 0 10px 35px rgba(0, 0, 0, 0.06);
-    --shadow-nav: 0 8px 32px rgba(0, 0, 0, 0.1);
     --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --space-1: 8px;
     --space-2: 16px;
@@ -42,8 +27,6 @@
     --space-4: 32px;
     --topbar-h: 56px;
     --bottombar-h: 88px;
-    --grad-hero: linear-gradient(145deg, #4F46E5 0%, #4338CA 55%, #3730A3 100%);
-    --grad-btn: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%);
   }
 
   /* ========== Base ========== */
@@ -131,7 +114,7 @@
     border-radius: 14px;
     background: var(--grad-hero);
     color: #fff;
-    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.18);
+    box-shadow: 0 8px 20px var(--shadow-accent);
     animation: fadeSlide .35s ease;
   }
   .hero-card.hidden { display: none; }
@@ -232,7 +215,7 @@
     position: fixed; inset: 0; z-index: 200;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 28px;
-    background: #F4F3F8;
+    background: var(--splash-bg);
     transition: opacity .4s ease, visibility .4s ease;
   }
   .boot-splash.is-done {
@@ -244,17 +227,17 @@
   }
   .boot-splash-bar {
     width: 148px; height: 4px; border-radius: 999px;
-    background: rgba(109, 94, 245, 0.14); overflow: hidden;
+    background: var(--load-track); overflow: hidden;
   }
   .boot-splash-bar > span {
     display: block; height: 100%; width: 42%;
     border-radius: 999px;
-    background: linear-gradient(90deg, #6D5EF5 0%, #4F46E5 45%, #14B8A6 100%);
+    background: var(--load-bar);
     animation: loadslide 1.05s ease-in-out infinite;
   }
   .boot-splash-label {
     margin: 0;
-    font-size: 15px; font-weight: 600; color: #3F4656;
+    font-size: 15px; font-weight: 600; color: var(--splash-label);
     letter-spacing: -0.01em;
   }
   @keyframes bootPulse {
@@ -269,7 +252,7 @@
   .loading-bar.active { opacity: 1; }
   .loading-bar.active::after {
     content: ''; display: block; height: 100%; width: 38%;
-    background: linear-gradient(90deg, #6D5EF5, #14B8A6);
+    background: var(--load-bar);
     border-radius: 2px;
     animation: loadslide 1.05s ease-in-out infinite;
   }
@@ -281,7 +264,7 @@
   .loading-overlay {
     position: fixed; inset: 0; z-index: 90;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(244, 243, 248, 0.42);
+    background: var(--overlay-scrim);
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
     pointer-events: none;
@@ -306,17 +289,17 @@
   }
   .loading-chip-bar {
     width: 120px; height: 4px; border-radius: 999px;
-    background: rgba(109, 94, 245, 0.14); overflow: hidden;
+    background: var(--load-track); overflow: hidden;
   }
   .loading-chip-bar > span {
     display: block; height: 100%; width: 42%;
     border-radius: 999px;
-    background: linear-gradient(90deg, #6D5EF5 0%, #4F46E5 45%, #14B8A6 100%);
+    background: var(--load-bar);
     animation: loadslide 1.05s ease-in-out infinite;
   }
   .loading-chip-label {
     margin: 0;
-    font-size: 14px; font-weight: 600; color: #3F4656;
+    font-size: 14px; font-weight: 600; color: var(--splash-label);
     letter-spacing: -0.01em;
   }
 
@@ -413,6 +396,30 @@
     margin-bottom: 6px; margin-top: var(--space-2);
   }
   label:first-child, .form-group > label:first-of-type { margin-top: 0; }
+  .expense-group-picks { margin-bottom: 12px; }
+  .expense-group-picks.hidden { display: none; }
+  .expense-group-picks > label { margin-top: 0; }
+  .expense-group-chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  button.expense-group-chip {
+    margin: 0; padding: 8px 12px; min-height: 36px;
+    border: 1.5px solid var(--border); border-radius: 999px; box-shadow: none;
+    background: var(--surface-2); color: var(--ink);
+    font-size: 13px; font-weight: 600; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  button.expense-group-chip:hover {
+    border-color: var(--primary); color: var(--primary); background: var(--primary-soft); filter: none;
+  }
+  button.expense-group-chip.is-active {
+    border-color: var(--primary); background: var(--primary-soft); color: var(--primary);
+  }
+  button.expense-group-chip:active { transform: none; }
+  button.expense-group-chip .eg-count {
+    font-size: 11px; font-weight: 600; color: var(--muted);
+  }
+  button.expense-group-chip.is-active .eg-count { color: var(--primary); opacity: 0.85; }
 
   input[type="text"], input[type="number"], input[type="date"], input[type="month"], select, textarea {
     width: 100%;
@@ -430,7 +437,7 @@
     outline: none;
     border-color: var(--primary);
     background: var(--surface);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    box-shadow: 0 0 0 3px var(--focus-ring);
   }
   textarea { min-height: 64px; resize: vertical; }
 
@@ -448,7 +455,7 @@
     min-height: 48px;
     font-family: inherit;
     transition: background .15s ease, transform .1s ease, box-shadow .15s ease, opacity .15s ease;
-    box-shadow: 0 4px 14px -4px rgba(79, 70, 229, 0.45);
+    box-shadow: 0 4px 14px -4px var(--shadow-accent);
   }
   button:hover { background: var(--primary-hover); }
   button:active { transform: scale(0.98); }
@@ -487,7 +494,7 @@
   button.tab-filter.active {
     background: var(--primary);
     color: #fff;
-    box-shadow: 0 4px 12px -4px rgba(79, 70, 229, 0.4);
+    box-shadow: 0 4px 12px -4px var(--shadow-accent);
   }
   button.link-action {
     background: transparent;
@@ -741,7 +748,7 @@
   table.report th:nth-child(2), table.report td:nth-child(2) {
     position: sticky; left: 90px; background: var(--surface); z-index: 1;
   }
-  table.report th:first-child, table.report th:nth-child(2) { z-index: 3; background: #EEF0F3; }
+  table.report th:first-child, table.report th:nth-child(2) { z-index: 3; background: var(--report-head); }
   table.report tr.totals td {
     font-weight: 700;
     background: var(--primary-soft);
@@ -754,58 +761,366 @@
   table.report tr.self-line td.pos { color: var(--success); }
   table.report tr.self-line td.neg { color: var(--danger); }
   table.report .desc { max-width: 160px; white-space: normal; }
-  table.report tbody tr:hover td { background: rgba(79, 70, 229, 0.03); }
+  table.report tbody tr:hover td { background: var(--row-hover); }
 
-  /* ========== Settings / account ========== */
-  .account-card { padding: var(--space-3); }
-  .account-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); flex-wrap: wrap; }
-  .account-who { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
-  .avatar {
+  /* ========== Settings hub ========== */
+  .settings-wrap {
+    margin: 0 0 var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .settings-hub,
+  .settings-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .settings-hub { --settings-inset: 12px; }
+  .settings-hub.hidden,
+  .settings-panel.hidden { display: none; }
+
+  .settings-profile {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--settings-inset);
+    border-bottom: 1px solid var(--border);
+  }
+  .settings-profile .avatar {
     width: 56px; height: 56px; border-radius: 50%;
     background: var(--primary-soft); color: var(--primary);
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: 22px; text-transform: uppercase; flex-shrink: 0;
   }
-  .account-name { font-weight: 700; font-size: 18px; text-transform: capitalize; }
-  .account-role { font-size: 13px; color: var(--muted); margin-top: 2px; }
-  .account-actions { display: flex; gap: var(--space-1); align-items: center; flex-shrink: 0; }
-  .account-actions form { margin: 0; }
-  a.admin-link {
-    color: var(--primary); text-decoration: none; font-size: 14px; font-weight: 600;
+  .settings-profile-meta { min-width: 0; flex: 1; }
+  .settings-profile-name {
+    font-weight: 700; font-size: 18px; text-transform: capitalize;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .settings-profile-role {
+    display: inline-flex; font-size: 11px; font-weight: 600;
+    color: var(--primary); background: var(--primary-soft);
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .settings-profile-email {
+    margin: 4px 0 0; font-size: 13px; color: var(--muted);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  a.settings-admin {
+    color: var(--primary); text-decoration: none; font-size: 13px; font-weight: 600;
     border: 1.5px solid var(--border); background: var(--primary-soft);
-    padding: 10px 14px; border-radius: var(--radius-sm); min-height: 40px;
-    display: inline-flex; align-items: center;
+    padding: 8px 12px; border-radius: var(--radius-sm); min-height: 36px;
+    display: inline-flex; align-items: center; flex-shrink: 0;
   }
-  .github-card .github-row {
-    display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;
+
+  .settings-menu { padding: 4px 0; }
+  button.settings-row {
+    width: 100%;
+    display: flex; align-items: center; gap: 12px;
+    margin: 0;
+    padding: 14px var(--settings-inset);
+    border: none; background: transparent; color: inherit;
+    text-align: left; cursor: pointer; font-family: inherit;
+    min-height: 56px; border-radius: 0; box-shadow: none;
+    appearance: none; -webkit-appearance: none;
   }
-  .github-card .github-copy { flex: 1; min-width: 0; }
-  .github-card .github-copy p {
-    margin: 4px 0 0; font-size: 13px; color: var(--muted); line-height: 1.4;
+  button.settings-row:hover { background: var(--surface-2); filter: none; transform: none; }
+  button.settings-row:active { transform: none; }
+  .settings-row-icon {
+    width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+    background: var(--primary-soft); color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
   }
-  .github-card .github-mark {
-    width: 40px; height: 40px; flex-shrink: 0; object-fit: contain;
+  .settings-row-icon svg {
+    width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8;
   }
-  a.github-star {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--ink); color: #fff; text-decoration: none;
-    font-size: 14px; font-weight: 600; padding: 10px 14px;
-    border-radius: var(--radius-sm); min-height: 40px; flex-shrink: 0;
+  .settings-row-body { flex: 1; min-width: 0; }
+  .settings-row-title { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .settings-row-sub {
+    margin-top: 2px; font-size: 12px; color: var(--muted);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  a.github-star:hover { filter: brightness(1.08); }
-  a.github-star svg { width: 16px; height: 16px; fill: currentColor; }
-  .made-by {
-    margin: 12px 0 0;
-    font-size: 12px;
-    color: var(--muted);
-    text-align: center;
+  .settings-row-bar {
+    height: 4px; border-radius: 999px; background: var(--surface-2);
+    overflow: hidden; margin-top: 6px; max-width: 160px;
   }
-  .made-by a {
-    color: var(--ink);
-    font-weight: 600;
-    text-decoration: none;
+  .settings-row-bar > span {
+    display: block; height: 100%; width: 0; border-radius: 999px; background: var(--primary);
   }
+  .settings-row-bar.warn > span { background: var(--warning); }
+  .settings-row-bar.over > span { background: var(--danger); }
+  .settings-row-chevron {
+    color: var(--muted); flex-shrink: 0; font-size: 18px; line-height: 1;
+  }
+
+  .settings-about {
+    display: flex; flex-direction: column; align-items: stretch; gap: 8px;
+    padding: 12px var(--settings-inset);
+    border-top: 1px solid var(--border);
+  }
+  .settings-about-brand {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .settings-about-mark { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+  .settings-about-brand strong { font-size: 13px; font-weight: 700; }
+  .settings-about-actions {
+    display: flex; gap: 8px;
+  }
+  a.settings-about-btn {
+    flex: 1;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    text-decoration: none; font-size: 12px; font-weight: 600;
+    padding: 8px 10px; min-height: 34px; border-radius: var(--radius-sm);
+  }
+  a.settings-about-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+  a.settings-about-btn.star {
+    background: var(--btn-contrast); color: var(--btn-contrast-text);
+  }
+  a.settings-about-btn.star:hover { filter: brightness(1.08); }
+  a.settings-about-btn.star svg { fill: currentColor; }
+  a.settings-about-btn.issue {
+    background: var(--surface-2); color: var(--ink);
+    border: 1.5px solid var(--border);
+  }
+  a.settings-about-btn.issue:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+  a.settings-about-btn.issue svg { stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .made-by { margin: 0; font-size: 11px; color: var(--muted); text-align: center; }
+  .made-by a { color: var(--ink); font-weight: 600; text-decoration: none; }
   .made-by a:hover { text-decoration: underline; color: var(--primary); }
+
+  .settings-logout {
+    width: calc(100% - 2 * var(--settings-inset));
+    margin: 0 var(--settings-inset) 12px;
+    background: transparent; border: 1.5px solid var(--danger); color: var(--danger);
+    box-shadow: none; min-height: 42px; font-size: 14px;
+  }
+  .settings-logout:hover { background: var(--danger-soft); filter: none; }
+
+  .settings-panel-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px var(--space-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .settings-back {
+    border: none; background: transparent; color: var(--primary);
+    font-weight: 600; font-size: 14px; padding: 8px 4px; min-height: 36px;
+    box-shadow: none; margin: 0; cursor: pointer; font-family: inherit;
+  }
+  .settings-back:hover { filter: none; background: var(--primary-soft); border-radius: 8px; }
+  .settings-panel-title {
+    margin: 0; font-size: 16px; font-weight: 700; flex: 1;
+  }
+  .settings-panel-body { padding: var(--space-3) var(--space-2); }
+  .settings-panel-body.people-body {
+    display: flex; flex-direction: column; gap: 14px;
+    padding-bottom: var(--space-3);
+  }
+  .settings-panel-body.people-body .settings-hint { margin-bottom: 0; }
+  .people-add {
+    display: flex; gap: 8px; align-items: stretch;
+  }
+  .people-add input {
+    flex: 1; min-width: 0; margin: 0;
+  }
+  .people-add button {
+    margin: 0; flex-shrink: 0; min-width: 72px;
+  }
+  .people-list-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  }
+  .people-list-head strong {
+    font-size: 13px; font-weight: 700; color: var(--ink);
+  }
+  .people-list-head span {
+    font-size: 12px; color: var(--muted); font-weight: 500;
+  }
+  .people-list {
+    display: flex; flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    overflow: hidden;
+    margin: 0;
+  }
+  .people-list .empty {
+    padding: 28px 16px; margin: 0;
+  }
+  .person-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+  }
+  .person-row:last-child { border-bottom: none; }
+  .person-avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    background: var(--primary-soft); color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; text-transform: uppercase;
+  }
+  .person-name {
+    flex: 1; min-width: 0;
+    font-size: 15px; font-weight: 600; color: var(--ink);
+    text-transform: capitalize;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .person-meta {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .person-meta .person-name { flex: none; }
+  .group-members {
+    font-size: 12px; color: var(--muted); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  button.person-remove {
+    margin: 0; padding: 0; width: 32px; height: 32px; min-height: 32px;
+    border: none; border-radius: 50%; box-shadow: none;
+    background: transparent; color: var(--muted);
+    font-size: 18px; line-height: 1; font-weight: 500;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  button.person-remove:hover {
+    background: var(--danger-soft); color: var(--danger); filter: none;
+  }
+  button.person-remove:active { transform: none; }
+  button.person-edit {
+    margin: 0; padding: 6px 10px; min-height: 32px;
+    border: 1.5px solid var(--border); border-radius: 8px; box-shadow: none;
+    background: var(--surface); color: var(--primary);
+    font-size: 12px; font-weight: 600;
+  }
+  button.person-edit:hover {
+    background: var(--primary-soft); border-color: var(--primary); filter: none;
+  }
+  button.person-edit:active { transform: none; }
+  .person-row-actions {
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+
+  .settings-panel-body.groups-body {
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .settings-panel-body.groups-body .settings-hint { margin-bottom: 0; }
+  .settings-panel-body.groups-body .group-create-details { margin-top: 0; }
+  .group-form-actions {
+    display: flex; gap: 8px; margin-top: 4px;
+  }
+  .group-form-actions button {
+    margin-top: 0; flex: 1;
+  }
+  .group-form-actions button.secondary {
+    flex: 0 0 auto; min-width: 88px;
+  }
+
+  .settings-hint {
+    margin: 0 0 14px; font-size: 12px; color: var(--muted); line-height: 1.4;
+  }
+  .mode-cards {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
+  }
+  .mode-card {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+    padding: 14px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--surface-2);
+    color: var(--ink); cursor: pointer; font-family: inherit;
+    min-height: 72px; box-shadow: none; text-align: left;
+  }
+  .mode-card:hover { filter: none; border-color: var(--primary); }
+  .mode-card.is-active {
+    border-color: var(--primary); background: var(--primary-soft); color: var(--primary);
+  }
+  .mode-card strong { font-size: 14px; }
+  .mode-card span { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .mode-card.is-active span { color: var(--primary); opacity: 0.85; }
+  .accent-swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+  .accent-swatch {
+    width: 36px; height: 36px; border-radius: 50%; border: 2px solid transparent;
+    cursor: pointer; padding: 0; min-height: 0; box-shadow: none;
+    background: var(--swatch, var(--primary));
+  }
+  .accent-swatch:hover { filter: none; transform: scale(1.05); }
+  .accent-swatch.is-active {
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--primary);
+  }
+  .accent-swatch[data-accent="indigo"] { --swatch: #4F46E5; }
+  .accent-swatch[data-accent="teal"] { --swatch: #0D9488; }
+  .accent-swatch[data-accent="rose"] { --swatch: #E11D48; }
+  .accent-swatch[data-accent="amber"] { --swatch: #D97706; }
+  .accent-swatch[data-accent="slate"] { --swatch: #475569; }
+
+  .settings-budget-bar {
+    height: 8px; border-radius: 999px; background: rgba(255,255,255,0.22); overflow: hidden; margin: 0;
+  }
+  .settings-budget-bar > span {
+    display: block; height: 100%; width: 0; border-radius: 999px; background: #fff;
+    transition: width .25s ease;
+  }
+  .settings-budget-bar.warn > span { background: #FDE68A; }
+  .settings-budget-bar.over > span { background: #FECACA; }
+  .settings-budget-meta { display: none; }
+
+  .settings-panel-body.budget-body {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .settings-panel-body.budget-body .settings-hint { margin-bottom: 0; }
+  .budget-preview {
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    background: var(--grad-hero);
+    color: #fff;
+    box-shadow: 0 8px 18px -8px var(--shadow-accent);
+  }
+  .budget-preview-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+    margin-bottom: 12px;
+  }
+  .budget-preview-stat {
+    display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  }
+  .budget-preview-stat span {
+    font-size: 11px; opacity: 0.8; font-weight: 500;
+  }
+  .budget-preview-stat strong {
+    font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .budget-preview-stat strong.is-over { color: #FECACA; }
+  .budget-preview .settings-budget-bar { margin-top: 2px; }
+  .budget-edit-label {
+    display: block; margin: 0 0 8px;
+    font-size: 13px; font-weight: 600; color: var(--ink);
+  }
+  .budget-edit {
+    display: flex; gap: 8px; align-items: stretch;
+  }
+  .budget-edit input {
+    flex: 1; min-width: 0; margin: 0;
+  }
+  .budget-edit button {
+    margin: 0; flex-shrink: 0; min-width: 80px;
+  }
+  .budget-clear-hint {
+    margin: 0; font-size: 12px; color: var(--muted); line-height: 1.4;
+  }
+
+  .group-create-details {
+    margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 0; background: var(--surface-2);
+  }
+  .group-create-details > summary {
+    cursor: pointer; list-style: none; padding: 12px 14px; font-weight: 600; font-size: 14px;
+    color: var(--ink);
+  }
+  .group-create-details > summary::-webkit-details-marker { display: none; }
+  .group-create-details > summary::after {
+    content: '+'; float: right; color: var(--muted); font-weight: 700;
+  }
+  .group-create-details[open] > summary::after { content: '–'; }
+  .group-create-body { padding: 0 14px 14px; }
 
   /* ========== Bottom nav (floating, 4 equal tabs) ========== */
   .bottom-nav {
@@ -850,7 +1165,7 @@
   .nav-btn .fab-add svg { width: 22px; height: 22px; stroke: currentColor; }
   .nav-btn.active .fab-add {
     background: var(--grad-btn); color: #fff;
-    box-shadow: 0 4px 12px -4px rgba(79, 70, 229, 0.5);
+    box-shadow: 0 4px 12px -4px var(--shadow-accent);
   }
   .nav-btn.active .fab-add svg { stroke: #fff; }
 
@@ -971,7 +1286,7 @@
       <span id="heroBudgetBreakdown">Personal ₹0 · My share ₹0</span>
     </div>
     <p class="hero-budget-hint hidden" id="heroBudgetHint">
-      <a onclick="showTab('settings')">Set a monthly budget</a> in Settings
+      <a onclick="showTab('settings'); openSettingsPanel('budget')">Set a monthly budget</a> in Settings
     </p>
     <div class="hero-stats">
       <div class="hero-stat">
@@ -1013,7 +1328,7 @@
         <div class="form-group">
           <p class="form-group-title">Basics</p>
           <label for="desc">Description</label>
-          <input type="text" id="desc" placeholder="e.g. food jay malhar or bus fare" />
+          <input type="text" id="desc" placeholder="e.g. food or bus fare or something else" />
           <div class="field-row">
             <div>
               <label for="amount">Amount (₹)</label>
@@ -1038,7 +1353,11 @@
 
         <div class="form-group" id="participantsBlock">
           <p class="form-group-title">Split between</p>
-          <label for="participantSearch">Participants</label>
+          <div id="expenseGroupPicks" class="expense-group-picks hidden">
+            <label>Quick pick a group</label>
+            <div id="expenseGroupChips" class="expense-group-chips"></div>
+          </div>
+          <label for="participantSearch">Or add people</label>
           <div class="combo">
             <input type="text" id="participantSearch" class="picker-search" autocomplete="off" placeholder="Search &amp; add people"
                    oninput="showParticipantOptions(this.value)" onfocus="showParticipantOptions(this.value)" />
@@ -1086,79 +1405,205 @@
 
     <!-- TAB: SETTINGS -->
     <section class="tab-panel" data-panel="settings">
-      <div class="card account-card">
-        <h2><span class="dot"></span>Account</h2>
-        <div class="account-row">
-          <div class="account-who">
+      <div class="settings-wrap">
+        <div class="settings-hub" id="settingsHub">
+          <div class="settings-profile">
             <div class="avatar">{{ current_username[0] if current_username else '?' }}</div>
+            <div class="settings-profile-meta">
+              <div class="settings-profile-name">
+                {{ current_username }}
+                <span class="settings-profile-role">{{ 'Admin' if is_admin else 'Member' }}</span>
+              </div>
+              {% if current_email %}
+              <p class="settings-profile-email">{{ current_email }}</p>
+              {% else %}
+              <p class="settings-profile-email">No email</p>
+              {% endif %}
+            </div>
+            {% if is_admin %}<a class="settings-admin" href="{{ url_for('admin.dashboard') }}">Admin</a>{% endif %}
+          </div>
+
+          <div class="settings-menu">
+            <button type="button" class="settings-row" onclick="openSettingsPanel('appearance')">
+              <span class="settings-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke-linecap="round"/></svg></span>
+              <span class="settings-row-body">
+                <span class="settings-row-title">Appearance</span>
+                <span class="settings-row-sub" id="hubAppearanceSub">Light · Indigo</span>
+              </span>
+              <span class="settings-row-chevron" aria-hidden="true">›</span>
+            </button>
+            <button type="button" class="settings-row" onclick="openSettingsPanel('budget')">
+              <span class="settings-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M8 14h4" stroke-linecap="round"/></svg></span>
+              <span class="settings-row-body">
+                <span class="settings-row-title">Monthly budget</span>
+                <span class="settings-row-sub" id="hubBudgetSub">No budget set</span>
+                <span class="settings-row-bar" id="hubBudgetBar" aria-hidden="true"><span id="hubBudgetFill"></span></span>
+              </span>
+              <span class="settings-row-chevron" aria-hidden="true">›</span>
+            </button>
+            <button type="button" class="settings-row" onclick="openSettingsPanel('people')">
+              <span class="settings-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M21 19c0-2.2-1.5-3.8-4-4.5" stroke-linecap="round"/></svg></span>
+              <span class="settings-row-body">
+                <span class="settings-row-title">People</span>
+                <span class="settings-row-sub" id="hubPeopleSub">0 people</span>
+              </span>
+              <span class="settings-row-chevron" aria-hidden="true">›</span>
+            </button>
+            <button type="button" class="settings-row" onclick="openSettingsPanel('groups')">
+              <span class="settings-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v12H4z"/><path d="M8 7V5h8v2" stroke-linecap="round"/></svg></span>
+              <span class="settings-row-body">
+                <span class="settings-row-title">Groups</span>
+                <span class="settings-row-sub" id="hubGroupsSub">0 groups</span>
+              </span>
+              <span class="settings-row-chevron" aria-hidden="true">›</span>
+            </button>
+          </div>
+
+          <div class="settings-about">
+            <div class="settings-about-brand">
+              <img class="settings-about-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="24" height="24" />
+              <strong>Splitwise Mini</strong>
+            </div>
+            <div class="settings-about-actions">
+              <a class="settings-about-btn star" href="https://github.com/Manojhankare/SplitwiseMini" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
+                Star on GitHub
+              </a>
+              <a class="settings-about-btn issue" href="https://github.com/Manojhankare/SplitwiseMini/issues/new" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/></svg>
+                Raise issue
+              </a>
+            </div>
+            <p class="made-by">Made by <a href="https://manojhankare.in" target="_blank" rel="noopener noreferrer">manojhankare.in</a></p>
+          </div>
+
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            <button type="submit" class="settings-logout">Log out</button>
+          </form>
+        </div>
+
+        <div class="settings-panel hidden" id="panel-appearance" data-settings-panel="appearance">
+          <div class="settings-panel-head">
+            <button type="button" class="settings-back" onclick="closeSettingsPanel()">‹ Settings</button>
+            <h2 class="settings-panel-title">Appearance</h2>
+          </div>
+          <div class="settings-panel-body">
+            <p class="settings-hint">Saved on this device and to your account when signed in.</p>
+            <div class="mode-cards" role="group" aria-label="Color mode">
+              <button type="button" class="mode-card" id="themeModeLight" onclick="setThemeMode('light')">
+                <strong>Light</strong>
+                <span>Bright surfaces</span>
+              </button>
+              <button type="button" class="mode-card" id="themeModeDark" onclick="setThemeMode('dark')">
+                <strong>Dark</strong>
+                <span>Low-light friendly</span>
+              </button>
+            </div>
+            <label style="margin-top:0">Accent</label>
+            <div class="accent-swatches" role="radiogroup" aria-label="Accent color">
+              <button type="button" class="accent-swatch" data-accent="indigo" aria-label="Indigo" onclick="setThemeAccent('indigo')"></button>
+              <button type="button" class="accent-swatch" data-accent="teal" aria-label="Teal" onclick="setThemeAccent('teal')"></button>
+              <button type="button" class="accent-swatch" data-accent="rose" aria-label="Rose" onclick="setThemeAccent('rose')"></button>
+              <button type="button" class="accent-swatch" data-accent="amber" aria-label="Amber" onclick="setThemeAccent('amber')"></button>
+              <button type="button" class="accent-swatch" data-accent="slate" aria-label="Slate" onclick="setThemeAccent('slate')"></button>
+            </div>
+            <div id="themeStatus" class="status"></div>
+          </div>
+        </div>
+
+        <div class="settings-panel hidden" id="panel-budget" data-settings-panel="budget">
+          <div class="settings-panel-head">
+            <button type="button" class="settings-back" onclick="closeSettingsPanel()">‹ Settings</button>
+            <h2 class="settings-panel-title">Monthly budget</h2>
+          </div>
+          <div class="settings-panel-body budget-body">
+            <p class="settings-hint">Set how much you want to spend each month. Spent includes your personal bills plus your share of shared expenses for the current month.</p>
+            <div class="budget-preview">
+              <div class="budget-preview-stats">
+                <div class="budget-preview-stat">
+                  <span>Spent</span>
+                  <strong id="budgetSpentVal">₹0.00</strong>
+                </div>
+                <div class="budget-preview-stat">
+                  <span>Left</span>
+                  <strong id="budgetLeftVal">—</strong>
+                </div>
+                <div class="budget-preview-stat">
+                  <span>Budget</span>
+                  <strong id="budgetTargetVal">—</strong>
+                </div>
+              </div>
+              <div class="settings-budget-bar" id="settingsBudgetBar" aria-hidden="true"><span id="settingsBudgetFill"></span></div>
+              <div class="settings-budget-meta" id="settingsBudgetMeta">No budget set</div>
+            </div>
             <div>
-              <div class="account-name">{{ current_username }}</div>
-              <div class="account-role">{{ 'Admin' if is_admin else 'Member' }}</div>
+              <label class="budget-edit-label" for="monthlyBudgetInput">Budget (₹ / month)</label>
+              <div class="budget-edit">
+                <input type="number" id="monthlyBudgetInput" min="0" step="0.01" placeholder="e.g. 8000" onkeydown="if(event.key==='Enter'){event.preventDefault();saveMonthlyBudget();}" />
+                <button type="button" id="saveBudgetBtn" onclick="saveMonthlyBudget()">Save</button>
+              </div>
             </div>
-          </div>
-          <div class="account-actions">
-            {% if is_admin %}<a class="admin-link" href="{{ url_for('admin.dashboard') }}">Admin</a>{% endif %}
-            <form method="post" action="{{ url_for('auth.logout') }}">
-              <button type="submit" class="secondary">Log out</button>
-            </form>
+            <p class="budget-clear-hint">Tip: clear the amount and save to remove your monthly budget.</p>
+            <div id="budgetStatus" class="status"></div>
           </div>
         </div>
-      </div>
 
-      <div class="card" id="section-budget">
-        <h2><span class="dot"></span>Monthly budget</h2>
-        <p class="period-hint">Uses your personal expenses + your share of shared bills. Shared bill totals are shown separately on the home card.</p>
-        <label for="monthlyBudgetInput">Target (₹ / month)</label>
-        <div class="row">
-          <input type="number" id="monthlyBudgetInput" min="0" step="0.01" placeholder="e.g. 2000" />
-          <button type="button" id="saveBudgetBtn" onclick="saveMonthlyBudget()">Save</button>
-        </div>
-        <div id="budgetStatus" class="status"></div>
-      </div>
-
-      <div class="card" id="section-people">
-        <h2><span class="dot"></span>People</h2>
-        <div class="row">
-          <input type="text" id="personName" placeholder="Add a name" />
-          <button type="button" onclick="addPerson()">Add</button>
-        </div>
-        <div id="peopleChips" class="chips"><div class="empty">No people yet. Add someone to get started.</div></div>
-      </div>
-
-      <div class="card" id="section-groups">
-        <h2><span class="dot"></span>Groups</h2>
-        <label for="groupName">Group name</label>
-        <input type="text" id="groupName" placeholder="e.g. Roommates" />
-        <label>Members</label>
-        <div class="picker">
-          <div class="picker-toolbar">
-            <input type="text" class="picker-search" id="groupMemberSearch" placeholder="Search people" oninput="filterPicker('groupMemberPicks', this.value)" />
-            <div class="picker-actions">
-              <button type="button" class="link-action" onclick="selectAllPicker('groupMemberPicks','groupMemberSummary')">All</button>
-              <button type="button" class="link-action" onclick="clearPicker('groupMemberPicks','groupMemberSummary')">None</button>
+        <div class="settings-panel hidden" id="panel-people" data-settings-panel="people">
+          <div class="settings-panel-head">
+            <button type="button" class="settings-back" onclick="closeSettingsPanel()">‹ Settings</button>
+            <h2 class="settings-panel-title">People</h2>
+          </div>
+          <div class="settings-panel-body people-body">
+            <p class="settings-hint">Add friends you split bills with. They show up when you log expenses.</p>
+            <div class="people-add">
+              <input type="text" id="personName" placeholder="Add a name" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();addPerson();}" />
+              <button type="button" onclick="addPerson()">Add</button>
             </div>
+            <div class="people-list-head">
+              <strong>Your people</strong>
+              <span id="peopleCountLabel">0 people</span>
+            </div>
+            <div id="peopleChips" class="people-list"><div class="empty">No people yet. Add someone to get started.</div></div>
           </div>
-          <div id="groupMemberPicks" class="picker-list"><span class="empty picker-empty">Add people first.</span></div>
-          <div class="picker-summary" id="groupMemberSummary"></div>
         </div>
-        <button type="button" onclick="createGroup()">Create group</button>
-        <div id="groupsList" class="chips" style="margin-top:14px"><div class="empty">No groups yet.</div></div>
-      </div>
 
-      <div class="card github-card" id="section-github">
-        <h2><span class="dot"></span>Open source</h2>
-        <div class="github-row">
-          <img class="github-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="40" height="40" />
-          <div class="github-copy">
-            <strong>Splitwise Mini</strong>
-            <p>If this helped you split bills, a GitHub star helps others find it.</p>
+        <div class="settings-panel hidden" id="panel-groups" data-settings-panel="groups">
+          <div class="settings-panel-head">
+            <button type="button" class="settings-back" onclick="closeSettingsPanel()">‹ Settings</button>
+            <h2 class="settings-panel-title">Groups</h2>
           </div>
-          <a class="github-star" href="https://github.com/Manojhankare/SplitwiseMini" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
-            Star on GitHub
-          </a>
+          <div class="settings-panel-body groups-body">
+            <p class="settings-hint">Save a set of people as a group so you can split bills with them in one tap.</p>
+            <div class="people-list-head">
+              <strong>Your groups</strong>
+              <span id="groupsCountLabel">0 groups</span>
+            </div>
+            <div id="groupsList" class="people-list"><div class="empty">No groups yet. Create one below.</div></div>
+            <details class="group-create-details" id="groupCreateDetails">
+              <summary id="groupFormSummary">New group</summary>
+              <div class="group-create-body">
+                <label for="groupName">Group name</label>
+                <input type="text" id="groupName" placeholder="e.g. Roommates" />
+                <label>Members</label>
+                <div class="picker">
+                  <div class="picker-toolbar">
+                    <input type="text" class="picker-search" id="groupMemberSearch" placeholder="Search people" oninput="filterPicker('groupMemberPicks', this.value)" />
+                    <div class="picker-actions">
+                      <button type="button" class="link-action" onclick="selectAllPicker('groupMemberPicks','groupMemberSummary')">All</button>
+                      <button type="button" class="link-action" onclick="clearPicker('groupMemberPicks','groupMemberSummary')">None</button>
+                    </div>
+                  </div>
+                  <div id="groupMemberPicks" class="picker-list"><span class="empty picker-empty">Add people first.</span></div>
+                  <div class="picker-summary" id="groupMemberSummary"></div>
+                </div>
+                <div class="group-form-actions">
+                  <button type="button" class="secondary hidden" id="cancelGroupEditBtn" onclick="cancelGroupEdit()">Cancel</button>
+                  <button type="button" id="saveGroupBtn" onclick="saveGroup()">Create group</button>
+                </div>
+              </div>
+            </details>
+          </div>
         </div>
-        <p class="made-by">Made by <a href="https://manojhankare.in" target="_blank" rel="noopener noreferrer">manojhankare.in</a></p>
       </div>
     </section>
 
@@ -1231,6 +1676,145 @@ let settleOutstandingData = null;
 let editingExpenseId = null;
 const CURRENT_USERNAME = {{ (current_username or 'Self')|tojson }};
 
+function syncAppearanceUI(theme) {
+  const lightBtn = document.getElementById('themeModeLight');
+  const darkBtn = document.getElementById('themeModeDark');
+  if (lightBtn) lightBtn.classList.toggle('is-active', theme.mode === 'light');
+  if (darkBtn) darkBtn.classList.toggle('is-active', theme.mode === 'dark');
+  document.querySelectorAll('.accent-swatch').forEach(btn => {
+    const on = btn.getAttribute('data-accent') === theme.accent;
+    btn.classList.toggle('is-active', on);
+    btn.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+}
+
+function applyThemeLocal(partial) {
+  if (!window.swminiTheme) return { mode: 'light', accent: 'indigo' };
+  const theme = window.swminiTheme.apply(partial, { persist: true });
+  syncAppearanceUI(theme);
+  return theme;
+}
+
+function applyThemeFromServer(mode, accent) {
+  const partial = {};
+  if (mode) partial.mode = mode;
+  if (accent) partial.accent = accent;
+  if (!partial.mode && !partial.accent) return;
+  applyThemeLocal(partial);
+}
+
+async function persistThemeToServer(theme) {
+  const status = document.getElementById('themeStatus');
+  try {
+    const res = await fetch('/api/settings/theme', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ theme_mode: theme.mode, theme_accent: theme.accent }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      if (status) {
+        status.textContent = data.error || 'Could not save theme to account';
+        status.className = 'status error';
+      }
+      return;
+    }
+    if (status) {
+      status.textContent = '';
+      status.className = 'status';
+    }
+  } catch (e) {
+    if (status) {
+      status.textContent = 'Could not save theme to account';
+      status.className = 'status error';
+    }
+  }
+}
+
+function setThemeMode(mode) {
+  const theme = applyThemeLocal({ mode });
+  persistThemeToServer(theme);
+}
+
+function setThemeAccent(accent) {
+  const theme = applyThemeLocal({ accent });
+  persistThemeToServer(theme);
+}
+
+window.__swminiOnThemeChange = function(theme) {
+  syncAppearanceUI(theme);
+  updateSettingsHubSummaries();
+};
+if (window.swminiTheme) {
+  syncAppearanceUI(window.swminiTheme.read());
+  updateSettingsHubSummaries();
+}
+
+function openSettingsPanel(name) {
+  const hub = document.getElementById('settingsHub');
+  if (hub) hub.classList.add('hidden');
+  document.querySelectorAll('[data-settings-panel]').forEach(panel => {
+    panel.classList.toggle('hidden', panel.getAttribute('data-settings-panel') !== name);
+  });
+  window.scrollTo(0, 0);
+}
+
+function closeSettingsPanel() {
+  const hub = document.getElementById('settingsHub');
+  if (hub) hub.classList.remove('hidden');
+  document.querySelectorAll('[data-settings-panel]').forEach(panel => panel.classList.add('hidden'));
+  if (editingGroupId != null) cancelGroupEdit();
+}
+
+function updateSettingsHubSummaries() {
+  const appearanceSub = document.getElementById('hubAppearanceSub');
+  if (appearanceSub && window.swminiTheme) {
+    const theme = window.swminiTheme.read();
+    const modeLabel = theme.mode === 'dark' ? 'Dark' : 'Light';
+    const accentLabel = (theme.accent || 'indigo').charAt(0).toUpperCase() + (theme.accent || 'indigo').slice(1);
+    appearanceSub.textContent = `${modeLabel} · ${accentLabel}`;
+  }
+
+  const peopleSub = document.getElementById('hubPeopleSub');
+  if (peopleSub) {
+    const n = people.length;
+    peopleSub.textContent = n === 1 ? '1 person' : `${n} people`;
+  }
+
+  const groupsSub = document.getElementById('hubGroupsSub');
+  if (groupsSub) {
+    const n = groups.length;
+    groupsSub.textContent = n === 1 ? '1 group' : `${n} groups`;
+  }
+
+  const spent = Number(lastBudgetSummary.budget_spent) || 0;
+  const target = lastBudgetSummary.monthly_budget;
+  updateHubBudgetSummary(spent, target);
+}
+
+function updateHubBudgetSummary(spent, target) {
+  const sub = document.getElementById('hubBudgetSub');
+  const bar = document.getElementById('hubBudgetBar');
+  const fill = document.getElementById('hubBudgetFill');
+  if (!sub || !bar || !fill) return;
+  const hasTarget = target != null && Number(target) > 0;
+  bar.classList.remove('warn', 'over');
+  if (!hasTarget) {
+    fill.style.width = '0%';
+    sub.textContent = spent ? `Spent ${fmt(spent)} · no budget` : 'No budget set';
+    return;
+  }
+  const t = Number(target);
+  const pct = Math.min(100, (spent / t) * 100);
+  const over = spent > t + 0.001;
+  fill.style.width = pct + '%';
+  if (over) bar.classList.add('over');
+  else if (spent / t >= 0.8) bar.classList.add('warn');
+  sub.textContent = over
+    ? `${fmt(spent)} / ${fmt(t)} · over`
+    : `${fmt(spent)} / ${fmt(t)}`;
+}
+
 const _now = new Date();
 let periodMode = 'month'; // month | range | all
 let periodYear = _now.getFullYear();
@@ -1244,7 +1828,7 @@ const TAB_META = {
   add:      { title: 'Add expense', sub: 'Log a new bill or purchase' },
   report:   { title: 'Report',      sub: 'Itemized breakdown & activity' },
   balances: { title: 'Balances',    sub: 'Who owes what, at a glance' },
-  settings: { title: 'Settings',    sub: 'People, groups & account' }
+  settings: { title: 'Settings',    sub: 'Account, theme & setup' }
 };
 
 function pad2(n) { return String(n).padStart(2, '0'); }
@@ -1328,6 +1912,69 @@ function updateHeroSummary() {
     if (fillEl) fillEl.style.width = '0%';
     if (barEl) barEl.classList.remove('warn', 'over');
   }
+
+  updateSettingsBudgetPreview(spent, target);
+}
+
+function updateSettingsBudgetPreview(spent, target) {
+  const bar = document.getElementById('settingsBudgetBar');
+  const fill = document.getElementById('settingsBudgetFill');
+  const meta = document.getElementById('settingsBudgetMeta');
+  const spentEl = document.getElementById('budgetSpentVal');
+  const leftEl = document.getElementById('budgetLeftVal');
+  const targetEl = document.getElementById('budgetTargetVal');
+  const hasTarget = target != null && Number(target) > 0;
+
+  if (spentEl) spentEl.textContent = fmt(spent || 0);
+
+  if (bar && fill) {
+    bar.classList.remove('warn', 'over');
+    if (!hasTarget) {
+      fill.style.width = '0%';
+    } else {
+      const t = Number(target);
+      const pct = Math.min(100, (spent / t) * 100);
+      const over = spent > t + 0.001;
+      fill.style.width = pct + '%';
+      if (over) bar.classList.add('over');
+      else if (spent / t >= 0.8) bar.classList.add('warn');
+    }
+  }
+
+  if (meta) {
+    if (!hasTarget) {
+      meta.textContent = spent ? `Spent ${fmt(spent)} this month · no budget` : 'No budget set';
+    } else {
+      const t = Number(target);
+      const over = spent > t + 0.001;
+      meta.textContent = over
+        ? `${fmt(spent)} / ${fmt(t)} · over by ${fmt(spent - t)}`
+        : `${fmt(spent)} / ${fmt(t)} · ${fmt(t - spent)} left`;
+    }
+  }
+
+  if (hasTarget) {
+    const t = Number(target);
+    const left = t - spent;
+    const over = left < -0.001;
+    if (leftEl) {
+      leftEl.textContent = fmt(Math.abs(left));
+      leftEl.classList.toggle('is-over', over);
+      const label = leftEl.previousElementSibling;
+      if (label) label.textContent = over ? 'Over' : 'Left';
+    }
+    if (targetEl) targetEl.textContent = fmt(t);
+  } else {
+    if (leftEl) {
+      leftEl.textContent = '—';
+      leftEl.classList.remove('is-over');
+      const label = leftEl.previousElementSibling;
+      if (label) label.textContent = 'Left';
+    }
+    if (targetEl) targetEl.textContent = '—';
+  }
+
+  updateHubBudgetSummary(spent, target);
 }
 
 async function saveMonthlyBudget() {
@@ -1499,6 +2146,7 @@ function showTab(tab) {
   document.getElementById('pageSub').textContent = TAB_META[tab].sub;
   document.getElementById('periodBar').classList.toggle('hidden', tab !== 'report' && tab !== 'balances');
   document.getElementById('heroCard').classList.toggle('hidden', tab === 'add');
+  if (tab === 'settings') closeSettingsPanel();
   window.scrollTo(0, 0);
 }
 
@@ -1521,6 +2169,7 @@ function getCheckedIds(containerId) {
 
 // --- participant combobox (search & add one by one) ---
 let selectedParticipants = ['self'];
+let editingGroupId = null;
 
 function togglePersonal() {
   const personal = document.getElementById('isPersonal').checked;
@@ -1574,6 +2223,58 @@ function renderParticipantChips() {
       <button type="button" class="secondary" onclick="removeParticipant('${name}')">×</button>
     </span>
   `).join('');
+  syncExpenseGroupChipState();
+}
+
+function renderExpenseGroupPicks() {
+  const wrap = document.getElementById('expenseGroupPicks');
+  const chips = document.getElementById('expenseGroupChips');
+  if (!wrap || !chips) return;
+  if (!groups.length) {
+    wrap.classList.add('hidden');
+    chips.innerHTML = '';
+    return;
+  }
+  wrap.classList.remove('hidden');
+  chips.innerHTML = groups.map(g => {
+    const count = (g.members || []).length;
+    const safeName = String(g.name || '').replace(/"/g, '&quot;');
+    return `<button type="button" class="expense-group-chip" data-group-id="${g.id}" onclick="applyExpenseGroup(${g.id})" title="Add ${safeName} members to this split">
+      ${cap(g.name)}
+      <span class="eg-count">${count}</span>
+    </button>`;
+  }).join('');
+  syncExpenseGroupChipState();
+}
+
+function applyExpenseGroup(id) {
+  const g = groups.find(x => x.id === id);
+  if (!g) return;
+  const names = ['self', ...(g.members || []).map(m => m.name)];
+  const next = [];
+  names.forEach(name => {
+    if (name && !next.includes(name)) next.push(name);
+  });
+  selectedParticipants = next;
+  renderParticipantChips();
+  hideParticipantOptions();
+  const search = document.getElementById('participantSearch');
+  if (search) search.value = '';
+}
+
+function syncExpenseGroupChipState() {
+  document.querySelectorAll('.expense-group-chip').forEach(btn => {
+    const id = parseInt(btn.getAttribute('data-group-id'), 10);
+    const g = groups.find(x => x.id === id);
+    if (!g) {
+      btn.classList.remove('is-active');
+      return;
+    }
+    const memberNames = (g.members || []).map(m => m.name);
+    const active = memberNames.length > 0 && memberNames.every(n => selectedParticipants.includes(n))
+      && selectedParticipants.includes('self');
+    btn.classList.toggle('is-active', active);
+  });
 }
 
 function closeAllMenus(except) {
@@ -1597,19 +2298,29 @@ function renderPeople() {
   const chips = document.getElementById('peopleChips');
   const payerSel = document.getElementById('payer');
   const groupPicks = document.getElementById('groupMemberPicks');
+  const countLabel = document.getElementById('peopleCountLabel');
+  const initial = n => n ? n.charAt(0).toUpperCase() : '?';
+
+  if (countLabel) {
+    const n = people.length;
+    countLabel.textContent = n === 1 ? '1 person' : `${n} people`;
+  }
 
   if (people.length === 0) {
     chips.innerHTML = '<div class="empty">No people yet. Add someone to get started.</div>';
     payerSel.innerHTML = '<option value="self" selected>Self</option>';
     groupPicks.innerHTML = '<span class="empty picker-empty">Add people first.</span>';
     updatePickerSummary('groupMemberPicks', 'groupMemberSummary');
+    updateSettingsHubSummaries();
     return;
   }
 
   chips.innerHTML = people.map(p => `
-    <span class="chip">${cap(p.name)}
-      <button type="button" class="secondary" onclick="removePerson(${p.id})">×</button>
-    </span>
+    <div class="person-row">
+      <span class="person-avatar" aria-hidden="true">${initial(p.name)}</span>
+      <span class="person-name">${cap(p.name)}</span>
+      <button type="button" class="person-remove" onclick="removePerson(${p.id})" aria-label="Remove ${cap(p.name)}">×</button>
+    </div>
   `).join('');
 
   const prevPayer = payerSel.value;
@@ -1621,8 +2332,6 @@ function renderPeople() {
     payerSel.value = 'self';
   }
 
-  const initial = n => n ? n.charAt(0).toUpperCase() : '?';
-
   const checkedIds = new Set(getCheckedIds('groupMemberPicks'));
   groupPicks.innerHTML = people.map(p => `
     <label data-name="${cap(p.name).toLowerCase()}">
@@ -1633,6 +2342,7 @@ function renderPeople() {
   `).join('');
 
   updatePickerSummary('groupMemberPicks', 'groupMemberSummary');
+  updateSettingsHubSummaries();
 }
 
 // --- picker helpers (search / select all / clear / summary) for the people lists ---
@@ -1665,15 +2375,127 @@ function updatePickerSummary(containerId, summaryId) {
 
 function renderGroups() {
   const el = document.getElementById('groupsList');
+  const countLabel = document.getElementById('groupsCountLabel');
+  const initial = n => n ? n.charAt(0).toUpperCase() : '?';
+
+  if (countLabel) {
+    const n = groups.length;
+    countLabel.textContent = n === 1 ? '1 group' : `${n} groups`;
+  }
+
   if (groups.length === 0) {
-    el.innerHTML = '<div class="empty">No groups yet.</div>';
+    el.innerHTML = '<div class="empty">No groups yet. Create one below.</div>';
+    updateSettingsHubSummaries();
+    renderExpenseGroupPicks();
     return;
   }
-  el.innerHTML = groups.map(g => `
-    <span class="chip">${g.name} (${g.members.map(m => cap(m.name)).join(', ')})
-      <button type="button" class="secondary" onclick="removeGroup(${g.id})">×</button>
-    </span>
-  `).join('');
+
+  el.innerHTML = groups.map(g => {
+    const members = (g.members || []).map(m => cap(m.name)).join(', ') || 'No members';
+    const count = (g.members || []).length;
+    return `
+    <div class="person-row">
+      <span class="person-avatar" aria-hidden="true">${initial(g.name)}</span>
+      <span class="person-meta">
+        <span class="person-name">${cap(g.name)}</span>
+        <span class="group-members">${count} member${count === 1 ? '' : 's'} · ${members}</span>
+      </span>
+      <span class="person-row-actions">
+        <button type="button" class="person-edit" onclick="editGroup(${g.id})">Edit</button>
+        <button type="button" class="person-remove" onclick="removeGroup(${g.id})" aria-label="Remove ${cap(g.name)}">×</button>
+      </span>
+    </div>`;
+  }).join('');
+  updateSettingsHubSummaries();
+  renderExpenseGroupPicks();
+}
+
+function updateGroupFormMode() {
+  const summary = document.getElementById('groupFormSummary');
+  const saveBtn = document.getElementById('saveGroupBtn');
+  const cancelBtn = document.getElementById('cancelGroupEditBtn');
+  const editing = editingGroupId != null;
+  if (summary) summary.textContent = editing ? 'Edit group' : 'New group';
+  if (saveBtn) saveBtn.textContent = editing ? 'Save changes' : 'Create group';
+  if (cancelBtn) cancelBtn.classList.toggle('hidden', !editing);
+}
+
+function resetGroupForm() {
+  editingGroupId = null;
+  const nameEl = document.getElementById('groupName');
+  const searchEl = document.getElementById('groupMemberSearch');
+  if (nameEl) nameEl.value = '';
+  if (searchEl) searchEl.value = '';
+  clearPicker('groupMemberPicks', 'groupMemberSummary');
+  filterPicker('groupMemberPicks', '');
+  updateGroupFormMode();
+}
+
+function cancelGroupEdit() {
+  resetGroupForm();
+  const details = document.getElementById('groupCreateDetails');
+  if (details) details.open = false;
+}
+
+function editGroup(id) {
+  const g = groups.find(x => x.id === id);
+  if (!g) return;
+  editingGroupId = id;
+  const details = document.getElementById('groupCreateDetails');
+  const nameEl = document.getElementById('groupName');
+  const searchEl = document.getElementById('groupMemberSearch');
+  if (nameEl) nameEl.value = g.name || '';
+  if (searchEl) searchEl.value = '';
+  filterPicker('groupMemberPicks', '');
+  const memberIds = new Set((g.members || []).map(m => m.id));
+  document.querySelectorAll('#groupMemberPicks input').forEach(cb => {
+    cb.checked = memberIds.has(parseInt(cb.value, 10));
+  });
+  updatePickerSummary('groupMemberPicks', 'groupMemberSummary');
+  updateGroupFormMode();
+  if (details) {
+    details.open = true;
+    details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  if (nameEl) nameEl.focus();
+}
+
+async function saveGroup() {
+  const name = document.getElementById('groupName').value.trim();
+  const member_ids = getCheckedIds('groupMemberPicks');
+  const btn = document.getElementById('saveGroupBtn');
+  if (!name) { alert('Enter a group name'); return; }
+  if (member_ids.length === 0) { alert('Select at least one member'); return; }
+  const editing = editingGroupId != null;
+  const url = editing ? `/api/groups/${editingGroupId}` : '/api/groups';
+  const method = editing ? 'PUT' : 'POST';
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, member_ids })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed'); return; }
+    resetGroupForm();
+    const details = document.getElementById('groupCreateDetails');
+    if (details) details.open = false;
+    await refresh();
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function createGroup() {
+  await saveGroup();
+}
+
+async function removeGroup(id) {
+  if (!confirm('Delete this group?')) return;
+  if (editingGroupId === id) cancelGroupEdit();
+  await fetch(`/api/groups/${id}`, { method: 'DELETE' });
+  await refresh();
 }
 
 async function addPerson() {
@@ -1693,28 +2515,6 @@ async function addPerson() {
 async function removePerson(id) {
   if (!confirm('Remove this person?')) return;
   await fetch(`/api/people/${id}`, { method: 'DELETE' });
-  await refresh();
-}
-
-async function createGroup() {
-  const name = document.getElementById('groupName').value.trim();
-  const member_ids = getCheckedIds('groupMemberPicks');
-  if (!name) { alert('Enter a group name'); return; }
-  if (member_ids.length === 0) { alert('Select at least one member'); return; }
-  const res = await fetch('/api/groups', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, member_ids })
-  });
-  const data = await res.json();
-  if (!res.ok) { alert(data.error || 'Failed'); return; }
-  document.getElementById('groupName').value = '';
-  await refresh();
-}
-
-async function removeGroup(id) {
-  if (!confirm('Delete this group?')) return;
-  await fetch(`/api/groups/${id}`, { method: 'DELETE' });
   await refresh();
 }
 
@@ -1766,6 +2566,7 @@ function resetExpenseForm() {
   togglePersonal();
   selectedParticipants = ['self'];
   renderParticipantChips();
+  syncExpenseGroupChipState();
   editingExpenseId = null;
   document.getElementById('addStructuredBtn').textContent = 'Add expense';
   document.getElementById('cancelEditBtn').classList.add('hidden');
@@ -2390,6 +3191,11 @@ async function refresh() {
       budget_spent: Number(data.budget_spent) || 0,
       budget_shared_total: Number(data.budget_shared_total) || 0,
     };
+    if (data.theme_mode || data.theme_accent) {
+      applyThemeFromServer(data.theme_mode, data.theme_accent);
+    } else {
+      syncAppearanceUI(window.swminiTheme ? window.swminiTheme.read() : { mode: 'light', accent: 'indigo' });
+    }
 
     renderPeople();
     renderGroups();

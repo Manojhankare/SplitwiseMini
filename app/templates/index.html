@@ -6,7 +6,7 @@
 <title>Splitwise Mini</title>
 <link rel="icon" href="{{ url_for('static', filename='brand/app-icon.png') }}" type="image/png" />
 {% set seo_title = 'Splitwise Mini' %}
-{% set seo_description = 'Splitwise Mini - track shared expenses, settle balances, and manage your monthly budget.' %}
+{% set seo_description = 'Splitwise Mini by Manoj Hankare — track shared expenses, settle balances, and manage your monthly budget.' %}
 {% set seo_robots = 'noindex, nofollow' %}
 {% include '_seo.html' %}
 {% include '_theme_boot.html' %}
@@ -649,7 +649,11 @@
     display: flex; flex-direction: column;
     max-height: 260px; padding: 0; overflow: hidden;
   }
-  .payer-dd-menu.hidden { display: none; }
+  .payer-dd-menu.hidden { display: none !important; }
+  .payer-dd-sheet-head { display: none; }
+  .payer-backdrop {
+    display: none;
+  }
   .payer-dd-search-wrap {
     padding: 8px; border-bottom: 1px solid var(--border); flex-shrink: 0;
     background: var(--surface);
@@ -684,6 +688,55 @@
   .payer-dd-empty {
     padding: 14px 10px; text-align: center; color: var(--muted);
     font-size: 13px; font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .payer-backdrop {
+      display: block;
+      position: fixed; inset: 0; z-index: 105;
+      background: rgba(17, 24, 39, 0.45);
+      animation: fadeIn .2s ease;
+    }
+    .payer-backdrop.hidden { display: none; }
+    .payer-dd-menu {
+      position: fixed;
+      left: 0; right: 0; bottom: 0; top: auto;
+      width: 100%; max-width: 520px;
+      margin: 0 auto;
+      max-height: min(72vh, 480px);
+      border: none;
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
+      z-index: 110;
+      animation: slideUp .28s ease;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .payer-dd-sheet-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; padding: 14px 14px 6px; flex-shrink: 0;
+      position: relative;
+    }
+    .payer-dd-sheet-head::before {
+      content: '';
+      position: absolute; left: 50%; top: 8px;
+      width: 40px; height: 4px; border-radius: 4px;
+      background: var(--border); transform: translateX(-50%);
+    }
+    .payer-dd-menu { padding-top: 8px; }
+    .payer-dd-sheet-head strong {
+      font-size: 16px; font-weight: 700; color: var(--ink);
+    }
+    button.payer-sheet-close {
+      margin: 0; padding: 6px 10px; min-height: 32px;
+      border: none; border-radius: 8px; box-shadow: none;
+      background: var(--surface-2); color: var(--muted);
+      font-size: 13px; font-weight: 600; font-family: inherit;
+    }
+    button.payer-sheet-close:hover { filter: none; color: var(--ink); }
+    button.payer-sheet-close:active { transform: none; }
+    .payer-dd-search-wrap { padding: 8px 14px 10px; }
+    .payer-dd-list { padding: 4px 10px 12px; }
+    button.payer-dd-option { min-height: 48px; }
   }
 
   /* ========== Balance / expense rows ========== */
@@ -852,7 +905,7 @@
     margin: 0 0 var(--space-2);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
   }
   .settings-hub,
   .settings-panel {
@@ -868,67 +921,75 @@
   .settings-profile {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--settings-inset);
+    gap: 10px;
+    padding: 10px var(--settings-inset);
     border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--primary-soft) 0%, transparent 100%);
   }
   .settings-profile .avatar {
-    width: 56px; height: 56px; border-radius: 50%;
+    width: 40px; height: 40px; border-radius: 50%;
     background: var(--primary-soft); color: var(--primary);
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 22px; text-transform: uppercase; flex-shrink: 0;
+    font-weight: 700; font-size: 16px; text-transform: uppercase; flex-shrink: 0;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 22%, transparent);
   }
   .settings-profile-meta { min-width: 0; flex: 1; }
   .settings-profile-name {
-    font-weight: 700; font-size: 18px; text-transform: capitalize;
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-weight: 700; font-size: 15px; text-transform: capitalize;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    line-height: 1.25;
   }
   .settings-profile-role {
-    display: inline-flex; font-size: 11px; font-weight: 600;
+    display: inline-flex; font-size: 10px; font-weight: 600;
     color: var(--primary); background: var(--primary-soft);
-    padding: 2px 8px; border-radius: 999px;
+    padding: 1px 7px; border-radius: 999px;
   }
   .settings-profile-email {
-    margin: 4px 0 0; font-size: 13px; color: var(--muted);
+    margin: 2px 0 0; font-size: 12px; color: var(--muted);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   a.settings-admin {
-    color: var(--primary); text-decoration: none; font-size: 13px; font-weight: 600;
-    border: 1.5px solid var(--border); background: var(--primary-soft);
-    padding: 8px 12px; border-radius: var(--radius-sm); min-height: 36px;
+    color: var(--primary); text-decoration: none; font-size: 12px; font-weight: 600;
+    border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
+    background: var(--surface);
+    padding: 5px 10px; border-radius: 999px; min-height: 28px;
     display: inline-flex; align-items: center; flex-shrink: 0;
   }
+  a.settings-admin:hover { background: var(--primary-soft); }
 
-  .settings-menu { padding: 4px 0; }
+  .settings-menu { padding: 2px 0; }
   button.settings-row {
     width: 100%;
-    display: flex; align-items: center; gap: 12px;
+    display: flex; align-items: center; gap: 10px;
     margin: 0;
-    padding: 14px var(--settings-inset);
+    padding: 10px var(--settings-inset);
     border: none; background: transparent; color: inherit;
     text-align: left; cursor: pointer; font-family: inherit;
-    min-height: 56px; border-radius: 0; box-shadow: none;
+    min-height: 48px; border-radius: 0; box-shadow: none;
     appearance: none; -webkit-appearance: none;
+  }
+  button.settings-row + button.settings-row {
+    border-top: 1px solid var(--border);
   }
   button.settings-row:hover { background: var(--surface-2); filter: none; transform: none; }
   button.settings-row:active { transform: none; }
   .settings-row-icon {
-    width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+    width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
     background: var(--primary-soft); color: var(--primary);
     display: flex; align-items: center; justify-content: center;
   }
   .settings-row-icon svg {
-    width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8;
+    width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8;
   }
   .settings-row-body { flex: 1; min-width: 0; }
-  .settings-row-title { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .settings-row-title { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.2; }
   .settings-row-sub {
-    margin-top: 2px; font-size: 12px; color: var(--muted);
+    margin-top: 1px; font-size: 11px; color: var(--muted);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .settings-row-bar {
-    height: 4px; border-radius: 999px; background: var(--surface-2);
-    overflow: hidden; margin-top: 6px; max-width: 160px;
+    height: 3px; border-radius: 999px; background: var(--surface-2);
+    overflow: hidden; margin-top: 4px; max-width: 140px;
   }
   .settings-row-bar > span {
     display: block; height: 100%; width: 0; border-radius: 999px; background: var(--primary);
@@ -936,29 +997,84 @@
   .settings-row-bar.warn > span { background: var(--warning); }
   .settings-row-bar.over > span { background: var(--danger); }
   .settings-row-chevron {
-    color: var(--muted); flex-shrink: 0; font-size: 18px; line-height: 1;
+    color: var(--muted); flex-shrink: 0; font-size: 16px; line-height: 1;
   }
 
   .settings-about {
-    display: flex; flex-direction: column; align-items: stretch; gap: 8px;
-    padding: 12px var(--settings-inset);
+    display: flex; flex-direction: column; align-items: stretch; gap: 6px;
+    padding: 10px var(--settings-inset);
     border-top: 1px solid var(--border);
   }
-  .settings-about-brand {
-    display: flex; align-items: center; gap: 8px;
+  .settings-about-top {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    flex-wrap: wrap;
   }
-  .settings-about-mark { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+  .settings-about-brand {
+    display: flex; align-items: center; gap: 8px; min-width: 0;
+  }
+  .settings-about-egg {
+    display: inline-flex; align-items: center; justify-content: center;
+    margin: 0; padding: 0; border: none; background: transparent;
+    cursor: pointer; border-radius: 6px; line-height: 0;
+    width: 28px; height: 28px; flex-shrink: 0;
+    box-shadow: none; font: inherit; color: inherit;
+  }
+  .settings-about-egg:hover, .settings-about-egg:focus-visible {
+    outline: none; background: var(--surface-2);
+  }
+  .settings-about-mark { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; display: block; }
+  .settings-about-egg.is-spinning .settings-about-mark {
+    animation: egg-spin .55s ease-in-out;
+  }
+  @keyframes egg-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .egg-toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    z-index: 70;
+    transform: translateX(-50%) translateY(8px);
+    max-width: min(90vw, 320px);
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    font-size: 13px; font-weight: 600; text-align: center;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease, visibility .2s;
+  }
+  .egg-toast.is-on {
+    opacity: 1; visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .egg-confetti {
+    position: fixed; width: 6px; height: 6px; border-radius: 2px;
+    pointer-events: none; z-index: 71;
+    animation: egg-confetti-fly .7s ease-out forwards;
+  }
+  @keyframes egg-confetti-fly {
+    to { transform: translate(var(--dx), var(--dy)) rotate(180deg); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .settings-about-egg.is-spinning .settings-about-mark { animation: none; }
+    .egg-confetti { animation: none; display: none; }
+    .egg-toast { transition: none; }
+  }
   .settings-about-brand strong { font-size: 13px; font-weight: 700; }
   .settings-about-actions {
-    display: flex; gap: 8px;
+    display: flex; gap: 6px;
   }
   a.settings-about-btn {
     flex: 1;
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    text-decoration: none; font-size: 12px; font-weight: 600;
-    padding: 8px 10px; min-height: 34px; border-radius: var(--radius-sm);
+    display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    text-decoration: none; font-size: 11px; font-weight: 600;
+    padding: 6px 8px; min-height: 30px; border-radius: var(--radius-sm);
   }
-  a.settings-about-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+  a.settings-about-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
   a.settings-about-btn.star {
     background: var(--btn-contrast); color: var(--btn-contrast-text);
   }
@@ -966,19 +1082,23 @@
   a.settings-about-btn.star svg { fill: currentColor; }
   a.settings-about-btn.issue {
     background: var(--surface-2); color: var(--ink);
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border);
   }
   a.settings-about-btn.issue:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
   a.settings-about-btn.issue svg { stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .settings-about .made-by {
+    margin: 0; font-size: 11px; color: var(--muted); text-align: right;
+    flex: 1; min-width: 0;
+  }
   .made-by { margin: 0; font-size: 11px; color: var(--muted); text-align: center; }
   .made-by a { color: var(--ink); font-weight: 600; text-decoration: none; }
   .made-by a:hover { text-decoration: underline; color: var(--primary); }
 
   .settings-logout {
     width: calc(100% - 2 * var(--settings-inset));
-    margin: 0 var(--settings-inset) 12px;
+    margin: 0 var(--settings-inset) 10px;
     background: transparent; border: 1.5px solid var(--danger); color: var(--danger);
-    box-shadow: none; min-height: 42px; font-size: 14px;
+    box-shadow: none; min-height: 38px; font-size: 13px;
   }
   .settings-logout:hover { background: var(--danger-soft); filter: none; }
 
@@ -1316,7 +1436,7 @@
   #printSheet { display: none; }
   @media print {
     body { background: #fff !important; }
-    .app, .bottom-nav, #settleModal, #loadingBar, #bootSplash, #loadingOverlay, .hero-card { display: none !important; }
+    .app, .bottom-nav, #settleModal, #payerBackdrop, #payerMenu, #loadingBar, #bootSplash, #loadingOverlay, .hero-card, #eggToast, .egg-confetti { display: none !important; }
     #printSheet {
       display: block !important; padding: 24px; max-width: 100%;
       color: #111; font-family: Georgia, 'Times New Roman', serif; font-size: 12pt;
@@ -1435,6 +1555,10 @@
               <span class="payer-dd-caret" aria-hidden="true">▾</span>
             </button>
             <div class="payer-dd-menu hidden" id="payerMenu">
+              <div class="payer-dd-sheet-head">
+                <strong>Paid by</strong>
+                <button type="button" class="payer-sheet-close" onclick="closePayerDropdown()">Close</button>
+              </div>
               <div class="payer-dd-search-wrap">
                 <input type="text" id="payerSearch" class="payer-dd-search" placeholder="Search who paid"
                        autocomplete="off" onclick="event.stopPropagation()"
@@ -1509,7 +1633,9 @@
             <div class="settings-profile-meta">
               <div class="settings-profile-name">
                 {{ current_username }}
-                <span class="settings-profile-role">{{ 'Admin' if is_admin else 'Member' }}</span>
+                {% if not is_admin %}
+                <span class="settings-profile-role">Member</span>
+                {% endif %}
               </div>
               {% if current_email %}
               <p class="settings-profile-email">{{ current_email }}</p>
@@ -1557,9 +1683,14 @@
           </div>
 
           <div class="settings-about">
-            <div class="settings-about-brand">
-              <img class="settings-about-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="24" height="24" />
-              <strong>Splitwise Mini</strong>
+            <div class="settings-about-top">
+              <div class="settings-about-brand">
+                <button type="button" class="settings-about-egg" id="settingsAboutEgg" aria-label="Splitwise Mini">
+                  <img class="settings-about-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="24" height="24" />
+                </button>
+                <strong>Splitwise Mini</strong>
+              </div>
+              <p class="made-by">Made by <a href="https://manojhankare.in" target="_blank" rel="noopener noreferrer">Manoj Hankare</a></p>
             </div>
             <div class="settings-about-actions">
               <a class="settings-about-btn star" href="https://github.com/Manojhankare/SplitwiseMini" target="_blank" rel="noopener noreferrer">
@@ -1571,7 +1702,6 @@
                 Raise issue
               </a>
             </div>
-            <p class="made-by">Made by <a href="https://manojhankare.in" target="_blank" rel="noopener noreferrer">manojhankare.in</a></p>
           </div>
 
           <form method="post" action="{{ url_for('auth.logout') }}">
@@ -1727,6 +1857,10 @@
     </button>
   </div>
 </nav>
+
+<div id="eggToast" class="egg-toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<div id="payerBackdrop" class="payer-backdrop hidden" onclick="closePayerDropdown()" aria-hidden="true"></div>
 
 <div id="settleModal" class="modal hidden" onclick="if(event.target===this)closeSettleModal()">
   <div class="modal-card">
@@ -2389,12 +2523,18 @@ document.addEventListener('toggle', e => {
 document.addEventListener('click', e => {
   if (!e.target.closest('.combo')) hideParticipantOptions();
   if (!e.target.closest('details.menu')) closeAllMenus();
-  if (!e.target.closest('#payerDropdown')) closePayerDropdown();
+  if (!e.target.closest('#payerDropdown') && !e.target.closest('#payerMenu') && !e.target.closest('#payerBackdrop')) {
+    closePayerDropdown();
+  }
 });
 
 function payerInitial(name) {
   if (!name || name === 'self') return (CURRENT_USERNAME || 'S').charAt(0).toUpperCase();
   return name.charAt(0).toUpperCase();
+}
+
+function usePayerSheet() {
+  return window.matchMedia('(max-width: 640px)').matches;
 }
 
 function syncPayerDropdown() {
@@ -2448,17 +2588,36 @@ function togglePayerDropdown(event) {
   if (event) event.stopPropagation();
   const menu = document.getElementById('payerMenu');
   const trigger = document.getElementById('payerTrigger');
-  const search = document.getElementById('payerSearch');
   if (!menu || !trigger) return;
   const open = menu.classList.contains('hidden');
-  if (open) {
-    if (search) search.value = '';
-    syncPayerDropdown();
-    menu.classList.remove('hidden');
-    trigger.setAttribute('aria-expanded', 'true');
-    setTimeout(() => { if (search) search.focus(); }, 0);
-  } else {
-    closePayerDropdown();
+  if (open) openPayerDropdown();
+  else closePayerDropdown();
+}
+
+function openPayerDropdown() {
+  const menu = document.getElementById('payerMenu');
+  const trigger = document.getElementById('payerTrigger');
+  const search = document.getElementById('payerSearch');
+  const backdrop = document.getElementById('payerBackdrop');
+  const host = document.getElementById('payerDropdown');
+  if (!menu || !trigger) return;
+  if (search) search.value = '';
+  syncPayerDropdown();
+  const sheet = usePayerSheet();
+  if (sheet) {
+    document.body.appendChild(menu);
+    document.body.style.overflow = 'hidden';
+  } else if (host && menu.parentElement !== host) {
+    host.appendChild(menu);
+  }
+  menu.classList.remove('hidden');
+  trigger.setAttribute('aria-expanded', 'true');
+  if (backdrop) {
+    backdrop.classList.toggle('hidden', !sheet);
+    backdrop.setAttribute('aria-hidden', sheet ? 'false' : 'true');
+  }
+  if (sheet) {
+    setTimeout(() => { if (search) search.focus(); }, 50);
   }
 }
 
@@ -2466,9 +2625,20 @@ function closePayerDropdown() {
   const menu = document.getElementById('payerMenu');
   const trigger = document.getElementById('payerTrigger');
   const search = document.getElementById('payerSearch');
+  const backdrop = document.getElementById('payerBackdrop');
+  const host = document.getElementById('payerDropdown');
   if (menu) menu.classList.add('hidden');
   if (trigger) trigger.setAttribute('aria-expanded', 'false');
-  if (search) search.value = '';
+  if (backdrop) {
+    backdrop.classList.add('hidden');
+    backdrop.setAttribute('aria-hidden', 'true');
+  }
+  if (host && menu && menu.parentElement !== host) host.appendChild(menu);
+  document.body.style.overflow = '';
+  if (search) {
+    search.blur();
+    search.value = '';
+  }
   filterPayerOptions('');
 }
 
@@ -3418,6 +3588,82 @@ refresh();
 renderParticipantChips();
 syncPayerDropdown();
 updateHeroSummary();
+
+(function initAboutEasterEgg() {
+  try {
+    console.log(
+      '%cSplitwise Mini%c made by Manoj Hankare — manojhankare.in',
+      'font-weight:700;color:#4F46E5',
+      'font-weight:400;color:inherit'
+    );
+  } catch (_) {}
+
+  try {
+    const btn = document.getElementById('settingsAboutEgg');
+    const toast = document.getElementById('eggToast');
+    if (!btn || !toast) return;
+
+    let taps = 0;
+    let lastTap = 0;
+    let cooldownUntil = 0;
+    let toastTimer = null;
+    const TAP_WINDOW_MS = 2000;
+    const NEED = 7;
+    const COOLDOWN_MS = 8000;
+    const TOAST_MS = 2500;
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function showEggToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('is-on');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () {
+        toast.classList.remove('is-on');
+      }, TOAST_MS);
+    }
+
+    function burstConfetti(originEl) {
+      if (reduceMotion) return;
+      const rect = originEl.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const colors = ['#4F46E5', '#22C55E', '#F59E0B', '#EC4899', '#06B6D4', '#8B5CF6'];
+      for (let i = 0; i < 10; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'egg-confetti';
+        dot.setAttribute('aria-hidden', 'true');
+        const angle = (Math.PI * 2 * i) / 10;
+        const dist = 36 + Math.random() * 28;
+        dot.style.left = cx + 'px';
+        dot.style.top = cy + 'px';
+        dot.style.background = colors[i % colors.length];
+        dot.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+        dot.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+        document.body.appendChild(dot);
+        setTimeout(function () { dot.remove(); }, 750);
+      }
+    }
+
+    btn.addEventListener('click', function () {
+      const now = Date.now();
+      if (now < cooldownUntil) return;
+      if (now - lastTap > TAP_WINDOW_MS) taps = 0;
+      lastTap = now;
+      taps += 1;
+      if (taps < NEED) return;
+      taps = 0;
+      cooldownUntil = now + COOLDOWN_MS;
+      if (!reduceMotion) {
+        btn.classList.remove('is-spinning');
+        void btn.offsetWidth;
+        btn.classList.add('is-spinning');
+        setTimeout(function () { btn.classList.remove('is-spinning'); }, 600);
+        burstConfetti(btn);
+      }
+      showEggToast('Made with care by Manoj Hankare');
+    });
+  } catch (_) {}
+})();
 </script>
 </body>
 </html>

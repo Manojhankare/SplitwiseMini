@@ -1,6 +1,6 @@
 # Splitwise Mini — Project Overview
 
-Multi-user personal expense tracker: shared bills, personal spending, settlements, itemized reports, and a monthly consumption budget. Each logged-in user only sees their own people, groups, expenses, and settlements (`user_id` isolation).
+Multi-user personal expense tracker by **Manoj Hankare** ([manojhankare.in](https://manojhankare.in)): shared bills, personal spending, settlements, itemized reports, and a monthly consumption budget. Each logged-in user only sees their own people, groups, expenses, and settlements (`user_id` isolation).
 
 ## Stack
 
@@ -89,10 +89,11 @@ UI defaults Report/Balances to the current *local* month. Budget month is always
 
 - Compact greeting + slim budget hero (left this month / my spend) + Add as default tab
 - Tabs: Add · Report · Balances · Settings (floating bottom nav)
-- Settings: hub list (profile, Appearance / Budget / People / Groups rows with live summaries, About, Log out) + one detail panel at a time; panels stay in the DOM when hidden so theme/budget/people/group IDs keep working; deep link from hero budget hint opens Budget panel after hub reset
+- Settings: denser hub (profile wash, compact rows, About band) with live summaries + Log out; one detail panel at a time (panels unchanged / stay in DOM so theme/budget/people/group IDs keep working); deep link from hero budget hint opens Budget panel after hub reset; Settings About logo has a client-only 7-tap easter egg (toast + optional spin/confetti)
 - Period bar on Report/Balances
 - Settle modal (bottom sheet)
 - IDs and `onclick` / `fetch` paths are wired tightly — preserve them when restyling
+- PWA: `manifest.webmanifest` + root `/sw.js` (static-only cache; never caches `/api` or HTML). Install needs HTTPS or localhost; iOS uses Share → Add to Home Screen (no auto Install banner)
 
 ## Schema migrations (existing DB)
 

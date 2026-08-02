@@ -1,5 +1,5 @@
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
-from flask_login import login_user, logout_user
+from flask_login import current_user, login_user, logout_user
 
 from app.models.person import Person
 from app.models.user import User
@@ -7,22 +7,38 @@ from app.models.user import User
 auth_bp = Blueprint("auth", __name__)
 
 
+def _safe_next_url(fallback=None):
+    """Only allow same-site relative redirects (blocks open redirects)."""
+    fallback = fallback or url_for("page.app")
+    next_url = (request.args.get("next") or "").strip()
+    if not next_url.startswith("/") or next_url.startswith("//"):
+        return fallback
+    return next_url
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    # Swipe-back / history to /login while signed in should return to the app,
+    # not show the login form (session is still valid — this is not a logout).
+    if current_user.is_authenticated:
+        return redirect(url_for("page.app"))
+
     if request.method == "POST":
         username = (request.form.get("username") or "").strip().lower()
         password = request.form.get("password") or ""
         user = User.get_by_username(username)
         if user and user.is_active and user.check_password(password):
             login_user(user)
-            next_url = request.args.get("next") or url_for("page.app")
-            return redirect(next_url)
+            return redirect(_safe_next_url())
         flash("Invalid username or password", "error")
     return render_template("login.html")
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("page.app"))
+
     form = {"username": "", "email": ""}
     if request.method == "POST":
         username = (request.form.get("username") or "").strip().lower()

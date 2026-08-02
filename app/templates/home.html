@@ -6,28 +6,10 @@
 <title>Splitwise Mini - Split bills without the mess</title>
 <link rel="icon" href="{{ url_for('static', filename='brand/app-icon.png') }}" type="image/png" />
 {% set seo_title = 'Splitwise Mini - Split bills without the mess' %}
-{% set seo_description = 'Splitwise Mini - a simple private expense splitter for roommates and friends. Track shared bills, settle up, and stay on budget.' %}
+{% set seo_description = 'Splitwise Mini by Manoj Hankare - a simple private expense splitter for roommates and friends. Track shared bills, settle up, and stay on budget.' %}
 {% set seo_path = '/' %}
 {% include '_seo.html' %}
 {% include '_theme_boot.html' %}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Splitwise Mini",
-  "applicationCategory": "FinanceApplication",
-  "operatingSystem": "Web",
-  "url": {{ (request.url_root.rstrip('/') ~ '/')|tojson }},
-  "description": "A simple private expense splitter for roommates and friends. Track shared bills, settle up, and stay on budget.",
-  "author": {
-    "@type": "Person",
-    "name": "Manoj Hankare",
-    "url": "https://manojhankare.in"
-  },
-  "codeRepository": "https://github.com/Manojhankare/SplitwiseMini",
-  "image": {{ url_for('static', filename='brand/app-icon.png', _external=True)|tojson }}
-}
-</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -235,7 +217,7 @@
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
         Star on GitHub
       </a>
-      <p class="made-by">Made by <a href="https://manojhankare.in" target="_blank" rel="noopener noreferrer">manojhankare.in</a></p>
+      <p class="made-by">Made by <a href="https://manojhankare.in" target="_blank" rel="noopener noreferrer">Manoj Hankare</a></p>
     </div>
   </main>
 </body>

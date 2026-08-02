@@ -1,6 +1,6 @@
 # Splitwise Mini
 
-Multi-user expense tracker: shared bills with groups, personal spending, itemized reports, monthly budget, and per-user isolated data.
+Multi-user expense tracker by **Manoj Hankare** ([manojhankare.in](https://manojhankare.in)): shared bills with groups, personal spending, itemized reports, monthly budget, and per-user isolated data.
 
 ## Docs
 - [docs/PROJECT.md](docs/PROJECT.md) — architecture, domains, balance & budget semantics

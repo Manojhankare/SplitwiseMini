@@ -1,4 +1,4 @@
-from flask import Blueprint, Response, redirect, render_template, request, url_for
+from flask import Blueprint, Response, current_app, make_response, redirect, render_template, request, send_from_directory, url_for
 from flask_login import current_user, login_required
 
 page_bp = Blueprint("page", __name__)
@@ -15,6 +15,24 @@ def home():
 @login_required
 def app():
     return render_template("index.html")
+
+
+@page_bp.route("/manifest.webmanifest")
+def web_manifest():
+    """Serve the web app manifest with the correct MIME type for installability."""
+    resp = make_response(send_from_directory(current_app.static_folder, "manifest.webmanifest"))
+    resp.headers["Content-Type"] = "application/manifest+json"
+    return resp
+
+
+@page_bp.route("/sw.js")
+def service_worker():
+    """Serve the service worker at site root scope (required for Install / PWA)."""
+    resp = make_response(send_from_directory(current_app.static_folder, "sw.js"))
+    resp.headers["Content-Type"] = "application/javascript; charset=utf-8"
+    resp.headers["Service-Worker-Allowed"] = "/"
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
 
 
 @page_bp.route("/robots.txt")

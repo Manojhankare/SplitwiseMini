@@ -396,18 +396,18 @@
     margin-bottom: 6px; margin-top: var(--space-2);
   }
   label:first-child, .form-group > label:first-of-type { margin-top: 0; }
-  .expense-group-picks { margin-bottom: 12px; }
+  #participantsBlock .form-group-title { margin-bottom: 8px; }
+  .expense-group-picks { margin: 0 0 8px; }
   .expense-group-picks.hidden { display: none; }
-  .expense-group-picks > label { margin-top: 0; }
   .expense-group-chips {
-    display: flex; flex-wrap: wrap; gap: 8px;
+    display: flex; flex-wrap: wrap; gap: 6px;
   }
   button.expense-group-chip {
-    margin: 0; padding: 8px 12px; min-height: 36px;
+    margin: 0; padding: 6px 10px; min-height: 32px;
     border: 1.5px solid var(--border); border-radius: 999px; box-shadow: none;
     background: var(--surface-2); color: var(--ink);
-    font-size: 13px; font-weight: 600; font-family: inherit;
-    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 5px;
   }
   button.expense-group-chip:hover {
     border-color: var(--primary); color: var(--primary); background: var(--primary-soft); filter: none;
@@ -417,9 +417,18 @@
   }
   button.expense-group-chip:active { transform: none; }
   button.expense-group-chip .eg-count {
-    font-size: 11px; font-weight: 600; color: var(--muted);
+    font-size: 10px; font-weight: 600; color: var(--muted);
   }
   button.expense-group-chip.is-active .eg-count { color: var(--primary); opacity: 0.85; }
+  #participantsBlock .participant-search {
+    padding: 10px 12px; min-height: 42px; font-size: 15px;
+  }
+  #participantsBlock .participant-selected {
+    margin-top: 8px; gap: 6px;
+  }
+  #participantsBlock .participant-selected .chip {
+    padding: 4px 6px 4px 10px; font-size: 13px;
+  }
 
   input[type="text"], input[type="number"], input[type="date"], input[type="month"], select, textarea {
     width: 100%;
@@ -601,6 +610,81 @@
   }
   .toggle-row input { width: 18px; height: 18px; accent-color: var(--primary); }
   .toggle-row label { margin: 0; font-weight: 500; }
+  #paidByBlock .form-group-title { margin-bottom: 8px; }
+  #paidByBlock .toggle-row {
+    margin-top: 8px; min-height: 40px; padding: 8px 10px; font-size: 13px; gap: 8px;
+  }
+  #paidByBlock .toggle-row label { font-size: 13px; }
+  .payer-dd { position: relative; }
+  .payer-dd-trigger {
+    width: 100%; margin: 0; padding: 8px 12px; min-height: 42px;
+    display: flex; align-items: center; gap: 10px;
+    border: 1.5px solid transparent; border-radius: var(--radius-sm);
+    background: var(--surface-2); color: var(--ink);
+    box-shadow: none; font-family: inherit; font-size: 15px; font-weight: 600;
+    text-align: left; cursor: pointer;
+  }
+  .payer-dd-trigger:hover { filter: none; border-color: var(--border); }
+  .payer-dd-trigger[aria-expanded="true"] {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+  }
+  .payer-dd-trigger:active { transform: none; }
+  .payer-dd-avatar {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    background: var(--primary-soft); color: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+  }
+  .payer-dd-label {
+    flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    text-transform: capitalize;
+  }
+  .payer-dd-caret { color: var(--muted); font-size: 12px; flex-shrink: 0; }
+  .payer-dd-menu {
+    position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 25;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+    max-height: 260px; padding: 0; overflow: hidden;
+  }
+  .payer-dd-menu.hidden { display: none; }
+  .payer-dd-search-wrap {
+    padding: 8px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    background: var(--surface);
+  }
+  .payer-dd-search {
+    width: 100%; margin: 0; padding: 8px 10px; min-height: 36px;
+    border: 1.5px solid transparent; border-radius: 10px;
+    background: var(--surface-2); color: var(--ink);
+    font-size: 14px; font-family: inherit;
+  }
+  .payer-dd-search:focus {
+    outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+  }
+  .payer-dd-list {
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 4px; flex: 1; min-height: 0;
+  }
+  button.payer-dd-option {
+    width: 100%; margin: 0; padding: 8px 10px; min-height: 40px;
+    display: flex; align-items: center; gap: 10px;
+    border: none; border-radius: 10px; background: transparent;
+    color: var(--ink); box-shadow: none; font-family: inherit;
+    font-size: 14px; font-weight: 600; text-align: left; cursor: pointer;
+    text-transform: capitalize;
+  }
+  button.payer-dd-option.payer-dd-hidden { display: none; }
+  button.payer-dd-option:hover { background: var(--surface-2); filter: none; }
+  button.payer-dd-option.is-active { background: var(--primary-soft); color: var(--primary); }
+  button.payer-dd-option:active { transform: none; }
+  button.payer-dd-option .payer-dd-avatar { width: 26px; height: 26px; font-size: 11px; }
+  .payer-dd-empty {
+    padding: 14px 10px; text-align: center; color: var(--muted);
+    font-size: 13px; font-weight: 500;
+  }
 
   /* ========== Balance / expense rows ========== */
   .balance-row {
@@ -1341,29 +1425,42 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="paidByBlock">
           <p class="form-group-title">Paid by</p>
-          <label for="payer">Paid by</label>
-          <select id="payer"><option value="self" selected>Self</option></select>
+          <select id="payer" class="sr-only" aria-hidden="true" tabindex="-1"><option value="self" selected>Self</option></select>
+          <div class="payer-dd" id="payerDropdown">
+            <button type="button" class="payer-dd-trigger" id="payerTrigger" aria-haspopup="listbox" aria-expanded="false" onclick="togglePayerDropdown(event)">
+              <span class="payer-dd-avatar" id="payerTriggerAvatar">S</span>
+              <span class="payer-dd-label" id="payerTriggerLabel">Self</span>
+              <span class="payer-dd-caret" aria-hidden="true">▾</span>
+            </button>
+            <div class="payer-dd-menu hidden" id="payerMenu">
+              <div class="payer-dd-search-wrap">
+                <input type="text" id="payerSearch" class="payer-dd-search" placeholder="Search who paid"
+                       autocomplete="off" onclick="event.stopPropagation()"
+                       onkeydown="event.stopPropagation()"
+                       oninput="filterPayerOptions(this.value)" />
+              </div>
+              <div class="payer-dd-list" id="payerOptionList" role="listbox" aria-label="Paid by"></div>
+            </div>
+          </div>
           <div class="toggle-row">
             <input type="checkbox" id="isPersonal" onchange="togglePersonal()" />
-            <label for="isPersonal">Personal expense (no split)</label>
+            <label for="isPersonal">Personal (no split)</label>
           </div>
         </div>
 
         <div class="form-group" id="participantsBlock">
           <p class="form-group-title">Split between</p>
           <div id="expenseGroupPicks" class="expense-group-picks hidden">
-            <label>Quick pick a group</label>
             <div id="expenseGroupChips" class="expense-group-chips"></div>
           </div>
-          <label for="participantSearch">Or add people</label>
           <div class="combo">
-            <input type="text" id="participantSearch" class="picker-search" autocomplete="off" placeholder="Search &amp; add people"
+            <input type="text" id="participantSearch" class="picker-search participant-search" autocomplete="off" placeholder="Search people"
                    oninput="showParticipantOptions(this.value)" onfocus="showParticipantOptions(this.value)" />
             <div id="participantOptions" class="combo-options hidden"></div>
           </div>
-          <div id="participantChips" class="chips" style="margin-top:10px"></div>
+          <div id="participantChips" class="chips participant-selected"></div>
         </div>
 
         <button type="button" id="addStructuredBtn" class="block" onclick="addStructuredExpense()">Add expense</button>
@@ -2292,7 +2389,96 @@ document.addEventListener('toggle', e => {
 document.addEventListener('click', e => {
   if (!e.target.closest('.combo')) hideParticipantOptions();
   if (!e.target.closest('details.menu')) closeAllMenus();
+  if (!e.target.closest('#payerDropdown')) closePayerDropdown();
 });
+
+function payerInitial(name) {
+  if (!name || name === 'self') return (CURRENT_USERNAME || 'S').charAt(0).toUpperCase();
+  return name.charAt(0).toUpperCase();
+}
+
+function syncPayerDropdown() {
+  const sel = document.getElementById('payer');
+  const list = document.getElementById('payerOptionList');
+  const label = document.getElementById('payerTriggerLabel');
+  const avatar = document.getElementById('payerTriggerAvatar');
+  if (!sel || !list) return;
+  const value = sel.value || 'self';
+  const options = [...sel.options].map(o => o.value);
+  list.innerHTML = options.map(v => {
+    const active = v === value ? ' is-active' : '';
+    const text = v === 'self' ? 'Self' : cap(v);
+    const safe = String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    const searchName = (v === 'self' ? 'self' : String(v)).toLowerCase();
+    return `<button type="button" class="payer-dd-option${active}" role="option" data-value="${safe}" data-name="${searchName}" aria-selected="${v === value}" onclick="selectPayer(this.getAttribute('data-value'))">
+      <span class="payer-dd-avatar">${payerInitial(v)}</span>${text}
+    </button>`;
+  }).join('') || '<div class="payer-dd-empty">No people yet</div>';
+  if (label) label.textContent = value === 'self' ? 'Self' : cap(value);
+  if (avatar) avatar.textContent = payerInitial(value);
+  const search = document.getElementById('payerSearch');
+  filterPayerOptions(search ? search.value : '');
+}
+
+function filterPayerOptions(query) {
+  const list = document.getElementById('payerOptionList');
+  if (!list) return;
+  const q = (query || '').trim().toLowerCase();
+  let visible = 0;
+  list.querySelectorAll('.payer-dd-option').forEach(btn => {
+    const match = !q || (btn.getAttribute('data-name') || '').includes(q);
+    btn.classList.toggle('payer-dd-hidden', !match);
+    if (match) visible += 1;
+  });
+  let empty = list.querySelector('.payer-dd-empty');
+  if (visible === 0) {
+    if (!empty) {
+      empty = document.createElement('div');
+      empty.className = 'payer-dd-empty';
+      list.appendChild(empty);
+    }
+    empty.textContent = q ? 'No matches' : 'No people yet';
+    empty.classList.remove('payer-dd-hidden');
+  } else if (empty) {
+    empty.remove();
+  }
+}
+
+function togglePayerDropdown(event) {
+  if (event) event.stopPropagation();
+  const menu = document.getElementById('payerMenu');
+  const trigger = document.getElementById('payerTrigger');
+  const search = document.getElementById('payerSearch');
+  if (!menu || !trigger) return;
+  const open = menu.classList.contains('hidden');
+  if (open) {
+    if (search) search.value = '';
+    syncPayerDropdown();
+    menu.classList.remove('hidden');
+    trigger.setAttribute('aria-expanded', 'true');
+    setTimeout(() => { if (search) search.focus(); }, 0);
+  } else {
+    closePayerDropdown();
+  }
+}
+
+function closePayerDropdown() {
+  const menu = document.getElementById('payerMenu');
+  const trigger = document.getElementById('payerTrigger');
+  const search = document.getElementById('payerSearch');
+  if (menu) menu.classList.add('hidden');
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  if (search) search.value = '';
+  filterPayerOptions('');
+}
+
+function selectPayer(value) {
+  const sel = document.getElementById('payer');
+  if (!sel) return;
+  if ([...sel.options].some(o => o.value === value)) sel.value = value;
+  syncPayerDropdown();
+  closePayerDropdown();
+}
 
 function renderPeople() {
   const chips = document.getElementById('peopleChips');
@@ -2311,6 +2497,7 @@ function renderPeople() {
     payerSel.innerHTML = '<option value="self" selected>Self</option>';
     groupPicks.innerHTML = '<span class="empty picker-empty">Add people first.</span>';
     updatePickerSummary('groupMemberPicks', 'groupMemberSummary');
+    syncPayerDropdown();
     updateSettingsHubSummaries();
     return;
   }
@@ -2331,6 +2518,7 @@ function renderPeople() {
   } else {
     payerSel.value = 'self';
   }
+  syncPayerDropdown();
 
   const checkedIds = new Set(getCheckedIds('groupMemberPicks'));
   groupPicks.innerHTML = people.map(p => `
@@ -2564,6 +2752,10 @@ function resetExpenseForm() {
   document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
   document.getElementById('isPersonal').checked = false;
   togglePersonal();
+  const payerSel = document.getElementById('payer');
+  if (payerSel) payerSel.value = 'self';
+  syncPayerDropdown();
+  closePayerDropdown();
   selectedParticipants = ['self'];
   renderParticipantChips();
   syncExpenseGroupChipState();
@@ -2602,6 +2794,8 @@ function editExpense(id) {
   } else {
     payerSel.value = 'self';
   }
+  syncPayerDropdown();
+  closePayerDropdown();
 
   selectedParticipants = e.is_personal ? ['self'] : [...(e.participants || [])];
   if (!selectedParticipants.length) selectedParticipants = ['self'];
@@ -3222,6 +3416,7 @@ setGreeting();
 syncPeriodControls();
 refresh();
 renderParticipantChips();
+syncPayerDropdown();
 updateHeroSummary();
 </script>
 </body>

@@ -10,11 +10,12 @@
   USE logo-mark.png ALONE (no “Splitwise / MINI” text) for compact chrome:
   - App topbar, boot splash, loading chip, small inline marks in Settings
   - Favicon / apple-touch / OG: use app-icon.png
+  - Mark is transparent and dark-safe (no white fringe)
 
   Optional: set brand_class = "brand-lockup--lg" before include for larger mark.
 #}
 <div class="brand-lockup{% if brand_class is defined and brand_class %} {{ brand_class }}{% endif %}" role="img" aria-label="Splitwise Mini">
-  <img class="brand-lockup-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="88" height="88" />
+  <img class="brand-lockup-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}?v=3" alt="" width="88" height="88" />
   <div class="brand-lockup-word">Splitwise</div>
   <div class="brand-lockup-mini">MINI</div>
 </div>

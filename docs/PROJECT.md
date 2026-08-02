@@ -80,6 +80,7 @@ UI defaults Report/Balances to the current *local* month. Budget month is always
 ## Auth & multi-tenant
 
 - Register / login session; data scoped by `current_user.id`
+- Stay signed in for `SESSION_DAYS` (default **30**, max 365): permanent Flask session + Flask-Login remember cookie (survives browser restart until expiry or Log out)
 - Register requires **email** (stored for future password recovery); username/email availability checked live via `GET /api/check-username` and `GET /api/check-email`
 - **Theme:** Light/Dark + accents (indigo/teal/rose/amber/slate). FOUC via `localStorage` key `swmini.theme` on all pages; logged-in users sync `users.theme_mode` / `theme_accent` through bootstrap and `PUT /api/settings/theme`. Default: light + indigo.
 - Admin role: `/admin` user management

@@ -32,6 +32,7 @@ Multi-user expense tracker by **Manoj Hankare** ([manojhankare.in](https://manoj
 |----------|-------------|
 | `DATABASE_URL` | Postgres connection string (pooler `:6543` recommended on Vercel) |
 | `SECRET_KEY` | Flask session secret (required) |
+| `SESSION_DAYS` | Stay signed in this many days after login/register (default `30`, max `365`) |
 | `ADMIN_USERNAME` | Initial admin username (seeded once in development) |
 | `ADMIN_PASSWORD` | Initial admin password |
 | `FLASK_ENV` | Set to `development` locally to create tables + seed on startup |
@@ -39,7 +40,7 @@ Multi-user expense tracker by **Manoj Hankare** ([manojhankare.in](https://manoj
 
 ## Auth
 - `/register` — open sign-up; each user gets isolated people, groups, expenses
-- `/login` — session login
+- `/login` — session login; stays signed in for `SESSION_DAYS` (default 30) via permanent session + remember cookie (survives browser restart until expiry or Log out)
 - `/admin` — admin dashboard (user list, enable/disable, set password, delete)
 
 ## API (all require login)

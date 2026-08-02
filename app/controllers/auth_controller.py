@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_user, logout_user
 
 from app.models.person import Person
@@ -16,6 +16,12 @@ def _safe_next_url(fallback=None):
     return next_url
 
 
+def _login_persistent(user):
+    """Keep the user signed in for SESSION_DAYS (session + remember cookie)."""
+    session.permanent = True
+    login_user(user, remember=True, duration=current_app.config.get("REMEMBER_COOKIE_DURATION"))
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     # Swipe-back / history to /login while signed in should return to the app,
@@ -28,7 +34,7 @@ def login():
         password = request.form.get("password") or ""
         user = User.get_by_username(username)
         if user and user.is_active and user.check_password(password):
-            login_user(user)
+            _login_persistent(user)
             return redirect(_safe_next_url())
         flash("Invalid username or password", "error")
     return render_template("login.html")
@@ -63,7 +69,7 @@ def register():
             user = User.create(username=username, password=password, email=email)
             Person.add(user.id, username)
             Person.add(user.id, "me")
-            login_user(user)
+            _login_persistent(user)
             return redirect(url_for("page.app"))
     return render_template("register.html", form=form)
 

@@ -84,7 +84,7 @@ Files live in `app/static/brand/` (cut from `logo_designs.png` via `scripts/cut_
 | Asset / pattern | When to use |
 |-----------------|-------------|
 | **HTML lockup** (`{% include '_brand_lockup.html' %}` + styles) | Page headers on home, login, register, and any future marketing/auth surface. Transparent `logo-mark.png` + text **Splitwise** + **MINI**. Prefer this over a lockup PNG on glass/gradient backgrounds. |
-| `logo-mark.png` alone | Compact UI: app topbar, boot splash, loading chip, small Settings marks. No wordmark text beside it unless space is clearly marketing-sized. |
+| `logo-mark.png` alone | Compact UI: app topbar, boot splash, loading chip, small Settings marks. Transparent / dark-safe (no white fringe). No wordmark text beside it unless space is clearly marketing-sized. |
 | `app-icon.png` | Favicon, apple-touch-icon, Open Graph / JSON-LD image. |
 | `logo-lockup.png` | Avoid for UI headers — opaque white plate shows as a box on non-white backgrounds. Prefer the HTML lockup instead. |
 

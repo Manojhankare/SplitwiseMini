@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from dotenv import load_dotenv
 from sqlalchemy.pool import NullPool
@@ -20,6 +21,15 @@ def should_create_db_on_startup():
     return os.environ.get("FLASK_ENV", "").strip().lower() == "development"
 
 
+def _session_days():
+    raw = (os.environ.get("SESSION_DAYS") or "30").strip()
+    try:
+        days = int(raw)
+    except ValueError:
+        days = 30
+    return max(1, min(days, 365))
+
+
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-change-me")
     SQLALCHEMY_DATABASE_URI = get_database_url()
@@ -31,3 +41,12 @@ class Config:
     }
     ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "")
     ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+
+    # Stay signed in across browser restarts (Flask session + Flask-Login remember cookie)
+    SESSION_DAYS = _session_days()
+    PERMANENT_SESSION_LIFETIME = timedelta(days=SESSION_DAYS)
+    REMEMBER_COOKIE_DURATION = timedelta(days=SESSION_DAYS)
+    REMEMBER_COOKIE_HTTPONLY = True
+    REMEMBER_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"

@@ -36,7 +36,12 @@
     margin: 0;
     font-family: var(--font);
     color: var(--ink);
-    background: var(--bg);
+    background:
+      radial-gradient(900px 520px at 12% 0%, var(--page-rad-a), transparent 55%),
+      radial-gradient(780px 480px at 92% 100%, var(--page-rad-b), transparent 50%),
+      radial-gradient(640px 400px at 70% 30%, var(--page-rad-c), transparent 45%),
+      var(--page-grad);
+    background-attachment: fixed;
     font-size: 16px;
     line-height: 1.45;
     -webkit-font-smoothing: antialiased;
@@ -46,6 +51,7 @@
     margin: 0 auto;
     min-height: 100%;
     position: relative;
+    background: transparent;
     padding-bottom: calc(var(--bottombar-h) + env(safe-area-inset-bottom));
   }
   .sr-only {
@@ -1339,10 +1345,23 @@
     max-width: 520px; margin: 0 auto;
     display: flex; justify-content: space-around; align-items: center;
     padding: 8px;
-    background: var(--surface);
+    background: color-mix(in srgb, var(--surface-glass) 72%, transparent);
+    border: 1px solid var(--border-soft);
     border-radius: 24px;
     box-shadow: var(--shadow-nav);
+    backdrop-filter: blur(20px) saturate(1.35);
+    -webkit-backdrop-filter: blur(20px) saturate(1.35);
     pointer-events: auto;
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .bottom-nav-inner { background: var(--surface); }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .bottom-nav-inner {
+      background: var(--surface);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
   }
   .nav-btn {
     background: none; border: none; color: var(--muted); cursor: pointer; font-family: inherit;
@@ -1353,13 +1372,14 @@
   }
   .nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
   .nav-btn:hover, .nav-btn:active {
-    background: var(--surface-2); color: var(--primary); transform: none;
+    background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+    color: var(--primary); transform: none;
   }
   .nav-btn.active {
     color: var(--primary);
-    background: var(--primary-soft);
+    background: color-mix(in srgb, var(--primary-soft) 88%, transparent);
   }
-  .nav-btn.active:hover { background: var(--primary-soft); }
+  .nav-btn.active:hover { background: color-mix(in srgb, var(--primary-soft) 88%, transparent); }
   .nav-btn .fab-add {
     width: 28px; height: 28px; border-radius: 10px;
     background: transparent; color: currentColor;
@@ -1456,22 +1476,22 @@
 </head>
 <body>
 <div id="bootSplash" class="boot-splash" aria-live="polite" aria-busy="true">
-  <img class="boot-splash-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="96" height="96" />
+  <img class="boot-splash-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}?v=3" alt="" width="96" height="96" />
   <div class="boot-splash-bar" aria-hidden="true"><span></span></div>
   <p class="boot-splash-label">Splitwise Mini</p>
 </div>
 <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
   <div class="loading-chip" role="status">
-    <img class="loading-chip-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="72" height="72" />
+    <img class="loading-chip-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}?v=3" alt="" width="72" height="72" />
     <div class="loading-chip-bar" aria-hidden="true"><span></span></div>
-    <p class="loading-chip-label">Updating…</p>
+    <p class="loading-chip-label">loading...</p>
   </div>
 </div>
 <div class="app">
   <header class="topbar">
     <div class="topbar-row">
       <div class="topbar-left">
-        <img class="topbar-logo" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="28" height="28" />
+        <img class="topbar-logo" src="{{ url_for('static', filename='brand/logo-mark.png') }}?v=3" alt="" width="28" height="28" />
         <p class="greeting-line"><span id="greetingText">Good evening</span>, <strong class="greeting-name">{{ current_username }}</strong></p>
       </div>
       <h1 class="page-title" id="pageTitle">Add expense</h1>
@@ -1686,7 +1706,7 @@
             <div class="settings-about-top">
               <div class="settings-about-brand">
                 <button type="button" class="settings-about-egg" id="settingsAboutEgg" aria-label="Splitwise Mini">
-                  <img class="settings-about-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}" alt="" width="24" height="24" />
+                  <img class="settings-about-mark" src="{{ url_for('static', filename='brand/logo-mark.png') }}?v=3" alt="" width="24" height="24" />
                 </button>
                 <strong>Splitwise Mini</strong>
               </div>
